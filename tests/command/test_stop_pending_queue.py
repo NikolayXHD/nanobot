@@ -3,14 +3,11 @@
 import asyncio
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 from nanobot.bus.events import OutboundMessage
 from nanobot.command.builtin import cmd_stop
 from nanobot.command.router import CommandContext
 
 
-@pytest.mark.asyncio
 async def test_cmd_stop_drains_pending_queue():
     """cmd_stop should drain pending queue in addition to cancelling active tasks."""
     mock_loop = MagicMock()
@@ -37,7 +34,6 @@ async def test_cmd_stop_drains_pending_queue():
     assert "test-session" not in mock_loop._pending_queues
 
 
-@pytest.mark.asyncio
 async def test_cmd_stop_with_empty_pending_queue():
     """cmd_stop should work correctly when pending queue is empty."""
     mock_loop = MagicMock()
@@ -61,7 +57,6 @@ async def test_cmd_stop_with_empty_pending_queue():
     assert "test-session" not in mock_loop._pending_queues
 
 
-@pytest.mark.asyncio
 async def test_cmd_stop_no_pending_queue():
     """cmd_stop should work when no pending queue exists."""
     mock_loop = MagicMock()

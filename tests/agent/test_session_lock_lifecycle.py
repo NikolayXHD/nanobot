@@ -4,8 +4,6 @@ import asyncio
 import gc
 from unittest.mock import MagicMock
 
-import pytest
-
 
 def _make_loop(loop_factory):
     provider = MagicMock()
@@ -25,7 +23,6 @@ def test_idle_agent_session_locks_are_released(loop_factory):
     assert len(loop._session_locks) == 0
 
 
-@pytest.mark.asyncio
 async def test_waiter_keeps_agent_session_lock_alive(loop_factory):
     loop = _make_loop(loop_factory)
     owner_lock = loop._get_session_lock("api:shared")

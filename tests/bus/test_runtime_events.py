@@ -119,7 +119,6 @@ async def test_drain_finishes_when_dispatch_completed_before_its_cleanup_callbac
     assert not bus._pending
 
 
-@pytest.mark.asyncio
 async def test_runtime_event_bus_filters_by_event_type() -> None:
     bus = MessageBus()
     seen: list[str] = []
@@ -144,7 +143,6 @@ async def test_runtime_event_bus_filters_by_event_type() -> None:
     assert seen == ["running"]
 
 
-@pytest.mark.asyncio
 async def test_runtime_event_bus_keeps_catch_all_subscription() -> None:
     bus = MessageBus()
     seen: list[str] = []
@@ -159,7 +157,6 @@ async def test_runtime_event_bus_keeps_catch_all_subscription() -> None:
     assert seen == ["RuntimeModelChanged"]
 
 
-@pytest.mark.asyncio
 async def test_runtime_event_publisher_builds_context_from_inbound_message() -> None:
     bus = MessageBus()
     seen: list[object] = []
@@ -195,7 +192,6 @@ async def test_runtime_event_publisher_builds_context_from_inbound_message() -> 
     assert running.started_at == 12.5
 
 
-@pytest.mark.asyncio
 async def test_runtime_event_publisher_consumes_turn_metadata_on_complete() -> None:
     bus = MessageBus()
     seen: list[object] = []
@@ -242,7 +238,6 @@ async def test_runtime_event_publisher_consumes_turn_metadata_on_complete() -> N
     assert second.usage is None
 
 
-@pytest.mark.asyncio
 async def test_runtime_event_publisher_exposes_admitted_runtime() -> None:
     bus = MessageBus()
     seen: list[object] = []
@@ -273,7 +268,6 @@ async def test_runtime_event_publisher_exposes_admitted_runtime() -> None:
     assert completed.runtime is runtime
 
 
-@pytest.mark.asyncio
 async def test_runtime_event_publisher_emits_persisted_turn_attributes() -> None:
     bus = MessageBus()
     seen: list[object] = []

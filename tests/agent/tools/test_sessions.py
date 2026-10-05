@@ -77,7 +77,6 @@ def test_session_tools_do_not_own_runtime_context(tmp_path) -> None:
     assert registry.get_runtime_context_providers() == []
 
 
-@pytest.mark.asyncio
 async def test_search_sessions_has_no_hidden_content_scan_cutoff(tmp_path):
     manager = SessionManager(tmp_path)
     for index in range(200):
@@ -102,7 +101,6 @@ async def test_search_sessions_has_no_hidden_content_scan_cutoff(tmp_path):
     assert [row["session_key"] for row in result["results"]] == ["websocket:old-target"]
 
 
-@pytest.mark.asyncio
 async def test_search_sessions_ranks_titles_before_message_matches(tmp_path):
     manager = SessionManager(tmp_path)
     _save_session(
@@ -136,7 +134,6 @@ async def test_search_sessions_ranks_titles_before_message_matches(tmp_path):
     assert rows[1]["excerpts"][0]["content"] == "The pricing model is BYOK."
 
 
-@pytest.mark.asyncio
 async def test_session_tools_hide_private_and_non_conversation_messages(tmp_path):
     manager = SessionManager(tmp_path)
     content, marker = append_runtime_context(
@@ -171,7 +168,6 @@ async def test_session_tools_hide_private_and_non_conversation_messages(tmp_path
     assert all("secret runtime context" not in message["content"] for message in messages)
 
 
-@pytest.mark.asyncio
 async def test_read_session_filters_by_query_and_returns_recent_matches(tmp_path):
     manager = SessionManager(tmp_path)
     _save_session(
@@ -200,7 +196,6 @@ async def test_read_session_filters_by_query_and_returns_recent_matches(tmp_path
     ]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("query", [None, "", " "])
 async def test_read_session_accepts_unfiltered_query_forms(tmp_path, query):
     manager = SessionManager(tmp_path)
@@ -227,7 +222,6 @@ async def test_read_session_accepts_unfiltered_query_forms(tmp_path, query):
     ]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("query", ["*", ".*"])
 async def test_read_session_rejects_match_all_patterns_with_retry_guidance(tmp_path, query):
     with _webui_request():
@@ -241,7 +235,6 @@ async def test_read_session_rejects_match_all_patterns_with_retry_guidance(tmp_p
     assert "Omit query" in str(result)
 
 
-@pytest.mark.asyncio
 async def test_read_session_reports_invalid_requests(tmp_path):
     with _webui_request():
         missing = await ReadSessionTool(SessionManager(tmp_path)).execute(
@@ -251,7 +244,6 @@ async def test_read_session_reports_invalid_requests(tmp_path):
     assert missing.is_error and "session not found" in str(missing)
 
 
-@pytest.mark.asyncio
 async def test_session_tools_read_persisted_sessions_from_any_channel(tmp_path):
     manager = SessionManager(tmp_path)
     _save_session(
@@ -293,7 +285,6 @@ async def test_session_tools_read_persisted_sessions_from_any_channel(tmp_path):
     assert current_read.is_error and "session not found" in str(current_read)
 
 
-@pytest.mark.asyncio
 async def test_read_session_accepts_a_persisted_session_handle(tmp_path):
     manager = SessionManager(tmp_path)
     _save_session(
@@ -315,7 +306,6 @@ async def test_read_session_accepts_a_persisted_session_handle(tmp_path):
     assert "session_key" not in result
 
 
-@pytest.mark.asyncio
 async def test_session_tools_work_without_request_context(tmp_path):
     manager = SessionManager(tmp_path)
     _save_session(

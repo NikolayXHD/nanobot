@@ -133,7 +133,6 @@ class TestArgumentVectorPath:
 
 class TestSpawnUnix:
 
-    @pytest.mark.asyncio
     async def test_uses_bash(self):
         with (
             patch("nanobot.agent.tools.shell._IS_WINDOWS", False),
@@ -151,7 +150,6 @@ class TestSpawnUnix:
         kwargs = mock_exec.call_args[1]
         assert kwargs["stdin"] == asyncio.subprocess.DEVNULL
 
-    @pytest.mark.asyncio
     async def test_process_tree_starts_new_session(self):
         with (
             patch("nanobot.agent.tools.shell._IS_WINDOWS", False),
@@ -170,7 +168,6 @@ class TestSpawnUnix:
 
 class TestSpawnWindows:
 
-    @pytest.mark.asyncio
     async def test_job_assignment_failure_kills_suspended_process(self):
         env = {"PATH": ""}
         process = AsyncMock()
@@ -196,7 +193,6 @@ class TestSpawnWindows:
         process.kill.assert_called_once_with()
         process.wait.assert_awaited_once_with()
 
-    @pytest.mark.asyncio
     async def test_single_line_uses_powershell(self):
         """Single-line commands on Windows now route through PowerShell."""
         env = {"COMSPEC": r"C:\Windows\system32\cmd.exe", "PATH": ""}
@@ -217,7 +213,6 @@ class TestSpawnWindows:
         kwargs = mock_exec.call_args[1]
         assert kwargs["stdin"] == asyncio.subprocess.DEVNULL
 
-    @pytest.mark.asyncio
     async def test_single_line_passes_cwd_and_env(self):
         """PowerShell should receive cwd and env from the caller."""
         env = {"PATH": "/usr/bin"}
@@ -232,7 +227,6 @@ class TestSpawnWindows:
         assert kwargs["cwd"] == r"C:\work"
         assert kwargs["env"] == env
 
-    @pytest.mark.asyncio
     async def test_multiline_uses_powershell(self):
         env = {"PATH": ""}
         with (
@@ -254,7 +248,6 @@ class TestSpawnWindows:
         assert kwargs["cwd"] == r"C:\work"
         assert kwargs["env"] == env
 
-    @pytest.mark.asyncio
     async def test_explicit_cmd_shell_uses_raw_shell_string(self):
         """Explicit shell='cmd' should preserve raw cmd.exe quoting semantics."""
         env = {"COMSPEC": r"C:\Windows\system32\cmd.exe", "PATH": ""}
@@ -277,7 +270,6 @@ class TestSpawnWindows:
             "PATH": "",
         }
 
-    @pytest.mark.asyncio
     async def test_powershell_preserves_last_native_exit_code(self):
         """PowerShell -Command should forward native process exit codes."""
         env = {"PATH": ""}
@@ -292,7 +284,6 @@ class TestSpawnWindows:
         assert "cmd /c exit 7" in command
         assert "if ($LASTEXITCODE -ne $null) { exit $LASTEXITCODE }" in command
 
-    @pytest.mark.asyncio
     async def test_powershell_configures_utf8_io(self):
         """PowerShell should use UTF-8 for captured output, native input, and redirections."""
         env = {"PATH": ""}
@@ -311,7 +302,6 @@ class TestSpawnWindows:
         ) in command
         assert "$PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'" in command
 
-    @pytest.mark.asyncio
     async def test_powershell_invokes_quoted_windows_executable_path(self):
         """PowerShell needs & before quoted executable paths with arguments."""
         env = {"PATH": ""}
@@ -326,7 +316,6 @@ class TestSpawnWindows:
         powershell_command = mock_exec.call_args[0][-1]
         assert f"\n& {command}\n" in powershell_command
 
-    @pytest.mark.asyncio
     async def test_powershell_invokes_quoted_windows_executable_without_arguments(self):
         """A quoted executable path is still a command when it has no arguments."""
         env = {"PATH": ""}
@@ -341,7 +330,6 @@ class TestSpawnWindows:
         powershell_command = mock_exec.call_args[0][-1]
         assert f"\n& {command}\n" in powershell_command
 
-    @pytest.mark.asyncio
     async def test_prefers_pwsh_when_available(self):
         env = {"PATH": ""}
 
@@ -370,7 +358,6 @@ class TestSpawnWindows:
 
 class TestPathAppendPlatform:
 
-    @pytest.mark.asyncio
     async def test_unix_uses_env_var_in_fixed_export(self):
         """On Unix, path_append must not be interpolated into shell source."""
         mock_proc = AsyncMock()
@@ -401,7 +388,6 @@ class TestPathAppendPlatform:
         assert captured_env["NANOBOT_PATH_APPEND"] == "/opt/bin; echo INJECTED"
         assert "INJECTED" not in captured_cmd
 
-    @pytest.mark.asyncio
     async def test_unix_path_prepend_uses_env_var_in_fixed_export(self):
         """On Unix, path_prepend must not be interpolated into shell source."""
         mock_proc = AsyncMock()
@@ -432,7 +418,6 @@ class TestPathAppendPlatform:
         assert captured_env["NANOBOT_PATH_PREPEND"] == "/venv/bin; echo INJECTED"
         assert "INJECTED" not in captured_cmd
 
-    @pytest.mark.asyncio
     async def test_unix_path_prepend_and_append_order(self):
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"ok", b"")
@@ -464,7 +449,6 @@ class TestPathAppendPlatform:
         assert captured_env["NANOBOT_PATH_PREPEND"] == "/venv/bin"
         assert captured_env["NANOBOT_PATH_APPEND"] == "/usr/sbin"
 
-    @pytest.mark.asyncio
     async def test_windows_modifies_env(self):
         """On Windows, path_append is appended to PATH in the env dict."""
         mock_proc = AsyncMock()
@@ -490,7 +474,6 @@ class TestPathAppendPlatform:
 
         assert captured_env["PATH"].endswith(r";C:\tools\bin")
 
-    @pytest.mark.asyncio
     async def test_windows_path_prepend_and_append_order(self):
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"ok", b"")
@@ -525,7 +508,6 @@ class TestPathAppendPlatform:
 
 class TestSandboxPlatform:
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("backend", ["bwrap", "seatbelt"])
     async def test_sandbox_skipped_on_windows(self, backend):
         """Configured Unix backends preserve the Windows native fallback."""
@@ -545,7 +527,6 @@ class TestSandboxPlatform:
         spawned_cmd = mock_spawn.call_args[0][0]
         assert backend not in spawned_cmd
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("backend", ["bwrap", "seatbelt"])
     async def test_sandbox_applied_on_unix(self, backend):
         """On Unix, sandbox wrapping should still happen normally."""
@@ -566,7 +547,6 @@ class TestSandboxPlatform:
         spawned_cmd = mock_spawn.call_args[0][0]
         assert backend in spawned_cmd
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("backend", ["bwrap", "seatbelt"])
     async def test_sandbox_receives_configured_bind_roots(self, tmp_path, backend):
         """Configured bind roots should be forwarded to the sandbox wrapper."""
@@ -605,7 +585,6 @@ class TestSandboxPlatform:
 
 class TestExecuteEndToEnd:
 
-    @pytest.mark.asyncio
     async def test_windows_full_path(self):
         """Full execute() flow on Windows: env, spawn, output formatting."""
         mock_proc = AsyncMock()
@@ -623,7 +602,6 @@ class TestExecuteEndToEnd:
         assert "hello world" in result
         assert "Exit code: 0" in result
 
-    @pytest.mark.asyncio
     async def test_unix_full_path(self):
         """Full execute() flow on Unix: env, spawn, output formatting."""
         mock_proc = AsyncMock()
@@ -641,7 +619,6 @@ class TestExecuteEndToEnd:
         assert "hello world" in result
         assert "Exit code: 0" in result
 
-    @pytest.mark.asyncio
     async def test_execute_defaults_to_non_login_shell(self):
         """The public execute path must not silently request a login shell."""
         mock_proc = AsyncMock()
@@ -733,7 +710,6 @@ class TestExtractAbsolutePaths:
 class TestWindowsMultilineExec:
     """Verify commands on Windows route through PowerShell (now the default)."""
 
-    @pytest.mark.asyncio
     async def test_multiline_python_uses_powershell(self):
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"1\n2\n", b"")
@@ -755,7 +731,6 @@ class TestWindowsMultilineExec:
         args = mock_exec.call_args[0]
         assert any(shell in args[0].lower() for shell in ("pwsh", "powershell"))
 
-    @pytest.mark.asyncio
     async def test_multiline_node_uses_powershell(self):
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"1\n", b"")
@@ -775,7 +750,6 @@ class TestWindowsMultilineExec:
         args = mock_exec.call_args[0]
         assert any(shell in args[0].lower() for shell in ("pwsh", "powershell"))
 
-    @pytest.mark.asyncio
     async def test_single_line_uses_powershell(self):
         """Single-line commands also route through PowerShell now."""
         mock_proc = AsyncMock()
@@ -793,7 +767,6 @@ class TestWindowsMultilineExec:
         assert "1" in result
         mock_spawn.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_unix_unchanged(self):
         mock_proc = AsyncMock()
         mock_proc.communicate.return_value = (b"1\n2\n", b"")
@@ -818,7 +791,6 @@ class TestWindowsMultilineExec:
 class TestResolveShellWindows:
     """shell parameter is now accepted on Windows."""
 
-    @pytest.mark.asyncio
     async def test_shell_powershell_accepted(self):
         """shell='powershell' should resolve and route through PowerShell."""
         mock_proc = AsyncMock()
@@ -840,7 +812,6 @@ class TestResolveShellWindows:
         assert "powershell" in args[0].lower()
         assert "-NonInteractive" in args
 
-    @pytest.mark.asyncio
     async def test_shell_cmd_accepted(self):
         """shell='cmd' should preserve the command string for cmd.exe parsing."""
         mock_proc = AsyncMock()
@@ -861,7 +832,6 @@ class TestResolveShellWindows:
         args = mock_shell.call_args[0]
         assert args == ('echo "a & b"',)
 
-    @pytest.mark.asyncio
     async def test_shell_bash_rejected_on_windows(self):
         """shell='bash' should still be rejected on Windows."""
         with patch("nanobot.agent.tools.shell._IS_WINDOWS", True):
@@ -879,7 +849,6 @@ class TestResolveShellWindows:
 class TestWindowsRealExec:
 
     @pytest.mark.skipif(shutil.which("pwsh") is None, reason="requires PowerShell 7")
-    @pytest.mark.asyncio
     async def test_single_line_and_separator_uses_pwsh(self):
         result = await ExecTool(timeout=10).execute(command="echo before && echo after")
 
@@ -887,7 +856,6 @@ class TestWindowsRealExec:
         assert "after" in result
         assert "Exit code: 0" in result
 
-    @pytest.mark.asyncio
     async def test_explicit_cmd_preserves_embedded_quotes(self):
         result = await ExecTool(timeout=10).execute(command='echo "a & b"', shell="cmd")
 
@@ -895,13 +863,11 @@ class TestWindowsRealExec:
         assert r'\"a & b\"' not in result
         assert "Exit code: 0" in result
 
-    @pytest.mark.asyncio
     async def test_default_powershell_preserves_native_exit_code(self):
         result = await ExecTool(timeout=10).execute(command="cmd /c exit 7")
 
         assert "Exit code: 7" in result
 
-    @pytest.mark.asyncio
     async def test_windows_powershell_output_and_redirection_are_utf8(self, tmp_path):
         result = await ExecTool(working_dir=str(tmp_path), timeout=180).execute(
             command=(
@@ -921,7 +887,6 @@ class TestWindowsRealExec:
         assert b"\x00" not in data
         assert data.decode("utf-8-sig").strip() == "file café λ 你好"
 
-    @pytest.mark.asyncio
     async def test_windows_powershell_native_pipeline_input_is_utf8(self):
         python = sys.executable.replace("'", "''")
         result = await ExecTool(timeout=180).execute(
@@ -935,7 +900,6 @@ class TestWindowsRealExec:
         assert "e4bc9a0d0a" in result
         assert "Exit code: 0" in result
 
-    @pytest.mark.asyncio
     async def test_windows_powershell_session_output_is_utf8(self):
         manager = ExecSessionManager()
         try:

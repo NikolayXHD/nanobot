@@ -17,7 +17,6 @@ def _audio_data_url(payload: bytes = b"voice", mime: str = "audio/webm") -> str:
     return f"data:{mime};base64,{base64.b64encode(payload).decode('ascii')}"
 
 
-@pytest.mark.asyncio
 async def test_webui_transcribe_audio_rejects_unconfigured_provider(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -41,7 +40,6 @@ async def test_webui_transcribe_audio_rejects_unconfigured_provider(
     }
 
 
-@pytest.mark.asyncio
 async def test_webui_transcription_uses_explicit_gateway_config(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -69,7 +67,6 @@ async def test_webui_transcription_uses_explicit_gateway_config(
     assert payload["detail"] == "not_configured"
 
 
-@pytest.mark.asyncio
 async def test_webui_transcribe_audio_rejects_unsupported_mime(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -91,7 +88,6 @@ async def test_webui_transcribe_audio_rejects_unsupported_mime(
     assert payload["detail"] == "mime"
 
 
-@pytest.mark.asyncio
 async def test_webui_transcribe_audio_rejects_oversized_audio(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -115,7 +111,6 @@ async def test_webui_transcribe_audio_rejects_oversized_audio(
     assert payload["detail"] == "size"
 
 
-@pytest.mark.asyncio
 async def test_webui_transcribe_audio_returns_text_and_removes_temp_file(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,

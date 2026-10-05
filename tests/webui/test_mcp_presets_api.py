@@ -146,7 +146,6 @@ def test_agent_plugin_reuses_mcp_catalog_and_runtime_action(
     assert len(rows) == 1 and rows[0]["source"] == "custom"
 
 
-@pytest.mark.asyncio
 async def test_oauth_preset_is_one_click_configured_after_token_storage(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -199,7 +198,6 @@ async def test_oauth_preset_is_one_click_configured_after_token_storage(
     assert await MCPOAuthStorage("xmind", cfg.url).get_tokens() is None
 
 
-@pytest.mark.asyncio
 async def test_settings_list_projects_runtime_snapshot_and_reconnects_custom_server(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -682,7 +680,6 @@ def test_import_recognizes_known_and_explicit_oauth_servers(
     assert "Bearer secret" not in str(payload)
 
 
-@pytest.mark.asyncio
 async def test_replacing_oauth_config_removes_its_stored_credentials(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,

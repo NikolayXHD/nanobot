@@ -39,7 +39,6 @@ class _FakeClient:
         self.api = _FakeApi()
 
 
-@pytest.mark.asyncio
 async def test_on_group_message_routes_to_group_chat_id() -> None:
     channel = QQChannel(QQConfig(app_id="app", secret="secret", allow_from=["user1"]), MessageBus())
 
@@ -58,7 +57,6 @@ async def test_on_group_message_routes_to_group_chat_id() -> None:
     assert msg.chat_id == "group123"
 
 
-@pytest.mark.asyncio
 async def test_on_c2c_message_passes_is_dm_true_to_base_handler() -> None:
     channel = QQChannel(QQConfig(app_id="app", secret="secret", allow_from=["user1"]), MessageBus())
     channel._handle_message = AsyncMock()
@@ -80,7 +78,6 @@ async def test_on_c2c_message_passes_is_dm_true_to_base_handler() -> None:
     assert kwargs["is_dm"] is True
 
 
-@pytest.mark.asyncio
 async def test_on_group_message_passes_is_dm_false_to_base_handler() -> None:
     channel = QQChannel(QQConfig(app_id="app", secret="secret", allow_from=["user1"]), MessageBus())
     channel._handle_message = AsyncMock()
@@ -103,7 +100,6 @@ async def test_on_group_message_passes_is_dm_false_to_base_handler() -> None:
     assert kwargs["is_dm"] is False
 
 
-@pytest.mark.asyncio
 async def test_send_group_message_uses_plain_text_group_api_with_msg_seq() -> None:
     channel = QQChannel(QQConfig(app_id="app", secret="secret", allow_from=["*"]), MessageBus())
     channel._client = _FakeClient()
@@ -130,7 +126,6 @@ async def test_send_group_message_uses_plain_text_group_api_with_msg_seq() -> No
     assert not channel._client.api.c2c_calls
 
 
-@pytest.mark.asyncio
 async def test_send_c2c_message_uses_plain_text_c2c_api_with_msg_seq() -> None:
     channel = QQChannel(QQConfig(app_id="app", secret="secret", allow_from=["*"]), MessageBus())
     channel._client = _FakeClient()
@@ -156,7 +151,6 @@ async def test_send_c2c_message_uses_plain_text_c2c_api_with_msg_seq() -> None:
     assert not channel._client.api.group_calls
 
 
-@pytest.mark.asyncio
 async def test_send_group_message_uses_markdown_when_configured() -> None:
     channel = QQChannel(
         QQConfig(app_id="app", secret="secret", allow_from=["*"], msg_format="markdown"),
@@ -185,7 +179,6 @@ async def test_send_group_message_uses_markdown_when_configured() -> None:
     }
 
 
-@pytest.mark.asyncio
 async def test_read_media_bytes_local_path() -> None:
     channel = QQChannel(QQConfig(app_id="app", secret="secret"), MessageBus())
 
@@ -198,7 +191,6 @@ async def test_read_media_bytes_local_path() -> None:
     assert filename == Path(tmp_path).name
 
 
-@pytest.mark.asyncio
 async def test_read_media_bytes_file_uri() -> None:
     channel = QQChannel(QQConfig(app_id="app", secret="secret"), MessageBus())
 
@@ -211,7 +203,6 @@ async def test_read_media_bytes_file_uri() -> None:
     assert filename == Path(tmp_path).name
 
 
-@pytest.mark.asyncio
 async def test_read_media_bytes_missing_file() -> None:
     channel = QQChannel(QQConfig(app_id="app", secret="secret"), MessageBus())
 
@@ -239,7 +230,6 @@ def _make_channel_with_local_file(suffix: str = ".png", content: bytes = b"\x89P
     return channel, tmp.name
 
 
-@pytest.mark.asyncio
 async def test_send_media_network_error_propagates() -> None:
     """aiohttp.ClientError (network/transport) should re-raise, not return False."""
     channel, tmp_path = _make_channel_with_local_file()
@@ -259,7 +249,6 @@ async def test_send_media_network_error_propagates() -> None:
         )
 
 
-@pytest.mark.asyncio
 async def test_send_media_client_connector_error_propagates() -> None:
     """aiohttp.ClientConnectorError (DNS/connection refused) should re-raise."""
     channel, tmp_path = _make_channel_with_local_file()
@@ -285,7 +274,6 @@ async def test_send_media_client_connector_error_propagates() -> None:
         )
 
 
-@pytest.mark.asyncio
 async def test_send_media_oserror_propagates() -> None:
     """OSError (low-level I/O) should re-raise for retry."""
     channel, tmp_path = _make_channel_with_local_file()
@@ -304,7 +292,6 @@ async def test_send_media_oserror_propagates() -> None:
         )
 
 
-@pytest.mark.asyncio
 async def test_send_media_api_error_returns_false() -> None:
     """API-level errors (botpy RuntimeError subclasses) should return False, not raise."""
     channel, tmp_path = _make_channel_with_local_file()
@@ -326,7 +313,6 @@ async def test_send_media_api_error_returns_false() -> None:
     assert result is False
 
 
-@pytest.mark.asyncio
 async def test_send_media_generic_runtime_error_returns_false() -> None:
     """Generic RuntimeError (not network) should return False."""
     channel, tmp_path = _make_channel_with_local_file()
@@ -345,7 +331,6 @@ async def test_send_media_generic_runtime_error_returns_false() -> None:
     assert result is False
 
 
-@pytest.mark.asyncio
 async def test_send_media_value_error_returns_false() -> None:
     """ValueError (bad API response data) should return False."""
     channel, tmp_path = _make_channel_with_local_file()
@@ -364,7 +349,6 @@ async def test_send_media_value_error_returns_false() -> None:
     assert result is False
 
 
-@pytest.mark.asyncio
 async def test_send_media_timeout_error_propagates() -> None:
     """asyncio.TimeoutError inherits from Exception but not ClientError/OSError.
     However, aiohttp.ServerTimeoutError IS a ClientError subclass, so that propagates.
@@ -385,7 +369,6 @@ async def test_send_media_timeout_error_propagates() -> None:
         )
 
 
-@pytest.mark.asyncio
 async def test_send_fallback_text_on_api_error() -> None:
     """When _send_media returns False (API error), send() should emit fallback text."""
     channel, tmp_path = _make_channel_with_local_file()
@@ -413,7 +396,6 @@ async def test_send_fallback_text_on_api_error() -> None:
     assert "Attachment send failed" in fallback_content
 
 
-@pytest.mark.asyncio
 async def test_send_propagates_network_error_no_fallback() -> None:
     """When _send_media raises a network error, send() should NOT silently fallback."""
     channel, tmp_path = _make_channel_with_local_file()

@@ -31,7 +31,6 @@ def _run_ctx() -> AgentRunHookContext:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_base_hook_emit_reasoning_is_noop():
     hook = AgentHook()
     result = await hook.emit_reasoning("should not raise")
@@ -43,7 +42,6 @@ async def test_base_hook_emit_reasoning_is_noop():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_composite_fans_out_before_iteration():
     calls: list[str] = []
 
@@ -61,7 +59,6 @@ async def test_composite_fans_out_before_iteration():
     assert calls == ["A:0", "B:0"]
 
 
-@pytest.mark.asyncio
 async def test_composite_fans_out_all_async_methods():
     """Verify all async methods fan out to every hook."""
     events: list[str] = []
@@ -151,7 +148,6 @@ async def test_composite_fans_out_all_async_methods():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_composite_error_isolation_before_iteration():
     calls: list[str] = []
 
@@ -168,7 +164,6 @@ async def test_composite_error_isolation_before_iteration():
     assert calls == ["good"]
 
 
-@pytest.mark.asyncio
 async def test_composite_error_isolation_on_stream():
     calls: list[str] = []
 
@@ -185,7 +180,6 @@ async def test_composite_error_isolation_on_stream():
     assert calls == ["delta"]
 
 
-@pytest.mark.asyncio
 async def test_composite_error_isolation_all_async():
     """Error isolation for on_stream_end, before_execute_tools, after_iteration."""
     calls: list[str] = []
@@ -356,7 +350,6 @@ def test_composite_wants_streaming_empty():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_composite_empty_hooks_no_ops():
     hook = CompositeHook([])
     ctx = _ctx()
@@ -376,7 +369,6 @@ async def test_composite_empty_hooks_no_ops():
     assert hook.finalize_content(ctx, "test") == "test"
 
 
-@pytest.mark.asyncio
 async def test_composite_supports_legacy_hook_init_without_super():
     calls: list[str] = []
 
@@ -392,7 +384,6 @@ async def test_composite_supports_legacy_hook_init_without_super():
     assert calls == ["legacy"]
 
 
-@pytest.mark.asyncio
 async def test_composite_can_wrap_another_composite():
     calls: list[str] = []
 
@@ -434,7 +425,6 @@ def _make_loop(tmp_path, hooks=None, hook_factories=None):
     return loop
 
 
-@pytest.mark.asyncio
 async def test_agent_loop_extra_hook_receives_calls(tmp_path):
     """Extra hook passed to AgentLoop is called alongside core LoopHook."""
     from nanobot.providers.base import LLMResponse
@@ -472,7 +462,6 @@ async def test_agent_loop_extra_hook_receives_calls(tmp_path):
     assert "after_run:completed" in events
 
 
-@pytest.mark.asyncio
 async def test_agent_loop_turn_hook_factories_receive_context(tmp_path):
     """Turn-scoped hooks can be supplied externally and see turn-local context."""
     from nanobot.providers.base import LLMResponse
@@ -538,7 +527,6 @@ async def test_agent_loop_turn_hook_factories_receive_context(tmp_path):
     ]
 
 
-@pytest.mark.asyncio
 async def test_agent_loop_extra_hook_error_isolation(tmp_path):
     """A faulty extra hook does not crash the agent loop."""
     from nanobot.providers.base import LLMResponse
@@ -561,7 +549,6 @@ async def test_agent_loop_extra_hook_error_isolation(tmp_path):
     assert result.final_content == "still works"
 
 
-@pytest.mark.asyncio
 async def test_agent_loop_extra_hooks_do_not_swallow_loop_hook_errors(tmp_path):
     """Extra hooks must not change the core LoopHook failure behavior."""
     from nanobot.providers.base import LLMResponse, ToolCallRequest
@@ -586,7 +573,6 @@ async def test_agent_loop_extra_hooks_do_not_swallow_loop_hook_errors(tmp_path):
         )
 
 
-@pytest.mark.asyncio
 async def test_agent_loop_no_hooks_backward_compat(tmp_path):
     """Without hooks param, behavior is identical to before."""
     from nanobot.providers.base import LLMResponse, ToolCallRequest

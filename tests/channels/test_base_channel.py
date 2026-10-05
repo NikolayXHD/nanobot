@@ -1,7 +1,5 @@
 from types import SimpleNamespace
 
-import pytest
-
 from nanobot.bus.events import OutboundMessage
 from nanobot.bus.queue import MessageBus
 from nanobot.channels.base import BaseChannel
@@ -66,7 +64,6 @@ def test_is_allowed_pairing_fallback(monkeypatch) -> None:
     assert channel.is_allowed("unknown") is False
 
 
-@pytest.mark.asyncio
 async def test_handle_message_dm_sends_pairing_code(monkeypatch) -> None:
     channel = _DummyChannel({"allowFrom": []}, MessageBus())
     monkeypatch.setattr(
@@ -83,7 +80,6 @@ async def test_handle_message_dm_sends_pairing_code(monkeypatch) -> None:
     assert msg.metadata.get("_pairing_code") == "ABCD-EFGH"
 
 
-@pytest.mark.asyncio
 async def test_dm_during_transient_store_failure_keeps_approvals(
     tmp_path, monkeypatch
 ) -> None:
@@ -126,7 +122,6 @@ async def test_dm_during_transient_store_failure_keeps_approvals(
     assert store.is_approved("dummy", "friend") is True
 
 
-@pytest.mark.asyncio
 async def test_handle_message_group_ignores_unknown() -> None:
     channel = _DummyChannel({"allowFrom": []}, MessageBus())
 
@@ -137,7 +132,6 @@ async def test_handle_message_group_ignores_unknown() -> None:
     assert channel._sent == []
 
 
-@pytest.mark.asyncio
 async def test_handle_message_uses_authorization_id_without_changing_sender() -> None:
     bus = MessageBus()
     channel = _DummyChannel({"allowFrom": ["group@g.us"]}, bus)
@@ -154,7 +148,6 @@ async def test_handle_message_uses_authorization_id_without_changing_sender() ->
     assert msg.chat_id == "group@g.us"
 
 
-@pytest.mark.asyncio
 async def test_handle_message_rejects_when_authorization_id_is_not_allowed() -> None:
     bus = MessageBus()
     channel = _DummyChannel({"allowFrom": ["member-lid"]}, bus)

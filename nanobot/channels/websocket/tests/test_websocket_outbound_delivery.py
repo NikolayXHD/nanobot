@@ -8,8 +8,6 @@ from pathlib import Path
 from typing import Any, cast
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 from nanobot.bus.events import OutboundMessage
 from nanobot.bus.queue import MessageBus
 from nanobot.channels.manager import ChannelManager
@@ -109,7 +107,6 @@ async def _wait_for_retire_tasks(channel: WebSocketChannel) -> None:
         await asyncio.sleep(0)
 
 
-@pytest.mark.asyncio
 async def test_message_bus_delivers_to_ten_tuis_with_one_blocked_connection() -> None:
     channel = _channel()
     bus = MessageBus()
@@ -142,7 +139,6 @@ async def test_message_bus_delivers_to_ten_tuis_with_one_blocked_connection() ->
     assert not channel._connection_outbound
 
 
-@pytest.mark.asyncio
 async def test_slow_tui_does_not_block_a_different_topic() -> None:
     channel = _channel()
     slow = _RecordingConnection(block_first_send=True)
@@ -163,7 +159,6 @@ async def test_slow_tui_does_not_block_a_different_topic() -> None:
         await channel._cleanup_connection(cast(Any, healthy))
 
 
-@pytest.mark.asyncio
 async def test_slow_tui_does_not_block_same_topic_fanout() -> None:
     channel = _channel()
     slow = _RecordingConnection(block_first_send=True)
@@ -182,7 +177,6 @@ async def test_slow_tui_does_not_block_same_topic_fanout() -> None:
         await channel._cleanup_connection(cast(Any, healthy))
 
 
-@pytest.mark.asyncio
 async def test_connection_writer_preserves_order_without_concurrent_sends() -> None:
     channel = _channel()
     connection = _RecordingConnection(block_first_send=True)
@@ -202,7 +196,6 @@ async def test_connection_writer_preserves_order_without_concurrent_sends() -> N
         await channel._cleanup_connection(cast(Any, connection))
 
 
-@pytest.mark.asyncio
 async def test_full_outbound_queue_disconnects_only_the_slow_tui(monkeypatch) -> None:
     monkeypatch.setattr(runtime, "_OUTBOUND_QUEUE_MAX_FRAMES", 2)
     monkeypatch.setattr(runtime, "_OUTBOUND_QUEUE_MAX_BYTES", 1024 * 1024)
@@ -231,7 +224,6 @@ async def test_full_outbound_queue_disconnects_only_the_slow_tui(monkeypatch) ->
         await channel._cleanup_connection(cast(Any, healthy))
 
 
-@pytest.mark.asyncio
 async def test_outbound_byte_budget_disconnects_oversized_connection(monkeypatch) -> None:
     monkeypatch.setattr(runtime, "_OUTBOUND_QUEUE_MAX_BYTES", 64)
     channel = _channel()
@@ -248,7 +240,6 @@ async def test_outbound_byte_budget_disconnects_oversized_connection(monkeypatch
         await channel._cleanup_connection(cast(Any, connection))
 
 
-@pytest.mark.asyncio
 async def test_cleanup_cancels_a_blocked_writer_and_discards_pending_frames() -> None:
     channel = _channel()
     connection = _RecordingConnection(block_first_send=True)
@@ -269,7 +260,6 @@ async def test_cleanup_cancels_a_blocked_writer_and_discards_pending_frames() ->
     assert channel._subs == {}
 
 
-@pytest.mark.asyncio
 async def test_send_timeout_retires_only_the_slow_connection(monkeypatch) -> None:
     monkeypatch.setattr(runtime, "_OUTBOUND_SEND_TIMEOUT_S", 0.01)
     channel = _channel()
@@ -293,7 +283,6 @@ async def test_send_timeout_retires_only_the_slow_connection(monkeypatch) -> Non
         await channel._cleanup_connection(cast(Any, healthy))
 
 
-@pytest.mark.asyncio
 async def test_stop_cancels_connection_writers() -> None:
     channel = _channel()
     connection = _RecordingConnection(block_first_send=True)
@@ -309,7 +298,6 @@ async def test_stop_cancels_connection_writers() -> None:
     assert channel._subs == {}
 
 
-@pytest.mark.asyncio
 async def test_stop_cancels_writers_before_waiting_for_the_server_task() -> None:
     channel = _channel()
     connection = _RecordingConnection(block_first_send=True)
@@ -333,7 +321,6 @@ async def test_stop_cancels_writers_before_waiting_for_the_server_task() -> None
     assert channel._server_task is None
 
 
-@pytest.mark.asyncio
 async def test_send_to_cleaned_connection_does_not_recreate_outbound_state() -> None:
     channel = _channel()
     connection = _RecordingConnection()
@@ -346,7 +333,6 @@ async def test_send_to_cleaned_connection_does_not_recreate_outbound_state() -> 
     assert connection not in channel._connection_outbound
 
 
-@pytest.mark.asyncio
 async def test_attach_does_not_revive_a_cleaned_connection() -> None:
     channel = _channel()
     connection = _RecordingConnection()
@@ -360,7 +346,6 @@ async def test_attach_does_not_revive_a_cleaned_connection() -> None:
     assert "chat-after-cleanup" not in channel._subs
 
 
-@pytest.mark.asyncio
 async def test_buffered_envelope_does_not_revive_a_cleaned_connection(monkeypatch) -> None:
     channel = _channel()
     connection = _RecordingConnection()
@@ -375,7 +360,6 @@ async def test_buffered_envelope_does_not_revive_a_cleaned_connection(monkeypatc
     assert connection not in channel._connection_outbound
 
 
-@pytest.mark.asyncio
 async def test_control_broadcast_cannot_precede_ready() -> None:
     channel = _channel()
     connection = _RecordingConnection()
@@ -387,7 +371,6 @@ async def test_control_broadcast_cannot_precede_ready() -> None:
     assert connection not in channel._connection_outbound
 
 
-@pytest.mark.asyncio
 async def test_close_timeout_aborts_transport_and_cleans_connection(monkeypatch) -> None:
     monkeypatch.setattr(runtime, "_OUTBOUND_QUEUE_MAX_BYTES", 64)
     monkeypatch.setattr(runtime, "_OUTBOUND_CLOSE_TIMEOUT_S", 0.01)
@@ -403,7 +386,6 @@ async def test_close_timeout_aborts_transport_and_cleans_connection(monkeypatch)
     assert connection not in channel._conn_chats
 
 
-@pytest.mark.asyncio
 async def test_retirement_contains_cleanup_failure(monkeypatch) -> None:
     monkeypatch.setattr(runtime, "_OUTBOUND_QUEUE_MAX_BYTES", 64)
     channel = _channel()
@@ -426,7 +408,6 @@ async def test_retirement_contains_cleanup_failure(monkeypatch) -> None:
     assert channel._subs == {}
 
 
-@pytest.mark.asyncio
 async def test_normal_cleanup_can_overlap_connection_retirement(monkeypatch) -> None:
     monkeypatch.setattr(runtime, "_OUTBOUND_QUEUE_MAX_BYTES", 64)
     channel = _channel()

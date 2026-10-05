@@ -14,7 +14,6 @@ def _picker_command(tmp_path: Path, body: str) -> picker._PickerCommand:
     return picker._PickerCommand((sys.executable, str(script)), frozenset({1}))
 
 
-@pytest.mark.asyncio
 async def test_pick_native_folder_returns_selected_directory(tmp_path, monkeypatch) -> None:
     selected = tmp_path / "project"
     selected.mkdir()
@@ -28,7 +27,6 @@ async def test_pick_native_folder_returns_selected_directory(tmp_path, monkeypat
     assert await picker.pick_native_folder() == str(selected)
 
 
-@pytest.mark.asyncio
 async def test_pick_native_folder_uses_secret_free_environment(tmp_path, monkeypatch) -> None:
     selected = tmp_path / "project"
     selected.mkdir()
@@ -63,7 +61,6 @@ def test_picker_environment_preserves_linux_display_context(monkeypatch) -> None
     assert "ANTHROPIC_API_KEY" not in environment
 
 
-@pytest.mark.asyncio
 async def test_pick_native_folder_maps_dialog_cancel_to_none(tmp_path, monkeypatch) -> None:
     command = _picker_command(tmp_path, "raise SystemExit(1)")
     monkeypatch.setattr(
@@ -75,7 +72,6 @@ async def test_pick_native_folder_maps_dialog_cancel_to_none(tmp_path, monkeypat
     assert await picker.pick_native_folder() is None
 
 
-@pytest.mark.asyncio
 async def test_pick_native_folder_rejects_non_directory_result(tmp_path, monkeypatch) -> None:
     missing = tmp_path / "missing"
     command = _picker_command(tmp_path, f"print({str(missing)!r}, end='')")
@@ -89,7 +85,6 @@ async def test_pick_native_folder_rejects_non_directory_result(tmp_path, monkeyp
         await picker.pick_native_folder()
 
 
-@pytest.mark.asyncio
 async def test_pick_native_folder_reports_unavailable(monkeypatch) -> None:
     monkeypatch.setattr(picker, "_picker_command", lambda: None)
 
@@ -98,7 +93,6 @@ async def test_pick_native_folder_reports_unavailable(monkeypatch) -> None:
         await picker.pick_native_folder()
 
 
-@pytest.mark.asyncio
 async def test_pick_native_folder_wraps_process_start_failure(tmp_path, monkeypatch) -> None:
     command = _picker_command(tmp_path, "raise AssertionError('not started')")
     monkeypatch.setattr(picker, "_picker_command", lambda: command)

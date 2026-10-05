@@ -39,7 +39,6 @@ def _make_loop(tmp_path):
     return loop
 
 
-@pytest.mark.asyncio
 async def test_process_direct_websocket_clears_run_status(tmp_path) -> None:
     loop = _make_loop(tmp_path)
     gateway = MagicMock()
@@ -89,7 +88,6 @@ async def test_process_direct_websocket_clears_run_status(tmp_path) -> None:
         wth._WEBSOCKET_TURN_OWNERS.clear()
 
 
-@pytest.mark.asyncio
 async def test_process_direct_reuses_existing_session_lock(tmp_path) -> None:
     loop = _make_loop(tmp_path)
     session_key = "api:fixed"
@@ -122,7 +120,6 @@ async def test_process_direct_reuses_existing_session_lock(tmp_path) -> None:
                 await task
 
 
-@pytest.mark.asyncio
 async def test_process_direct_applies_per_run_hooks(tmp_path) -> None:
     from nanobot.agent.hook import AgentHook, AgentRunHookContext
 

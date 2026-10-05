@@ -63,7 +63,6 @@ class _StreamingProvider(LLMProvider):
         return "test-model"
 
 
-@pytest.mark.asyncio
 async def test_observer_receives_every_retry_attempt() -> None:
     provider = _SequenceProvider(
         iter(
@@ -103,7 +102,6 @@ async def test_observer_receives_every_retry_attempt() -> None:
     assert events[1].usage.cache_read_tokens == 60
 
 
-@pytest.mark.asyncio
 async def test_observer_estimates_missing_success_usage_without_storing_content() -> None:
     provider = _SequenceProvider(iter([LLMResponse(content="hello")]))
     events: list[LLMCallRecord] = []
@@ -119,7 +117,6 @@ async def test_observer_estimates_missing_success_usage_without_storing_content(
     assert "content" not in LLMCallRecord.__dataclass_fields__
 
 
-@pytest.mark.asyncio
 async def test_observer_failure_never_breaks_provider_call() -> None:
     provider = _SequenceProvider(iter([LLMResponse(content="ok")]))
 
@@ -134,7 +131,6 @@ async def test_observer_failure_never_breaks_provider_call() -> None:
     assert response.content == "ok"
 
 
-@pytest.mark.asyncio
 async def test_stream_observer_records_physical_attempt_timing(monkeypatch) -> None:
     provider = _StreamingProvider(provider_name="streaming-provider")
     events: list[LLMCallRecord] = []
@@ -168,7 +164,6 @@ async def test_stream_observer_records_physical_attempt_timing(monkeypatch) -> N
     assert response.usage == usage
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("stream", [False, True])
 async def test_observer_records_cancelled_provider_attempt(stream: bool) -> None:
     provider = _BlockingProvider(provider_name="blocking-provider")
@@ -188,7 +183,6 @@ async def test_observer_records_cancelled_provider_attempt(stream: bool) -> None
     assert events[0].usage is None
 
 
-@pytest.mark.asyncio
 async def test_fallback_provider_propagates_observer_to_every_leaf() -> None:
     primary = _NoRetryProvider(
         iter(

@@ -64,7 +64,6 @@ def test_mcp_server_config_accepts_explicit_oauth() -> None:
     assert config.model_dump(by_alias=True)["auth"] == "oauth"
 
 
-@pytest.mark.asyncio
 async def test_mcp_oauth_storage_isolates_name_and_server_url(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -94,7 +93,6 @@ async def test_mcp_oauth_storage_isolates_name_and_server_url(
     assert "access-secret" in str(payload)
 
 
-@pytest.mark.asyncio
 async def test_changed_redirect_uri_discards_dynamic_registration_but_keeps_tokens(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -114,7 +112,6 @@ async def test_changed_redirect_uri_discards_dynamic_registration_but_keeps_toke
     assert await storage.get_client_info() is None
 
 
-@pytest.mark.asyncio
 async def test_reset_and_delete_credentials_are_scoped_to_one_server(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -138,7 +135,6 @@ async def test_reset_and_delete_credentials_are_scoped_to_one_server(
     assert await second.get_tokens() is not None
 
 
-@pytest.mark.asyncio
 async def test_deleted_credentials_reject_late_writes_from_stale_oauth_flow(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -165,7 +161,6 @@ async def test_deleted_credentials_reject_late_writes_from_stale_oauth_flow(
     assert stored.access_token == "fresh-token"
 
 
-@pytest.mark.asyncio
 async def test_delete_before_oauth_claim_rejects_late_credential_writes(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -186,7 +181,6 @@ async def test_delete_before_oauth_claim_rejects_late_credential_writes(
     assert mcp_oauth_has_credentials("linear", server_url)
 
 
-@pytest.mark.asyncio
 async def test_create_mcp_oauth_auth_uses_browser_handlers_and_persists_redirect(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -225,7 +219,6 @@ async def test_create_mcp_oauth_auth_uses_browser_handlers_and_persists_redirect
     assert await storage.redirect_uri() == "https://agent.example/auth/mcp/callback"
 
 
-@pytest.mark.asyncio
 async def test_background_authorization_without_tokens_stops_locally(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -238,7 +231,6 @@ async def test_background_authorization_without_tokens_stops_locally(
     assert not (tmp_path / "auth" / "mcp.json").exists()
 
 
-@pytest.mark.asyncio
 async def test_background_authorization_request_clears_rejected_token(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -263,7 +255,6 @@ async def test_background_authorization_request_clears_rejected_token(
     assert await storage.get_client_info() == client_info
 
 
-@pytest.mark.asyncio
 async def test_stale_authorization_preserves_new_credentials(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -285,7 +276,6 @@ async def test_stale_authorization_preserves_new_credentials(
     assert tokens is not None and tokens.access_token == "new-access"
 
 
-@pytest.mark.asyncio
 async def test_expired_token_refreshes_from_persisted_metadata_after_restart(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -339,7 +329,6 @@ async def test_expired_token_refreshes_from_persisted_metadata_after_restart(
     await lock.release()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("message_path", ["/mcp", "/messages?session_id=123"])
 async def test_issuer_bound_token_refreshes_after_401_discovers_endpoint(
     tmp_path,
@@ -403,7 +392,6 @@ async def test_issuer_bound_token_refreshes_after_401_discovers_endpoint(
     assert stored.refresh_token == "rotated-refresh"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("bound", [False, True], ids=["legacy-unbound", "issuer-changed"])
 async def test_untrusted_issuer_never_receives_refresh_token(
     tmp_path,
@@ -478,7 +466,6 @@ async def test_untrusted_issuer_never_receives_refresh_token(
     assert snapshot.token_issuer is None
 
 
-@pytest.mark.asyncio
 async def test_transient_refresh_failure_preserves_credentials(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -513,7 +500,6 @@ async def test_transient_refresh_failure_preserves_credentials(
     assert stored == original
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("recovery", ["immediate", "retry", "restart"])
 async def test_stale_token_endpoint_is_rediscovered_once(
     tmp_path,
@@ -599,7 +585,6 @@ async def test_stale_token_endpoint_is_rediscovered_once(
     assert reloaded.tokens.refresh_token == "rotated-refresh"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("error", "clears_client"),
     [("invalid_grant", False), ("invalid_client", True)],
@@ -692,7 +677,6 @@ async def test_unrecoverable_refresh_error_requires_authorization(
     await lock.release()
 
 
-@pytest.mark.asyncio
 async def test_concurrent_expired_requests_share_one_refresh(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -734,7 +718,6 @@ async def test_concurrent_expired_requests_share_one_refresh(
     assert refresh_requests == 1
 
 
-@pytest.mark.asyncio
 async def test_separate_providers_share_storage_refresh_lock(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -787,7 +770,6 @@ async def test_separate_providers_share_storage_refresh_lock(
     assert stored.refresh_token == "rotated-refresh"
 
 
-@pytest.mark.asyncio
 async def test_official_mcp_sdk_completes_discovery_registration_and_token_exchange(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,

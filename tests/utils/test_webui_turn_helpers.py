@@ -43,7 +43,6 @@ def _clear_turn_wall_clock() -> None:
     wth._WEBSOCKET_TURN_OWNERS.clear()
 
 
-@pytest.mark.asyncio
 async def test_publish_turn_run_status_running_records_wall_clock() -> None:
     bus = MessageBus()
     bus.publish_outbound = AsyncMock()
@@ -67,7 +66,6 @@ async def test_publish_turn_run_status_running_records_wall_clock() -> None:
     assert call.event.started_at == t0
 
 
-@pytest.mark.asyncio
 async def test_publish_turn_run_status_reuses_explicit_wall_clock() -> None:
     bus = MessageBus()
     bus.publish_outbound = AsyncMock()
@@ -81,7 +79,6 @@ async def test_publish_turn_run_status_reuses_explicit_wall_clock() -> None:
     assert call.event.started_at == 1234.5
 
 
-@pytest.mark.asyncio
 async def test_publish_turn_run_status_idle_retains_registry_until_delivery() -> None:
     bus = MessageBus()
     bus.publish_outbound = AsyncMock()
@@ -119,7 +116,6 @@ async def test_clear_websocket_turn_only_clears_matching_owner() -> None:
     assert wth.websocket_turn_id("chat-b") is None
 
 
-@pytest.mark.asyncio
 async def test_ownerless_turns_receive_distinct_internal_owners() -> None:
     bus = MessageBus()
     bus.publish_outbound = AsyncMock()
@@ -148,7 +144,6 @@ async def test_ownerless_turns_receive_distinct_internal_owners() -> None:
     assert wth.clear_websocket_turn_if_current("chat-ownerless", second_owner) is True
 
 
-@pytest.mark.asyncio
 async def test_publish_turn_run_status_non_websocket_noop_registry() -> None:
     bus = MessageBus()
     bus.publish_outbound = AsyncMock()
@@ -160,7 +155,6 @@ async def test_publish_turn_run_status_non_websocket_noop_registry() -> None:
     assert wth._WEBSOCKET_TURN_IDS == {}
 
 
-@pytest.mark.asyncio
 async def test_fallback_model_is_scoped_to_its_websocket_chat() -> None:
     bus = MessageBus()
     bus.publish_outbound = AsyncMock()
@@ -193,7 +187,6 @@ async def test_fallback_model_is_scoped_to_its_websocket_chat() -> None:
     assert outbound.event.reauth_provider == "openai_codex"
 
 
-@pytest.mark.asyncio
 async def test_coordinator_connections_end_on_scope_exit_and_can_reconnect(tmp_path):
     from nanobot.bus.runtime_events import RuntimeModelChanged
 
@@ -254,7 +247,6 @@ async def test_admitted_runtime_publishes_chat_scoped_model_and_preset(tmp_path)
     assert outbound.event.model_preset == "Codex"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(("states", "terminal_kind", "expected_kind", "attempts"), [
     (("exhausted",), None, "connection", 4),
     (("waiting", "recovered"), None, None, None),
@@ -290,7 +282,6 @@ async def test_turn_retry_cause_survives_only_actual_exhaustion(
     assert completed.failure_attempts == attempts
 
 
-@pytest.mark.asyncio
 async def test_session_input_is_projected_by_the_webui_coordinator(
     tmp_path,
     monkeypatch,
@@ -341,7 +332,6 @@ async def test_session_input_is_projected_by_the_webui_coordinator(
     }
 
 
-@pytest.mark.asyncio
 async def test_fallback_model_ignores_non_websocket_requests() -> None:
     bus = MessageBus()
     bus.publish_outbound = AsyncMock()

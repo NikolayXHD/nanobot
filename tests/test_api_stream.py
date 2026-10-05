@@ -98,7 +98,6 @@ async def aiohttp_client():
 
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 async def test_stream_true_returns_sse(aiohttp_client) -> None:
     """stream=true should return text/event-stream with SSE chunks."""
     agent = _make_streaming_agent(["Hello", " world"])
@@ -130,7 +129,6 @@ async def test_stream_true_returns_sse(aiohttp_client) -> None:
 
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 async def test_stream_false_returns_json(aiohttp_client) -> None:
     """stream=false should still return regular JSON response."""
     agent = MagicMock()
@@ -152,7 +150,6 @@ async def test_stream_false_returns_json(aiohttp_client) -> None:
 
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 async def test_stream_default_is_false(aiohttp_client) -> None:
     """Omitting stream should behave like stream=false."""
     agent = MagicMock()
@@ -173,7 +170,6 @@ async def test_stream_default_is_false(aiohttp_client) -> None:
 
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 @pytest.mark.parametrize("stream", ["false", "true", 0, 1, [], {}])
 async def test_stream_rejects_non_boolean_values(aiohttp_client, stream) -> None:
     """Wrong JSON types must not select a response protocol or invoke the agent."""
@@ -197,7 +193,6 @@ async def test_stream_rejects_non_boolean_values(aiohttp_client, stream) -> None
 
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 async def test_stream_null_preserves_non_streaming_compatibility(aiohttp_client) -> None:
     """OpenAI clients may explicitly serialize the optional flag as null."""
     agent = MagicMock()
@@ -218,7 +213,6 @@ async def test_stream_null_preserves_non_streaming_compatibility(aiohttp_client)
 
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 async def test_stream_sse_chunk_ids_are_consistent(aiohttp_client) -> None:
     """All SSE chunks in a single stream should share the same id."""
     agent = _make_streaming_agent(["A", "B", "C"])
@@ -244,7 +238,6 @@ async def test_stream_sse_chunk_ids_are_consistent(aiohttp_client) -> None:
 
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 async def test_stream_passes_on_stream_callbacks(aiohttp_client) -> None:
     """process_direct should be called with on_stream and on_stream_end when streaming."""
     captured_kwargs: dict = {}
@@ -273,7 +266,6 @@ async def test_stream_passes_on_stream_callbacks(aiohttp_client) -> None:
 
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 async def test_stream_segment_end_does_not_close_sse(aiohttp_client) -> None:
     """Intermediate stream-end callbacks should not terminate the HTTP stream."""
     agent = MagicMock()
@@ -315,7 +307,6 @@ async def test_stream_segment_end_does_not_close_sse(aiohttp_client) -> None:
 
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 async def test_stream_uses_final_response_when_no_deltas(aiohttp_client) -> None:
     """stream=true should not return an empty stream when the agent returns content."""
     agent = MagicMock()
@@ -352,7 +343,6 @@ async def test_stream_uses_final_response_when_no_deltas(aiohttp_client) -> None
 
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 async def test_stream_with_session_id(aiohttp_client) -> None:
     """Streaming should respect session_id for session key routing."""
     captured_key: str = ""
@@ -387,7 +377,6 @@ async def test_stream_with_session_id(aiohttp_client) -> None:
 
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 async def test_streaming_backend_failure_does_not_emit_success_terminator(aiohttp_client) -> None:
     """Backend exceptions should not surface as a normal stop+[DONE] stream."""
     agent = MagicMock()

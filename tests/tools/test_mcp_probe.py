@@ -31,7 +31,6 @@ def _clear_proxy_env(monkeypatch: pytest.MonkeyPatch) -> None:
 # _probe_http_url unit tests
 # ---------------------------------------------------------------------------
 
-@pytest.mark.asyncio
 async def test_probe_returns_true_for_open_port(tmp_path):
     """Start a trivial TCP server, probe should return True."""
     async def _close_connection(_reader, writer):
@@ -49,13 +48,11 @@ async def test_probe_returns_true_for_open_port(tmp_path):
         await server.wait_closed()
 
 
-@pytest.mark.asyncio
 async def test_probe_returns_false_for_closed_port():
     """Port 19999 is almost certainly not listening."""
     assert await _probe_http_url("http://127.0.0.1:19999/mcp") is False
 
 
-@pytest.mark.asyncio
 async def test_probe_uses_default_port_for_http(monkeypatch: pytest.MonkeyPatch):
     """When no port is present, probe the validated address on port 80."""
     attempts: list[tuple[str, int]] = []
@@ -75,7 +72,6 @@ async def test_probe_uses_default_port_for_http(monkeypatch: pytest.MonkeyPatch)
     assert attempts == [("93.184.216.34", 80)]
 
 
-@pytest.mark.asyncio
 async def test_probe_rejects_public_name_resolving_to_loopback():
     def _resolver(hostname, port, family=0, type_=0):
         return [(socket.AF_INET, socket.SOCK_STREAM, 0, "", ("127.0.0.1", 0))]
@@ -84,7 +80,6 @@ async def test_probe_rejects_public_name_resolving_to_loopback():
         assert await _probe_http_url("http://example.com:8765/mcp") is False
 
 
-@pytest.mark.asyncio
 async def test_probe_skips_direct_tcp_when_global_proxy_env_is_set(monkeypatch):
     def _resolver(hostname, port, family=0, type_=0):
         return [(socket.AF_INET, socket.SOCK_STREAM, 0, "", ("93.184.216.34", 0))]
@@ -100,7 +95,6 @@ async def test_probe_skips_direct_tcp_when_global_proxy_env_is_set(monkeypatch):
         assert await _probe_http_url("https://mcp.example.com/mcp") is True
 
 
-@pytest.mark.asyncio
 async def test_probe_tries_next_validated_ip_when_first_is_unreachable(monkeypatch):
     attempts: list[tuple[str, int]] = []
 
@@ -150,7 +144,6 @@ def _make_http_cfg(url: str, transport: str = "streamableHttp"):
     return cfg
 
 
-@pytest.mark.asyncio
 async def test_connect_skips_unreachable_streamable_http():
     """Unreachable streamableHttp server should be skipped with a warning, no crash."""
     async def _unreachable(_url: str) -> bool:
@@ -164,7 +157,6 @@ async def test_connect_skips_unreachable_streamable_http():
     assert len(registry._tools) == 0
 
 
-@pytest.mark.asyncio
 async def test_connect_skips_unreachable_sse():
     """Unreachable SSE server should be skipped with a warning, no crash."""
     async def _unreachable(_url: str) -> bool:
@@ -178,7 +170,6 @@ async def test_connect_skips_unreachable_sse():
     assert len(registry._tools) == 0
 
 
-@pytest.mark.asyncio
 async def test_connect_isolates_streamable_http_status_failure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -230,7 +221,6 @@ async def test_connect_isolates_streamable_http_status_failure(
         loop.set_exception_handler(previous_exception_handler)
 
 
-@pytest.mark.asyncio
 async def test_probe_not_called_for_stdio():
     """stdio transport should not be probed — it spawns a local process."""
     called = False

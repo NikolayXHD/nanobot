@@ -102,7 +102,6 @@ def test_init_missing_key_uses_aad_token_provider(monkeypatch):
     assert provider._client.api_key == ""
 
 
-@pytest.mark.asyncio
 async def test_aad_token_provider_wires_into_sdk_auth_headers(monkeypatch):
     """Regression guard: the token provider must be wired into the
     OpenAI SDK so ``_refresh_api_key`` pulls a fresh token and the
@@ -170,7 +169,6 @@ def test_init_missing_key_without_azure_identity_raises(monkeypatch):
             AzureOpenAIProvider(api_key="", api_base="https://res.openai.azure.com")
 
 
-@pytest.mark.asyncio
 async def test_token_provider_returns_credential_token(monkeypatch):
     """Token callback delegates to DefaultAzureCredential.get_token with the AOAI scope."""
     access_token = SimpleNamespace(token="token-A", expires_on=time.time() + 3600)
@@ -366,7 +364,6 @@ def _make_sdk_response(
     return resp
 
 
-@pytest.mark.asyncio
 async def test_chat_success():
     provider = AzureOpenAIProvider(
         api_key="test-key", api_base="https://test.openai.azure.com", default_model="gpt-4o",
@@ -384,7 +381,6 @@ async def test_chat_success():
     assert result.usage.input_tokens == 10
 
 
-@pytest.mark.asyncio
 async def test_chat_retries_without_unsupported_server_compaction():
     provider = AzureOpenAIProvider(
         api_key="test-key",
@@ -416,7 +412,6 @@ async def test_chat_retries_without_unsupported_server_compaction():
     assert provider.supports_native_compaction() is False
 
 
-@pytest.mark.asyncio
 async def test_chat_uses_default_model():
     provider = AzureOpenAIProvider(
         api_key="k", api_base="https://test.openai.azure.com", default_model="my-deployment",
@@ -431,7 +426,6 @@ async def test_chat_uses_default_model():
     assert call_kwargs["model"] == "my-deployment"
 
 
-@pytest.mark.asyncio
 async def test_chat_custom_model():
     provider = AzureOpenAIProvider(
         api_key="k", api_base="https://test.openai.azure.com", default_model="gpt-4o",
@@ -446,7 +440,6 @@ async def test_chat_custom_model():
     assert call_kwargs["model"] == "custom-deploy"
 
 
-@pytest.mark.asyncio
 async def test_chat_with_tool_calls():
     provider = AzureOpenAIProvider(
         api_key="k", api_base="https://test.openai.azure.com", default_model="gpt-4o",
@@ -472,7 +465,6 @@ async def test_chat_with_tool_calls():
     assert result.provider_state is not None
 
 
-@pytest.mark.asyncio
 async def test_chat_error_handling():
     provider = AzureOpenAIProvider(
         api_key="k", api_base="https://test.openai.azure.com", default_model="gpt-4o",
@@ -487,7 +479,6 @@ async def test_chat_error_handling():
     assert result.finish_reason == "error"
 
 
-@pytest.mark.asyncio
 async def test_chat_reasoning_param_format():
     """reasoning_effort should be sent as reasoning={effort: ...} not a flat string."""
     provider = AzureOpenAIProvider(
@@ -511,7 +502,6 @@ async def test_chat_reasoning_param_format():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_chat_stream_success():
     """Streaming should call on_content_delta and return combined response."""
     provider = AzureOpenAIProvider(
@@ -550,7 +540,6 @@ async def test_chat_stream_success():
     stream.__aexit__.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_chat_stream_with_tool_calls():
     """Streaming tool calls should be accumulated correctly."""
     provider = AzureOpenAIProvider(
@@ -595,7 +584,6 @@ async def test_chat_stream_with_tool_calls():
     assert result.provider_state is not None
 
 
-@pytest.mark.asyncio
 async def test_chat_stream_error():
     """Streaming should return error when SDK raises."""
     provider = AzureOpenAIProvider(

@@ -302,7 +302,6 @@ def _make_config(**kwargs) -> MatrixConfig:
     )
 
 
-@pytest.mark.asyncio
 async def test_start_skips_load_store_when_device_id_missing(
     monkeypatch, tmp_path
 ) -> None:
@@ -344,7 +343,6 @@ async def test_start_skips_load_store_when_device_id_missing(
     await channel.stop()
 
 
-@pytest.mark.asyncio
 async def test_register_event_callbacks_uses_media_base_filter() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -385,7 +383,6 @@ def test_register_to_device_callbacks_skips_when_e2ee_disabled() -> None:
     assert client.to_device_callbacks == []
 
 
-@pytest.mark.asyncio
 async def test_sas_verification_start_accepts_allowed_sender(monkeypatch) -> None:
     _patch_key_verification_events(monkeypatch)
     channel = MatrixChannel(
@@ -408,7 +405,6 @@ async def test_sas_verification_start_accepts_allowed_sender(monkeypatch) -> Non
     assert client.to_device_calls == []
 
 
-@pytest.mark.asyncio
 async def test_sas_verification_ignores_denied_sender(monkeypatch) -> None:
     _patch_key_verification_events(monkeypatch)
     channel = MatrixChannel(
@@ -431,7 +427,6 @@ async def test_sas_verification_ignores_denied_sender(monkeypatch) -> None:
     assert client.to_device_calls == []
 
 
-@pytest.mark.asyncio
 async def test_sas_verification_ignores_when_disabled(monkeypatch) -> None:
     _patch_key_verification_events(monkeypatch)
     channel = MatrixChannel(
@@ -448,7 +443,6 @@ async def test_sas_verification_ignores_when_disabled(monkeypatch) -> None:
     assert client.to_device_calls == []
 
 
-@pytest.mark.asyncio
 async def test_sas_verification_request_sends_ready_to_allowed_device(monkeypatch) -> None:
     monkeypatch.setattr(matrix_module.time, "time", lambda: 1_000.0)
     channel = MatrixChannel(
@@ -484,7 +478,6 @@ async def test_sas_verification_request_sends_ready_to_allowed_device(monkeypatc
     assert channel._sas_verification_requests["tx1"].device_id == "ALICEDEVICE"
 
 
-@pytest.mark.asyncio
 async def test_sas_verification_requests_are_bounded(monkeypatch) -> None:
     monkeypatch.setattr(matrix_module.time, "time", lambda: 1_000.0)
     channel = MatrixChannel(
@@ -513,7 +506,6 @@ async def test_sas_verification_requests_are_bounded(monkeypatch) -> None:
     assert f"tx-{matrix_module._SAS_REQUEST_MAX_PENDING}" in channel._sas_verification_requests
 
 
-@pytest.mark.asyncio
 async def test_sas_verification_start_must_match_requested_device(monkeypatch) -> None:
     _patch_key_verification_events(monkeypatch)
     monkeypatch.setattr(matrix_module.time, "time", lambda: 1_000.0)
@@ -543,7 +535,6 @@ async def test_sas_verification_start_must_match_requested_device(monkeypatch) -
     assert channel._sas_verification_requests["tx1"].device_id == "ALICEDEVICE"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("sender", "methods", "timestamp"),
     [
@@ -585,7 +576,6 @@ async def test_sas_verification_request_rejects_untrusted_or_invalid_input(
     assert channel._sas_verification_requests == {}
 
 
-@pytest.mark.asyncio
 async def test_sas_verification_ready_is_ignored_without_bot_initiated_flow() -> None:
     channel = MatrixChannel(
         _make_config(allow_from=["@alice:matrix.org"], sas_verification=True),
@@ -605,7 +595,6 @@ async def test_sas_verification_ready_is_ignored_without_bot_initiated_flow() ->
     assert channel._sas_verification_requests == {}
 
 
-@pytest.mark.asyncio
 async def test_sas_verification_key_confirms_allowed_sender(monkeypatch) -> None:
     _patch_key_verification_events(monkeypatch)
     channel = MatrixChannel(
@@ -626,7 +615,6 @@ async def test_sas_verification_key_confirms_allowed_sender(monkeypatch) -> None
     assert client.operation_calls == ["send_pending", "confirm:tx1"]
 
 
-@pytest.mark.asyncio
 async def test_sas_verification_mac_does_not_resend_mac(monkeypatch) -> None:
     _patch_key_verification_events(monkeypatch)
     channel = MatrixChannel(
@@ -644,7 +632,6 @@ async def test_sas_verification_mac_does_not_resend_mac(monkeypatch) -> None:
     assert client.to_device_calls == []
 
 
-@pytest.mark.asyncio
 async def test_sas_verification_mac_sends_done_for_element_request(monkeypatch) -> None:
     _patch_key_verification_events(monkeypatch)
     monkeypatch.setattr(matrix_module.time, "time", lambda: 1_000.0)
@@ -682,7 +669,6 @@ async def test_sas_verification_mac_sends_done_for_element_request(monkeypatch) 
     assert channel._sas_verification_requests == {}
 
 
-@pytest.mark.asyncio
 async def test_sas_verification_done_clears_matching_request(monkeypatch) -> None:
     monkeypatch.setattr(matrix_module.time, "time", lambda: 1_000.0)
     channel = MatrixChannel(
@@ -716,7 +702,6 @@ def test_media_event_filter_does_not_match_text_events() -> None:
     assert not issubclass(matrix_module.RoomMessageText, matrix_module.MATRIX_MEDIA_EVENT_FILTER)
 
 
-@pytest.mark.asyncio
 async def test_start_disables_e2ee_when_configured(
     monkeypatch, tmp_path
 ) -> None:
@@ -750,7 +735,6 @@ async def test_start_disables_e2ee_when_configured(
     await channel.stop()
 
 
-@pytest.mark.asyncio
 async def test_on_sync_error_stops_loop_on_unknown_token() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -763,7 +747,6 @@ async def test_on_sync_error_stops_loop_on_unknown_token() -> None:
     assert client.stop_sync_forever_called is True
 
 
-@pytest.mark.asyncio
 async def test_on_sync_error_keeps_running_on_transient_error() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -776,7 +759,6 @@ async def test_on_sync_error_keeps_running_on_transient_error() -> None:
     assert client.stop_sync_forever_called is False
 
 
-@pytest.mark.asyncio
 async def test_sync_loop_backs_off_on_repeated_errors(monkeypatch) -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
 
@@ -805,7 +787,6 @@ async def test_sync_loop_backs_off_on_repeated_errors(monkeypatch) -> None:
     assert sleeps == [2.0, 4.0, 8.0, 16.0]
 
 
-@pytest.mark.asyncio
 async def test_stop_stops_sync_forever_before_close(monkeypatch) -> None:
     channel = MatrixChannel(_make_config(device_id="DEVICE"), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -822,7 +803,6 @@ async def test_stop_stops_sync_forever_before_close(monkeypatch) -> None:
     assert task.cancelled is False
 
 
-@pytest.mark.asyncio
 async def test_room_invite_ignores_when_allow_list_is_empty() -> None:
     channel = MatrixChannel(_make_config(allow_from=[]), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -836,7 +816,6 @@ async def test_room_invite_ignores_when_allow_list_is_empty() -> None:
     assert client.join_calls == []
 
 
-@pytest.mark.asyncio
 async def test_room_invite_joins_when_sender_allowed() -> None:
     channel = MatrixChannel(_make_config(allow_from=["@alice:matrix.org"]), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -850,7 +829,6 @@ async def test_room_invite_joins_when_sender_allowed() -> None:
     assert client.join_calls == ["!room:matrix.org"]
 
 
-@pytest.mark.asyncio
 async def test_room_invite_respects_allow_list_when_configured() -> None:
     channel = MatrixChannel(_make_config(allow_from=["@bob:matrix.org"]), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -864,7 +842,6 @@ async def test_room_invite_respects_allow_list_when_configured() -> None:
     assert client.join_calls == []
 
 
-@pytest.mark.asyncio
 async def test_on_sync_invite_fallback_joins_pending_invites() -> None:
     """_on_sync_invite_fallback joins rooms from sync invite_state for allowed senders."""
     channel = MatrixChannel(
@@ -883,7 +860,6 @@ async def test_on_sync_invite_fallback_joins_pending_invites() -> None:
     assert client.join_calls == ["!room:matrix.org"]
 
 
-@pytest.mark.asyncio
 async def test_on_sync_invite_fallback_skips_when_no_invites() -> None:
     """_on_sync_invite_fallback is a no-op when sync has no invites."""
     channel = MatrixChannel(
@@ -900,7 +876,6 @@ async def test_on_sync_invite_fallback_skips_when_no_invites() -> None:
     assert client.join_calls == []
 
 
-@pytest.mark.asyncio
 async def test_on_sync_invite_fallback_skips_denied_sender() -> None:
     """_on_sync_invite_fallback respects the allow list."""
     channel = MatrixChannel(
@@ -919,7 +894,6 @@ async def test_on_sync_invite_fallback_skips_denied_sender() -> None:
     assert client.join_calls == []
 
 
-@pytest.mark.asyncio
 async def test_on_message_sets_typing_for_allowed_sender() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -943,7 +917,6 @@ async def test_on_message_sets_typing_for_allowed_sender() -> None:
     ]
 
 
-@pytest.mark.asyncio
 async def test_typing_keepalive_refreshes_periodically(monkeypatch) -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -961,7 +934,6 @@ async def test_typing_keepalive_refreshes_periodically(monkeypatch) -> None:
     assert client.typing_calls[-1] == ("!room:matrix.org", False, TYPING_NOTICE_TIMEOUT_MS)
 
 
-@pytest.mark.asyncio
 async def test_on_message_skips_typing_for_self_message() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -975,7 +947,6 @@ async def test_on_message_skips_typing_for_self_message() -> None:
     assert client.typing_calls == []
 
 
-@pytest.mark.asyncio
 async def test_on_message_skips_pre_startup_event() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -1006,7 +977,6 @@ async def test_on_message_skips_pre_startup_event() -> None:
     ]
 
 
-@pytest.mark.asyncio
 async def test_on_media_message_skips_pre_startup_event() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -1031,7 +1001,6 @@ async def test_on_media_message_skips_pre_startup_event() -> None:
     assert client.typing_calls == []
 
 
-@pytest.mark.asyncio
 async def test_on_message_skips_typing_for_denied_sender() -> None:
     channel = MatrixChannel(_make_config(allow_from=["@bob:matrix.org"]), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -1053,7 +1022,6 @@ async def test_on_message_skips_typing_for_denied_sender() -> None:
     assert client.typing_calls == []
 
 
-@pytest.mark.asyncio
 async def test_on_message_mention_policy_requires_mx_mentions() -> None:
     channel = MatrixChannel(_make_config(group_policy="mention"), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -1075,7 +1043,6 @@ async def test_on_message_mention_policy_requires_mx_mentions() -> None:
     assert client.typing_calls == []
 
 
-@pytest.mark.asyncio
 async def test_on_message_mention_policy_accepts_bot_user_mentions() -> None:
     channel = MatrixChannel(_make_config(group_policy="mention"), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -1101,7 +1068,6 @@ async def test_on_message_mention_policy_accepts_bot_user_mentions() -> None:
     assert client.typing_calls == [("!room:matrix.org", True, TYPING_NOTICE_TIMEOUT_MS)]
 
 
-@pytest.mark.asyncio
 async def test_on_message_mention_policy_allows_direct_room_without_mentions() -> None:
     channel = MatrixChannel(_make_config(group_policy="mention"), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -1123,7 +1089,6 @@ async def test_on_message_mention_policy_allows_direct_room_without_mentions() -
     assert client.typing_calls == [("!dm:matrix.org", True, TYPING_NOTICE_TIMEOUT_MS)]
 
 
-@pytest.mark.asyncio
 async def test_on_message_allowlist_policy_requires_room_id() -> None:
     channel = MatrixChannel(
         _make_config(group_policy="allowlist", group_allow_from=["!allowed:matrix.org"]),
@@ -1154,7 +1119,6 @@ async def test_on_message_allowlist_policy_requires_room_id() -> None:
     assert client.typing_calls == [("!allowed:matrix.org", True, TYPING_NOTICE_TIMEOUT_MS)]
 
 
-@pytest.mark.asyncio
 async def test_on_message_room_mention_requires_opt_in() -> None:
     channel = MatrixChannel(_make_config(group_policy="mention"), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -1185,7 +1149,6 @@ async def test_on_message_room_mention_requires_opt_in() -> None:
     assert client.typing_calls == [("!room:matrix.org", True, TYPING_NOTICE_TIMEOUT_MS)]
 
 
-@pytest.mark.asyncio
 async def test_on_message_sets_thread_metadata_when_threaded_event() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -1224,7 +1187,6 @@ async def test_on_message_sets_thread_metadata_when_threaded_event() -> None:
     assert handled[0]["session_key"] == "matrix:!room:matrix.org:thread:$root1"
 
 
-@pytest.mark.asyncio
 async def test_on_message_keeps_matrix_thread_sessions_independent() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -1271,7 +1233,6 @@ async def test_on_message_keeps_matrix_thread_sessions_independent() -> None:
     assert handled[2]["content"] == "/new"
 
 
-@pytest.mark.asyncio
 async def test_on_message_keeps_non_threaded_room_session() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -1298,7 +1259,6 @@ async def test_on_message_keeps_non_threaded_room_session() -> None:
     assert handled[0]["session_key"] is None
 
 
-@pytest.mark.asyncio
 async def test_on_media_message_downloads_attachment_and_sets_metadata(
     monkeypatch, tmp_path
 ) -> None:
@@ -1358,7 +1318,6 @@ async def test_on_media_message_downloads_attachment_and_sets_metadata(
     assert "[attachment: " in handled[0]["content"]
 
 
-@pytest.mark.asyncio
 async def test_on_media_message_sets_thread_metadata_when_threaded_event(
     monkeypatch, tmp_path
 ) -> None:
@@ -1404,7 +1363,6 @@ async def test_on_media_message_sets_thread_metadata_when_threaded_event(
     assert handled[0]["session_key"] == "matrix:!room:matrix.org:thread:$root1"
 
 
-@pytest.mark.asyncio
 async def test_on_media_message_respects_declared_size_limit(
     monkeypatch, tmp_path
 ) -> None:
@@ -1439,7 +1397,6 @@ async def test_on_media_message_respects_declared_size_limit(
     assert "[attachment: large.bin - too large]" in handled[0]["content"]
 
 
-@pytest.mark.asyncio
 async def test_on_media_message_uses_server_limit_when_smaller_than_local_limit(
     monkeypatch, tmp_path
 ) -> None:
@@ -1475,7 +1432,6 @@ async def test_on_media_message_uses_server_limit_when_smaller_than_local_limit(
     assert "[attachment: large.bin - too large]" in handled[0]["content"]
 
 
-@pytest.mark.asyncio
 async def test_on_media_message_handles_download_error(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr("nanobot.channels.matrix.runtime.get_data_dir", lambda: tmp_path)
 
@@ -1514,7 +1470,6 @@ async def test_on_media_message_handles_download_error(monkeypatch, tmp_path) ->
     assert "[attachment: photo.png - download failed]" in handled[0]["content"]
 
 
-@pytest.mark.asyncio
 async def test_on_media_message_decrypts_encrypted_media(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr("nanobot.channels.matrix.runtime.get_data_dir", lambda: tmp_path)
     monkeypatch.setattr(
@@ -1564,7 +1519,6 @@ async def test_on_media_message_decrypts_encrypted_media(monkeypatch, tmp_path) 
     assert attachment["size_bytes"] == 5
 
 
-@pytest.mark.asyncio
 async def test_on_media_message_handles_decrypt_error(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr("nanobot.channels.matrix.runtime.get_data_dir", lambda: tmp_path)
 
@@ -1612,7 +1566,6 @@ async def test_on_media_message_handles_decrypt_error(monkeypatch, tmp_path) -> 
     assert "[attachment: secret.txt - download failed]" in handled[0]["content"]
 
 
-@pytest.mark.asyncio
 async def test_send_clears_typing_after_send() -> None:
     channel = MatrixChannel(_make_config(e2ee_enabled=True), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -1632,7 +1585,6 @@ async def test_send_clears_typing_after_send() -> None:
     assert client.typing_calls[-1] == ("!room:matrix.org", False, TYPING_NOTICE_TIMEOUT_MS)
 
 
-@pytest.mark.asyncio
 async def test_send_uploads_media_and_sends_file_event(tmp_path) -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -1661,7 +1613,6 @@ async def test_send_uploads_media_and_sends_file_event(tmp_path) -> None:
     assert client.room_send_calls[1]["content"]["body"] == "Please review."
 
 
-@pytest.mark.asyncio
 async def test_send_adds_thread_relates_to_for_thread_metadata() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -1689,7 +1640,6 @@ async def test_send_adds_thread_relates_to_for_thread_metadata() -> None:
     }
 
 
-@pytest.mark.asyncio
 async def test_on_message_sets_message_id_for_room_level_event() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -1719,7 +1669,6 @@ async def test_on_message_sets_message_id_for_room_level_event() -> None:
     assert "thread_root_event_id" not in metadata
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("metadata", [
     {"message_id": "$user1", "event_id": "$user1"},
     {"event_id": "$user1"},
@@ -1743,7 +1692,6 @@ async def test_send_adds_in_reply_to_for_room_level_message_id(metadata) -> None
     assert content["m.relates_to"] == {"m.in_reply_to": {"event_id": "$user1"}}
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("metadata", [{}, {"message_id": ""}, {"event_id": 123}])
 async def test_send_without_valid_reply_target_stays_top_level(metadata) -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
@@ -1757,7 +1705,6 @@ async def test_send_without_valid_reply_target_stays_top_level(metadata) -> None
     assert "m.relates_to" not in client.room_send_calls[0]["content"]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("encrypted", [False, True])
 async def test_send_room_reply_attachment_keeps_source_event(tmp_path, encrypted) -> None:
     channel = MatrixChannel(_make_config(e2ee_enabled=encrypted), MessageBus())
@@ -1778,7 +1725,6 @@ async def test_send_room_reply_attachment_keeps_source_event(tmp_path, encrypted
         assert call["content"]["m.relates_to"] == {"m.in_reply_to": {"event_id": "$user"}}
 
 
-@pytest.mark.asyncio
 async def test_send_prefers_thread_relation_over_plain_reply() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -1807,7 +1753,6 @@ async def test_send_prefers_thread_relation_over_plain_reply() -> None:
     }
 
 
-@pytest.mark.asyncio
 async def test_send_uses_encrypted_media_payload_in_encrypted_room(tmp_path) -> None:
     channel = MatrixChannel(_make_config(e2ee_enabled=True), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -1837,7 +1782,6 @@ async def test_send_uses_encrypted_media_payload_in_encrypted_room(tmp_path) -> 
     assert content["file"]["hashes"]["sha256"] == "hash"
 
 
-@pytest.mark.asyncio
 async def test_send_does_not_parse_attachment_marker_without_media(tmp_path) -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -1857,7 +1801,6 @@ async def test_send_does_not_parse_attachment_marker_without_media(tmp_path) -> 
     assert client.room_send_calls[0]["content"]["body"] == f"[attachment: {missing_path}]"
 
 
-@pytest.mark.asyncio
 async def test_send_passes_thread_relates_to_to_attachment_upload(monkeypatch) -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -1901,7 +1844,6 @@ async def test_send_passes_thread_relates_to_to_attachment_upload(monkeypatch) -
     }
 
 
-@pytest.mark.asyncio
 async def test_send_workspace_restriction_blocks_external_attachment(tmp_path) -> None:
     workspace = tmp_path / "workspace"
     workspace.mkdir()
@@ -1931,7 +1873,6 @@ async def test_send_workspace_restriction_blocks_external_attachment(tmp_path) -
     assert client.room_send_calls[0]["content"]["body"] == "[attachment: external.txt - upload failed]"
 
 
-@pytest.mark.asyncio
 async def test_send_handles_upload_exception_and_reports_failure(tmp_path) -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     channel.logger = MagicMock()
@@ -1963,7 +1904,6 @@ async def test_send_handles_upload_exception_and_reports_failure(tmp_path) -> No
     )
 
 
-@pytest.mark.asyncio
 async def test_attachment_room_send_error_logs_room_id(tmp_path) -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     channel.logger = MagicMock()
@@ -1988,7 +1928,6 @@ async def test_attachment_room_send_error_logs_room_id(tmp_path) -> None:
     )
 
 
-@pytest.mark.asyncio
 async def test_send_uses_server_upload_limit_when_smaller_than_local_limit(tmp_path) -> None:
     channel = MatrixChannel(_make_config(max_media_bytes=10), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2012,7 +1951,6 @@ async def test_send_uses_server_upload_limit_when_smaller_than_local_limit(tmp_p
     assert client.room_send_calls[0]["content"]["body"] == "[attachment: tiny.txt - too large]"
 
 
-@pytest.mark.asyncio
 async def test_send_blocks_all_outbound_media_when_limit_is_zero(tmp_path) -> None:
     channel = MatrixChannel(_make_config(max_media_bytes=0), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2035,7 +1973,6 @@ async def test_send_blocks_all_outbound_media_when_limit_is_zero(tmp_path) -> No
     assert client.room_send_calls[0]["content"]["body"] == "[attachment: empty.txt - too large]"
 
 
-@pytest.mark.asyncio
 async def test_send_omits_ignore_unverified_devices_when_e2ee_disabled() -> None:
     channel = MatrixChannel(_make_config(e2ee_enabled=False), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2049,7 +1986,6 @@ async def test_send_omits_ignore_unverified_devices_when_e2ee_disabled() -> None
     assert "ignore_unverified_devices" not in client.room_send_calls[0]
 
 
-@pytest.mark.asyncio
 async def test_send_stops_typing_keepalive_task() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2067,7 +2003,6 @@ async def test_send_stops_typing_keepalive_task() -> None:
     assert client.typing_calls[-1] == ("!room:matrix.org", False, TYPING_NOTICE_TIMEOUT_MS)
 
 
-@pytest.mark.asyncio
 async def test_send_progress_keeps_typing_keepalive_running() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2092,7 +2027,6 @@ async def test_send_progress_keeps_typing_keepalive_running() -> None:
     await channel.stop()
 
 
-@pytest.mark.asyncio
 async def test_send_empty_content_does_not_call_room_send() -> None:
     """Progress messages with empty content must not produce an empty body: '' event."""
     channel = MatrixChannel(_make_config(), MessageBus())
@@ -2111,7 +2045,6 @@ async def test_send_empty_content_does_not_call_room_send() -> None:
     assert client.room_send_calls == []
 
 
-@pytest.mark.asyncio
 async def test_send_whitespace_only_content_does_not_call_room_send() -> None:
     """Progress messages with whitespace-only content must not produce an empty message."""
     channel = MatrixChannel(_make_config(), MessageBus())
@@ -2130,7 +2063,6 @@ async def test_send_whitespace_only_content_does_not_call_room_send() -> None:
     assert client.room_send_calls == []
 
 
-@pytest.mark.asyncio
 async def test_send_clears_typing_when_send_fails() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2145,7 +2077,6 @@ async def test_send_clears_typing_when_send_fails() -> None:
     assert client.typing_calls[-1] == ("!room:matrix.org", False, TYPING_NOTICE_TIMEOUT_MS)
 
 
-@pytest.mark.asyncio
 async def test_send_adds_formatted_body_for_markdown() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2166,7 +2097,6 @@ async def test_send_adds_formatted_body_for_markdown() -> None:
     assert "<li>[x] done</li>" in str(content["formatted_body"])
 
 
-@pytest.mark.asyncio
 async def test_send_adds_formatted_body_for_inline_url_superscript_subscript() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2189,7 +2119,6 @@ async def test_send_adds_formatted_body_for_inline_url_superscript_subscript() -
     assert "<sub>2</sub>" in str(content["formatted_body"])
 
 
-@pytest.mark.asyncio
 async def test_send_sanitizes_disallowed_link_scheme() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2215,7 +2144,6 @@ def test_matrix_html_cleaner_strips_event_handlers_and_script_tags() -> None:
     assert '<a href="https://example.com"' in cleaned_html
 
 
-@pytest.mark.asyncio
 async def test_send_keeps_only_mxc_image_sources() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2231,7 +2159,6 @@ async def test_send_keeps_only_mxc_image_sources() -> None:
     assert 'src="https://example.com/a.png"' not in formatted_body
 
 
-@pytest.mark.asyncio
 async def test_send_falls_back_to_plaintext_when_markdown_render_fails(monkeypatch) -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2250,7 +2177,6 @@ async def test_send_falls_back_to_plaintext_when_markdown_render_fails(monkeypat
     assert content == {"msgtype": "m.text", "body": markdown_text, "m.mentions": {}}
 
 
-@pytest.mark.asyncio
 async def test_send_keeps_plaintext_only_for_plain_text() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2347,7 +2273,6 @@ def test_build_matrix_text_content_plain_text_no_html() -> None:
     assert "formatted_body" not in result
 
 
-@pytest.mark.asyncio
 async def test_send_room_content_returns_room_send_response():
     """Test that _send_room_content returns the response from client.room_send."""
     client = _FakeAsyncClient("", "", "", None)
@@ -2362,7 +2287,6 @@ async def test_send_room_content_returns_room_send_response():
     assert result is client.room_send_response
 
 
-@pytest.mark.asyncio
 async def test_send_raises_when_room_send_returns_error(monkeypatch) -> None:
     class _FakeRoomSendError:
         def __str__(self) -> str:
@@ -2384,7 +2308,6 @@ async def test_send_raises_when_room_send_returns_error(monkeypatch) -> None:
         )
 
 
-@pytest.mark.asyncio
 async def test_send_delta_creates_stream_buffer_and_sends_initial_message() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2401,7 +2324,6 @@ async def test_send_delta_creates_stream_buffer_and_sends_initial_message() -> N
     assert client.room_send_calls[0]["content"]["body"] == "Hello"
 
 
-@pytest.mark.asyncio
 async def test_send_delta_appends_without_sending_before_edit_interval(monkeypatch) -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2422,7 +2344,6 @@ async def test_send_delta_appends_without_sending_before_edit_interval(monkeypat
     assert buf.event_id == "$8E2XVyINbEhcuAxvxd1d9JhQosNPzkVoU8TrbCAvyHo"
 
 
-@pytest.mark.asyncio
 async def test_send_delta_edits_again_after_interval(monkeypatch) -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2453,7 +2374,6 @@ async def test_send_delta_edits_again_after_interval(monkeypatch) -> None:
     }
 
 
-@pytest.mark.asyncio
 async def test_send_delta_stream_end_replaces_existing_message() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2477,7 +2397,6 @@ async def test_send_delta_stream_end_replaces_existing_message() -> None:
     }
 
 
-@pytest.mark.asyncio
 async def test_send_delta_merge_next_preserves_buffer() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2500,7 +2419,6 @@ async def test_send_delta_merge_next_preserves_buffer() -> None:
     assert client.room_send_calls == []
 
 
-@pytest.mark.asyncio
 async def test_send_delta_keeps_same_room_stream_ids_independent(monkeypatch) -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2530,7 +2448,6 @@ async def test_send_delta_keeps_same_room_stream_ids_independent(monkeypatch) ->
     assert final_b["m.relates_to"]["event_id"] == "event-b"
 
 
-@pytest.mark.asyncio
 async def test_send_delta_starts_threaded_stream_inside_thread() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2551,7 +2468,6 @@ async def test_send_delta_starts_threaded_stream_inside_thread() -> None:
     }
 
 
-@pytest.mark.asyncio
 async def test_send_delta_threaded_edit_keeps_replace_and_thread_relation(monkeypatch) -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2595,7 +2511,6 @@ async def test_send_delta_threaded_edit_keeps_replace_and_thread_relation(monkey
     }
 
 
-@pytest.mark.asyncio
 async def test_send_delta_room_reply_edits_the_bot_event(monkeypatch) -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2623,7 +2538,6 @@ async def test_send_delta_room_reply_edits_the_bot_event(monkeypatch) -> None:
         }
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("target", ["!source:example.org", "!other:example.org"])
 @pytest.mark.parametrize("use_request_context", [False, True])
 async def test_message_tool_scopes_reply_to_source_room(tmp_path, target, use_request_context) -> None:
@@ -2656,7 +2570,6 @@ async def test_message_tool_scopes_reply_to_source_room(tmp_path, target, use_re
         assert "m.relates_to" not in content
 
 
-@pytest.mark.asyncio
 async def test_send_delta_stream_end_noop_when_buffer_missing() -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2668,7 +2581,6 @@ async def test_send_delta_stream_end_noop_when_buffer_missing() -> None:
     assert client.typing_calls == []
 
 
-@pytest.mark.asyncio
 async def test_send_delta_on_error_restores_buffer_and_raises(monkeypatch) -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     channel.logger = MagicMock()
@@ -2701,7 +2613,6 @@ async def test_send_delta_on_error_restores_buffer_and_raises(monkeypatch) -> No
     assert channel._stream_bufs["!room:matrix.org"].text == "Hello"
 
 
-@pytest.mark.asyncio
 async def test_send_delta_raises_when_room_send_returns_error(monkeypatch) -> None:
     class _FakeRoomSendError:
         def __str__(self) -> str:
@@ -2719,7 +2630,6 @@ async def test_send_delta_raises_when_room_send_returns_error(monkeypatch) -> No
     assert "!room:matrix.org" not in channel._stream_bufs
 
 
-@pytest.mark.asyncio
 async def test_send_delta_stream_end_keeps_buffer_when_send_returns_error(monkeypatch) -> None:
     class _FakeRoomSendError:
         def __str__(self) -> str:
@@ -2742,7 +2652,6 @@ async def test_send_delta_stream_end_keeps_buffer_when_send_returns_error(monkey
     assert channel._stream_bufs["!room:matrix.org"].text == "Final text"
 
 
-@pytest.mark.asyncio
 async def test_send_delta_ignores_whitespace_only_delta(monkeypatch) -> None:
     channel = MatrixChannel(_make_config(), MessageBus())
     client = _FakeAsyncClient("", "", "", None)
@@ -2757,7 +2666,6 @@ async def test_send_delta_ignores_whitespace_only_delta(monkeypatch) -> None:
     assert channel._stream_bufs["!room:matrix.org"].text == "   "
 
 
-@pytest.mark.asyncio
 async def test_fetch_media_rejects_missing_declared_size(monkeypatch, tmp_path) -> None:
     channel = MatrixChannel(_make_config(max_media_bytes=8), MessageBus())
     client = _FakeAsyncClient("https://matrix.org", "", "", None)
@@ -2785,7 +2693,6 @@ async def test_fetch_media_rejects_missing_declared_size(monkeypatch, tmp_path) 
     assert marker == "[attachment: payload.bin - too large]"
 
 
-@pytest.mark.asyncio
 async def test_fetch_media_rejects_bool_declared_size(monkeypatch, tmp_path) -> None:
     channel = MatrixChannel(_make_config(max_media_bytes=8), MessageBus())
     client = _FakeAsyncClient("https://matrix.org", "", "", None)
@@ -2813,7 +2720,6 @@ async def test_fetch_media_rejects_bool_declared_size(monkeypatch, tmp_path) -> 
     assert marker == "[attachment: payload.bin - too large]"
 
 
-@pytest.mark.asyncio
 async def test_fetch_media_rejects_declared_oversized_before_download(monkeypatch, tmp_path) -> None:
     channel = MatrixChannel(_make_config(max_media_bytes=8), MessageBus())
     client = _FakeAsyncClient("https://matrix.org", "", "", None)
@@ -2841,7 +2747,6 @@ async def test_fetch_media_rejects_declared_oversized_before_download(monkeypatc
     assert marker == "[attachment: payload.bin - too large]"
 
 
-@pytest.mark.asyncio
 async def test_fetch_media_maps_streaming_cap_to_too_large(monkeypatch, tmp_path) -> None:
     channel = MatrixChannel(_make_config(max_media_bytes=8), MessageBus())
     client = _FakeAsyncClient("https://matrix.org", "", "", None)

@@ -197,7 +197,6 @@ def test_write_run_record_uses_cron_runs_dir(tmp_path) -> None:
     assert record["updated_at_ms"] > 0
 
 
-@pytest.mark.asyncio
 async def test_unbound_agent_jobs_are_disabled_on_add(tmp_path) -> None:
     called: list[str] = []
 
@@ -432,7 +431,6 @@ def test_add_job_preserves_origin_delivery_context(tmp_path) -> None:
     assert reloaded.payload.origin_metadata == metadata
 
 
-@pytest.mark.asyncio
 async def test_start_heals_runtime_context_from_pending_external_add(tmp_path) -> None:
     """Flattened runtime blocks from older action files must not be replayed."""
     store_path = tmp_path / "cron" / "jobs.json"
@@ -465,7 +463,6 @@ async def test_start_heals_runtime_context_from_pending_external_add(tmp_path) -
         owner.stop()
 
 
-@pytest.mark.asyncio
 async def test_channel_meta_and_session_key_survive_store_reload(tmp_path) -> None:
     store_path = tmp_path / "cron" / "jobs.json"
     service = CronService(store_path)
@@ -508,7 +505,6 @@ async def test_channel_meta_and_session_key_survive_store_reload(tmp_path) -> No
     assert reloaded.payload.origin_metadata == meta
 
 
-@pytest.mark.asyncio
 async def test_execute_job_records_run_history(tmp_path) -> None:
     store_path = tmp_path / "cron" / "jobs.json"
     service = CronService(store_path, on_job=lambda _: asyncio.sleep(0))
@@ -529,7 +525,6 @@ async def test_execute_job_records_run_history(tmp_path) -> None:
     assert rec.error is None
 
 
-@pytest.mark.asyncio
 async def test_run_history_records_errors(tmp_path) -> None:
     store_path = tmp_path / "cron" / "jobs.json"
 
@@ -551,7 +546,6 @@ async def test_run_history_records_errors(tmp_path) -> None:
     assert loaded.state.run_history[0].error == "boom"
 
 
-@pytest.mark.asyncio
 async def test_run_history_records_skipped_jobs(tmp_path) -> None:
     store_path = tmp_path / "cron" / "jobs.json"
 
@@ -576,7 +570,6 @@ async def test_run_history_records_skipped_jobs(tmp_path) -> None:
     assert loaded.state.run_history[0].error == "missing session binding"
 
 
-@pytest.mark.asyncio
 async def test_run_history_records_job_cancellation(tmp_path) -> None:
     store_path = tmp_path / "cron" / "jobs.json"
 
@@ -603,7 +596,6 @@ async def test_run_history_records_job_cancellation(tmp_path) -> None:
     assert loaded.state.next_run_at_ms is not None
 
 
-@pytest.mark.asyncio
 async def test_run_history_trimmed_to_max(tmp_path) -> None:
     store_path = tmp_path / "cron" / "jobs.json"
     service = CronService(store_path, on_job=lambda _: asyncio.sleep(0))
@@ -620,7 +612,6 @@ async def test_run_history_trimmed_to_max(tmp_path) -> None:
     assert len(loaded.state.run_history) == CronService._MAX_RUN_HISTORY
 
 
-@pytest.mark.asyncio
 async def test_run_history_persisted_to_disk(tmp_path) -> None:
     store_path = tmp_path / "cron" / "jobs.json"
     service = CronService(store_path, on_job=lambda _: asyncio.sleep(0))
@@ -645,7 +636,6 @@ async def test_run_history_persisted_to_disk(tmp_path) -> None:
     assert loaded.state.run_history[0].status == "ok"
 
 
-@pytest.mark.asyncio
 async def test_run_job_disabled_does_not_flip_running_state(tmp_path) -> None:
     store_path = tmp_path / "cron" / "jobs.json"
     service = CronService(store_path, on_job=lambda _: asyncio.sleep(0))
@@ -663,7 +653,6 @@ async def test_run_job_disabled_does_not_flip_running_state(tmp_path) -> None:
     assert service._running is False
 
 
-@pytest.mark.asyncio
 async def test_run_job_preserves_running_service_state(tmp_path) -> None:
     store_path = tmp_path / "cron" / "jobs.json"
     service = CronService(store_path, on_job=lambda _: asyncio.sleep(0))
@@ -682,7 +671,6 @@ async def test_run_job_preserves_running_service_state(tmp_path) -> None:
     service.stop()
 
 
-@pytest.mark.asyncio
 async def test_manual_run_persists_completion_when_callback_lists_jobs(tmp_path) -> None:
     store_path = tmp_path / "cron" / "jobs.json"
 
@@ -707,7 +695,6 @@ async def test_manual_run_persists_completion_when_callback_lists_jobs(tmp_path)
     assert state["runHistory"][0]["status"] == "ok"
 
 
-@pytest.mark.asyncio
 async def test_overlapping_manual_runs_preserve_stopped_service_state(tmp_path) -> None:
     store_path = tmp_path / "cron" / "jobs.json"
     entered = [asyncio.Event(), asyncio.Event()]
@@ -759,7 +746,6 @@ async def test_overlapping_manual_runs_preserve_stopped_service_state(tmp_path) 
         service.stop()
 
 
-@pytest.mark.asyncio
 async def test_manual_run_does_not_restart_service_stopped_during_execution(tmp_path) -> None:
     store_path = tmp_path / "cron" / "jobs.json"
     entered = asyncio.Event()
@@ -793,7 +779,6 @@ async def test_manual_run_does_not_restart_service_stopped_during_execution(tmp_
         service.stop()
 
 
-@pytest.mark.asyncio
 async def test_running_service_honors_external_disable(tmp_path) -> None:
     store_path = tmp_path / "cron" / "jobs.json"
     called: list[str] = []
@@ -874,7 +859,6 @@ def test_remove_system_job_without_store_file(tmp_path) -> None:
     assert not store_path.exists()
 
 
-@pytest.mark.asyncio
 async def test_start_server_not_jobs(tmp_path):
     store_path = tmp_path / "cron" / "jobs.json"
     called = []
@@ -898,7 +882,6 @@ async def test_start_server_not_jobs(tmp_path):
     service.stop()
 
 
-@pytest.mark.asyncio
 async def test_subsecond_job_not_delayed_to_one_second(tmp_path):
     store_path = tmp_path / "cron" / "jobs.json"
     called = []
@@ -921,7 +904,6 @@ async def test_subsecond_job_not_delayed_to_one_second(tmp_path):
         service.stop()
 
 
-@pytest.mark.asyncio
 async def test_running_service_picks_up_external_add(tmp_path):
     """A running service should detect and execute a job added by another instance."""
     store_path = tmp_path / "cron" / "jobs.json"
@@ -955,7 +937,6 @@ async def test_running_service_picks_up_external_add(tmp_path):
         service.stop()
 
 
-@pytest.mark.asyncio
 async def test_add_job_during_jobs_exec(tmp_path):
     store_path = tmp_path / "cron" / "jobs.json"
     run_once = True
@@ -990,7 +971,6 @@ async def test_add_job_during_jobs_exec(tmp_path):
         service.stop()
 
 
-@pytest.mark.asyncio
 async def test_external_update_preserves_run_history_records(tmp_path):
     store_path = tmp_path / "cron" / "jobs.json"
     service = CronService(store_path, on_job=lambda _: asyncio.sleep(0))
@@ -1049,7 +1029,6 @@ def test_stale_instance_remove_preserves_external_add(tmp_path) -> None:
 # ── timer race regression tests ──
 
 
-@pytest.mark.asyncio
 async def test_save_store_failure_retries_without_replaying_job(tmp_path, monkeypatch):
     """A failed post-run save must be retried before jobs can execute again."""
     store_path = tmp_path / "cron" / "jobs.json"
@@ -1127,7 +1106,6 @@ async def test_save_store_failure_retries_without_replaying_job(tmp_path, monkey
     assert persisted.state.next_run_at_ms > persisted.state.last_run_at_ms
 
 
-@pytest.mark.asyncio
 async def test_timer_execution_is_not_rolled_back_by_list_jobs_reload(tmp_path):
     """list_jobs() during _on_timer should not replace the active store and re-run the same due job."""
     store_path = tmp_path / "cron" / "jobs.json"
@@ -1270,7 +1248,6 @@ def test_update_job_validates_schedule(tmp_path, schedule, error) -> None:
     assert service.get_job(job.id).schedule.every_ms == 60_000
 
 
-@pytest.mark.asyncio
 async def test_update_job_preserves_run_history(tmp_path) -> None:
     import asyncio
     store_path = tmp_path / "cron" / "jobs.json"
@@ -1325,7 +1302,6 @@ def test_update_job_migrates_legacy_delivery_target(tmp_path) -> None:
     assert result.payload.channel_meta == {}
 
 
-@pytest.mark.asyncio
 async def test_list_jobs_during_on_job_does_not_cause_stale_reload(tmp_path) -> None:
     """Regression: if the bot calls list_jobs (which reloads from disk) during
     on_job execution, the in-memory next_run_at_ms update must not be lost.

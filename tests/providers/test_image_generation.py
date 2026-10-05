@@ -118,7 +118,6 @@ def generated_image_downloads(monkeypatch) -> list[tuple[str, str | None]]:
     return downloads
 
 
-@pytest.mark.asyncio
 async def test_openrouter_image_generation_payload_and_response(tmp_path: Path) -> None:
     ref = tmp_path / "ref.png"
     ref.write_bytes(PNG_BYTES)
@@ -166,7 +165,6 @@ async def test_openrouter_image_generation_payload_and_response(tmp_path: Path) 
     assert body["messages"][0]["content"][1]["image_url"]["url"].startswith("data:image/png;base64,")
 
 
-@pytest.mark.asyncio
 async def test_openrouter_image_generation_requires_images() -> None:
     fake = FakeClient(FakeResponse({"choices": [{"message": {"content": "text only"}}]}))
     client = OpenRouterImageGenerationClient(api_key="sk-or-test", client=fake)  # type: ignore[arg-type]
@@ -175,7 +173,6 @@ async def test_openrouter_image_generation_requires_images() -> None:
         await client.generate(prompt="draw", model="model")
 
 
-@pytest.mark.asyncio
 async def test_openrouter_image_generation_requires_api_key() -> None:
     client = OpenRouterImageGenerationClient(api_key=None)
 
@@ -183,7 +180,6 @@ async def test_openrouter_image_generation_requires_api_key() -> None:
         await client.generate(prompt="draw", model="model")
 
 
-@pytest.mark.asyncio
 async def test_ollama_image_generation_payload_and_response() -> None:
     raw_b64 = PNG_DATA_URL.removeprefix("data:image/png;base64,")
     fake = FakeClient(FakeResponse({"image": raw_b64}))
@@ -219,7 +215,6 @@ async def test_ollama_image_generation_payload_and_response() -> None:
     assert body["seed"] == 123
 
 
-@pytest.mark.asyncio
 async def test_ollama_image_generation_rejects_reference_images() -> None:
     client = OllamaImageGenerationClient(api_key=None)
 
@@ -231,7 +226,6 @@ async def test_ollama_image_generation_rejects_reference_images() -> None:
         )
 
 
-@pytest.mark.asyncio
 async def test_aihubmix_image_generation_payload_and_response() -> None:
     raw_b64 = PNG_DATA_URL.removeprefix("data:image/png;base64,")
     fake = FakeClient(FakeResponse({"output": {"b64_json": [{"bytesBase64": raw_b64}]}}))
@@ -265,7 +259,6 @@ async def test_aihubmix_image_generation_payload_and_response() -> None:
     }
 
 
-@pytest.mark.asyncio
 async def test_aihubmix_image_edit_payload_uses_reference_images(tmp_path: Path) -> None:
     raw_b64 = PNG_DATA_URL.removeprefix("data:image/png;base64,")
     fake = FakeClient(FakeResponse({"output": [{"b64_json": raw_b64}]}))
@@ -292,7 +285,6 @@ async def test_aihubmix_image_edit_payload_uses_reference_images(tmp_path: Path)
     assert call["json"]["input"]["image"].startswith("data:image/png;base64,")
 
 
-@pytest.mark.asyncio
 async def test_aihubmix_image_generation_downloads_url_response(
     generated_image_downloads: list[tuple[str, str | None]],
 ) -> None:
@@ -311,7 +303,6 @@ async def test_aihubmix_image_generation_downloads_url_response(
     assert generated_image_downloads == [("https://cdn.example/image.png", proxy)]
 
 
-@pytest.mark.asyncio
 async def test_aihubmix_base64_response_uses_detected_mime() -> None:
     raw_b64 = base64.b64encode(JPEG_BYTES).decode("ascii")
     fake = FakeClient(FakeResponse({"output": {"b64_json": raw_b64}}))
@@ -328,7 +319,6 @@ async def test_aihubmix_base64_response_uses_detected_mime() -> None:
 RAW_B64 = PNG_DATA_URL.removeprefix("data:image/png;base64,")
 
 
-@pytest.mark.asyncio
 async def test_gemini_imagen_payload_and_response() -> None:
     fake = FakeClient(
         FakeResponse({"predictions": [{"bytesBase64Encoded": RAW_B64, "mimeType": "image/png"}]})
@@ -357,7 +347,6 @@ async def test_gemini_imagen_payload_and_response() -> None:
     assert body["parameters"]["aspectRatio"] == "16:9"
 
 
-@pytest.mark.asyncio
 async def test_gemini_imagen_ignores_unsupported_aspect_ratio() -> None:
     fake = FakeClient(
         FakeResponse({"predictions": [{"bytesBase64Encoded": RAW_B64, "mimeType": "image/png"}]})
@@ -370,7 +359,6 @@ async def test_gemini_imagen_ignores_unsupported_aspect_ratio() -> None:
     assert "aspectRatio" not in body["parameters"]
 
 
-@pytest.mark.asyncio
 async def test_gemini_flash_payload_and_response() -> None:
     fake = FakeClient(
         FakeResponse(
@@ -410,7 +398,6 @@ async def test_gemini_flash_payload_and_response() -> None:
     assert body["contents"][0]["parts"][-1] == {"text": "draw a cat"}
 
 
-@pytest.mark.asyncio
 async def test_gemini_flash_reference_images(tmp_path: Path) -> None:
     ref = tmp_path / "ref.png"
     ref.write_bytes(PNG_BYTES)
@@ -452,7 +439,6 @@ def _gemini_flash_image_response() -> FakeResponse:
     )
 
 
-@pytest.mark.asyncio
 async def test_gemini_flash_forwards_aspect_ratio_and_image_size() -> None:
     fake = FakeClient(_gemini_flash_image_response())
     client = GeminiImageGenerationClient(api_key="AIza-test", client=fake)  # type: ignore[arg-type]
@@ -468,7 +454,6 @@ async def test_gemini_flash_forwards_aspect_ratio_and_image_size() -> None:
     assert image_config == {"aspectRatio": "16:9", "imageSize": "2K"}
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "aspect_ratio, model",
     [
@@ -500,7 +485,6 @@ async def test_gemini_flash_omits_unsupported_image_size(aspect_ratio, model) ->
         ("gemini-2.5-flash-image", "4:1", None),
     ],
 )
-@pytest.mark.asyncio
 async def test_gemini_flash_scopes_extreme_aspect_ratios_by_model(
     model: str,
     aspect_ratio: str,
@@ -529,7 +513,6 @@ async def test_gemini_flash_scopes_extreme_aspect_ratios_by_model(
         ("gemini-3.1-flash-image", "512", {"imageSize": "512"}),
     ],
 )
-@pytest.mark.asyncio
 async def test_gemini_flash_scopes_image_size_by_model(
     model: str,
     image_size: str,
@@ -548,7 +531,6 @@ async def test_gemini_flash_scopes_image_size_by_model(
     assert image_config == expected
 
 
-@pytest.mark.asyncio
 async def test_gemini_flash_ignores_unsupported_hints() -> None:
     fake = FakeClient(_gemini_flash_image_response())
     client = GeminiImageGenerationClient(api_key="AIza-test", client=fake)  # type: ignore[arg-type]
@@ -565,7 +547,6 @@ async def test_gemini_flash_ignores_unsupported_hints() -> None:
     assert "imageConfig" not in fake.calls[0]["json"]["generationConfig"]
 
 
-@pytest.mark.asyncio
 async def test_gemini_requires_api_key() -> None:
     client = GeminiImageGenerationClient(api_key=None)
 
@@ -578,7 +559,6 @@ def test_gemini_image_client_uses_native_api_base_by_default() -> None:
     assert client.api_base == "https://generativelanguage.googleapis.com/v1beta"
 
 
-@pytest.mark.asyncio
 async def test_gemini_no_images_raises() -> None:
     fake = FakeClient(FakeResponse({"candidates": [{"content": {"parts": [{"text": "sorry"}]}}]}))
     client = GeminiImageGenerationClient(api_key="AIza-test", client=fake)  # type: ignore[arg-type]
@@ -587,7 +567,6 @@ async def test_gemini_no_images_raises() -> None:
         await client.generate(prompt="draw", model="gemini-2.0-flash-preview-image-generation")
 
 
-@pytest.mark.asyncio
 async def test_minimax_payload_and_response_with_reference_image(tmp_path: Path) -> None:
     ref = tmp_path / "ref.png"
     ref.write_bytes(PNG_BYTES)
@@ -620,7 +599,6 @@ async def test_minimax_payload_and_response_with_reference_image(tmp_path: Path)
     assert body["subject_reference"][0]["image_file"].startswith("data:image/png;base64,")
 
 
-@pytest.mark.asyncio
 async def test_minimax_base64_response_uses_detected_mime() -> None:
     raw_b64 = base64.b64encode(JPEG_BYTES).decode("ascii")
     fake = FakeClient(FakeResponse({"data": {"image_base64": [raw_b64]}}))
@@ -635,7 +613,6 @@ async def test_minimax_base64_response_uses_detected_mime() -> None:
 # StepFun (阶跃星辰)
 # ---------------------------------------------------------------------------
 
-@pytest.mark.asyncio
 async def test_stepfun_payload_and_response_with_aspect_ratio() -> None:
     fake = FakeClient(FakeResponse({"data": [{"b64_json": RAW_B64}]}))
     client = StepFunImageGenerationClient(
@@ -664,7 +641,6 @@ async def test_stepfun_payload_and_response_with_aspect_ratio() -> None:
     assert body["size"] == "1280x800"
 
 
-@pytest.mark.asyncio
 async def test_stepfun_default_size_when_no_aspect_ratio() -> None:
     fake = FakeClient(FakeResponse({"data": [{"b64_json": RAW_B64}]}))
     client = StepFunImageGenerationClient(
@@ -679,7 +655,6 @@ async def test_stepfun_default_size_when_no_aspect_ratio() -> None:
     assert body["size"] == "1024x1024"
 
 
-@pytest.mark.asyncio
 async def test_stepfun_uses_explicit_image_size() -> None:
     fake = FakeClient(FakeResponse({"data": [{"b64_json": RAW_B64}]}))
     client = StepFunImageGenerationClient(
@@ -698,7 +673,6 @@ async def test_stepfun_uses_explicit_image_size() -> None:
     assert body["size"] == "1024x1024"
 
 
-@pytest.mark.asyncio
 async def test_stepfun_style_reference_on_1x_model(tmp_path: Path) -> None:
     """step-1x-medium supports style_reference for reference-image generation."""
     ref = tmp_path / "ref.png"
@@ -721,7 +695,6 @@ async def test_stepfun_style_reference_on_1x_model(tmp_path: Path) -> None:
     assert body["style_reference"]["source_url"].startswith("data:image/png;base64,")
 
 
-@pytest.mark.asyncio
 async def test_stepfun_no_style_reference_on_non_1x_model() -> None:
     """step-image-edit-2 does not use style_reference; reference images are ignored."""
     fake = FakeClient(FakeResponse({"data": [{"b64_json": RAW_B64}]}))
@@ -741,7 +714,6 @@ async def test_stepfun_no_style_reference_on_non_1x_model() -> None:
     assert "style_reference" not in body
 
 
-@pytest.mark.asyncio
 async def test_stepfun_requires_api_key() -> None:
     client = StepFunImageGenerationClient(api_key=None)
 
@@ -749,7 +721,6 @@ async def test_stepfun_requires_api_key() -> None:
         await client.generate(prompt="draw", model="step-image-edit-2")
 
 
-@pytest.mark.asyncio
 async def test_stepfun_no_images_raises() -> None:
     fake = FakeClient(FakeResponse({"data": [{"text": "sorry"}]}))
     client = StepFunImageGenerationClient(api_key="sk-sf-test", client=fake)  # type: ignore[arg-type]
@@ -763,7 +734,6 @@ async def test_stepfun_no_images_raises() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_openai_payload_and_response() -> None:
     fake = FakeClient(FakeResponse({"data": [{"b64_json": RAW_B64}]}))
     client = OpenAIImageGenerationClient(
@@ -792,7 +762,6 @@ async def test_openai_payload_and_response() -> None:
     assert body["size"] == "1792x1024"
 
 
-@pytest.mark.asyncio
 async def test_openai_extra_body_null_drops_default_params_only() -> None:
     fake = FakeClient(FakeResponse({"data": [{"b64_json": RAW_B64}]}))
     client = OpenAIImageGenerationClient(
@@ -814,7 +783,6 @@ async def test_openai_extra_body_null_drops_default_params_only() -> None:
     assert body["safety_checker"] is False
 
 
-@pytest.mark.asyncio
 async def test_openai_b64_json_response_uses_detected_mime() -> None:
     raw_b64 = base64.b64encode(JPEG_BYTES).decode("ascii")
     fake = FakeClient(FakeResponse({"data": [{"b64_json": raw_b64}]}))
@@ -828,7 +796,6 @@ async def test_openai_b64_json_response_uses_detected_mime() -> None:
     assert response.images == [f"data:image/jpeg;base64,{raw_b64}"]
 
 
-@pytest.mark.asyncio
 async def test_openai_url_download_fallback(
     generated_image_downloads: list[tuple[str, str | None]],
 ) -> None:
@@ -847,7 +814,6 @@ async def test_openai_url_download_fallback(
     assert generated_image_downloads == [("https://cdn.example/image.png", proxy)]
 
 
-@pytest.mark.asyncio
 async def test_openai_multiple_images() -> None:
     fake = FakeClient(FakeResponse({
         "data": [
@@ -866,7 +832,6 @@ async def test_openai_multiple_images() -> None:
     assert response.images == [PNG_DATA_URL, PNG_DATA_URL]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "expected_size, model, aspect_ratio",
     [
@@ -890,7 +855,6 @@ async def test_openai_aspect_ratio_uses_model_supported_size(
     assert fake.calls[0]["json"]["size"] == expected_size
 
 
-@pytest.mark.asyncio
 async def test_openai_dalle3_uses_supported_orientation_sizes() -> None:
     fake = FakeClient(FakeResponse({"data": [{"b64_json": RAW_B64}]}))
     client = OpenAIImageGenerationClient(
@@ -905,7 +869,6 @@ async def test_openai_dalle3_uses_supported_orientation_sizes() -> None:
     assert fake.calls[1]["json"]["size"] == "1792x1024"
 
 
-@pytest.mark.asyncio
 async def test_openai_gpt_image_uses_supported_orientation_sizes() -> None:
     fake = FakeClient(FakeResponse({"data": [{"b64_json": RAW_B64}]}))
     client = OpenAIImageGenerationClient(
@@ -920,7 +883,6 @@ async def test_openai_gpt_image_uses_supported_orientation_sizes() -> None:
     assert fake.calls[1]["json"]["size"] == "1536x1024"
 
 
-@pytest.mark.asyncio
 async def test_openai_reference_images_use_edits_endpoint(tmp_path: Path) -> None:
     ref = tmp_path / "ref.png"
     ref.write_bytes(PNG_BYTES)
@@ -956,7 +918,6 @@ async def test_openai_reference_images_use_edits_endpoint(tmp_path: Path) -> Non
     assert call["files"][0][1][1].closed is True
 
 
-@pytest.mark.asyncio
 async def test_openai_reference_images_expand_user_paths(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -985,7 +946,6 @@ async def test_openai_reference_images_expand_user_paths(
     assert call["files"][0][1][1].closed is True
 
 
-@pytest.mark.asyncio
 async def test_openai_reference_images_send_multiple_multipart_files(
     tmp_path: Path,
 ) -> None:
@@ -1026,7 +986,6 @@ async def test_openai_reference_images_send_multiple_multipart_files(
     assert all(item[1][1].closed for item in call["files"])
 
 
-@pytest.mark.asyncio
 async def test_openai_gpt_image_without_reference_images_uses_generations_json() -> None:
     fake = FakeClient(FakeResponse({"data": [{"b64_json": RAW_B64}]}))
     client = OpenAIImageGenerationClient(
@@ -1046,7 +1005,6 @@ async def test_openai_gpt_image_without_reference_images_uses_generations_json()
     assert "files" not in call
 
 
-@pytest.mark.asyncio
 async def test_openai_dalle_reference_images_raise_clear_error(tmp_path: Path) -> None:
     ref = tmp_path / "ref.png"
     ref.write_bytes(PNG_BYTES)
@@ -1060,7 +1018,6 @@ async def test_openai_dalle_reference_images_raise_clear_error(tmp_path: Path) -
         )
 
 
-@pytest.mark.asyncio
 async def test_openai_default_size_when_no_aspect_ratio() -> None:
     fake = FakeClient(FakeResponse({"data": [{"b64_json": RAW_B64}]}))
     client = OpenAIImageGenerationClient(
@@ -1074,7 +1031,6 @@ async def test_openai_default_size_when_no_aspect_ratio() -> None:
     assert body["size"] == "1024x1024"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "expected_size, image_size",
     [
@@ -1100,7 +1056,6 @@ async def test_openai_validates_explicit_size_for_model_family(expected_size, im
     assert body["size"] == expected_size
 
 
-@pytest.mark.asyncio
 async def test_openai_requires_api_key() -> None:
     client = OpenAIImageGenerationClient(api_key=None)
 
@@ -1113,7 +1068,6 @@ async def test_openai_requires_api_key() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_custom_generate_success() -> None:
     fake = FakeClient(FakeResponse({"data": [{"b64_json": RAW_B64}]}))
     client = CustomImageGenerationClient(
@@ -1144,7 +1098,6 @@ async def test_custom_generate_success() -> None:
     assert body["size"] == "1536x1024"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "expected_size, image_size",
     [
@@ -1169,7 +1122,6 @@ async def test_custom_generate_maps_size_hint(expected_size, image_size) -> None
     assert fake.calls[0]["json"]["size"] == expected_size
 
 
-@pytest.mark.asyncio
 async def test_custom_generate_extra_body_can_override_defaults(
     generated_image_downloads: list[tuple[str, str | None]],
 ) -> None:
@@ -1197,7 +1149,6 @@ async def test_custom_generate_extra_body_can_override_defaults(
     assert body["size"] == "2K"
 
 
-@pytest.mark.asyncio
 async def test_custom_generate_without_api_key_omits_authorization() -> None:
     fake = FakeClient(FakeResponse({"data": [{"b64_json": RAW_B64}]}))
     client = CustomImageGenerationClient(
@@ -1212,7 +1163,6 @@ async def test_custom_generate_without_api_key_omits_authorization() -> None:
     assert "Authorization" not in fake.calls[0]["headers"]
 
 
-@pytest.mark.asyncio
 async def test_custom_generate_requires_api_base() -> None:
     client = CustomImageGenerationClient(api_key="sk-custom-test")
 
@@ -1220,7 +1170,6 @@ async def test_custom_generate_requires_api_base() -> None:
         await client.generate(prompt="draw", model="custom-image-model")
 
 
-@pytest.mark.asyncio
 async def test_custom_generate_http_error() -> None:
     fake = FakeClient(FakeResponse({"error": "bad request"}, status_code=400))
     client = CustomImageGenerationClient(
@@ -1238,7 +1187,6 @@ async def test_custom_generate_http_error() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_codex_payload_and_response(monkeypatch) -> None:
     import sys
     from dataclasses import dataclass
@@ -1295,7 +1243,6 @@ async def test_codex_payload_and_response(monkeypatch) -> None:
     assert body["stream"] is True
 
 
-@pytest.mark.asyncio
 async def test_codex_proxy_applies_to_oauth_and_http(monkeypatch) -> None:
     import sys
     from types import SimpleNamespace
@@ -1350,7 +1297,6 @@ async def test_codex_proxy_applies_to_oauth_and_http(monkeypatch) -> None:
     assert captured["client_kwargs"]["trust_env"] is False
 
 
-@pytest.mark.asyncio
 async def test_codex_stops_reading_after_completed_event(monkeypatch) -> None:
     import sys
     from dataclasses import dataclass
@@ -1379,7 +1325,6 @@ async def test_codex_stops_reading_after_completed_event(monkeypatch) -> None:
     assert response.content == ""
 
 
-@pytest.mark.asyncio
 async def test_codex_strips_model_prefix(monkeypatch) -> None:
     import sys
     from dataclasses import dataclass
@@ -1412,7 +1357,6 @@ async def test_codex_strips_model_prefix(monkeypatch) -> None:
     assert fake.calls[0]["json"]["model"] == "gpt-5.4"
 
 
-@pytest.mark.asyncio
 async def test_codex_requires_oauth(monkeypatch) -> None:
     async def fake_to_thread(fn, *args, **kwargs):
         raise RuntimeError("no token")
@@ -1425,7 +1369,6 @@ async def test_codex_requires_oauth(monkeypatch) -> None:
         await client.generate(prompt="draw", model="gpt-5.4")
 
 
-@pytest.mark.asyncio
 async def test_codex_no_images_raises(monkeypatch) -> None:
     import sys
     from dataclasses import dataclass
@@ -1457,7 +1400,6 @@ async def test_codex_no_images_raises(monkeypatch) -> None:
         await client.generate(prompt="draw", model="gpt-5.4")
 
 
-@pytest.mark.asyncio
 async def test_codex_extracts_text_content(monkeypatch) -> None:
     import sys
     from dataclasses import dataclass
@@ -1495,7 +1437,6 @@ async def test_codex_extracts_text_content(monkeypatch) -> None:
     assert response.content == "Here is your cat image."
 
 
-@pytest.mark.asyncio
 async def test_codex_json_result_format(monkeypatch) -> None:
     """image_generation_call result can be a dict with image_url key."""
     import sys
@@ -1529,7 +1470,6 @@ async def test_codex_json_result_format(monkeypatch) -> None:
     assert response.images == [PNG_DATA_URL]
 
 
-@pytest.mark.asyncio
 async def test_openai_no_images_raises() -> None:
     fake = FakeClient(FakeResponse({"data": []}))
     client = OpenAIImageGenerationClient(
@@ -1546,7 +1486,6 @@ async def test_openai_no_images_raises() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_zhipu_image_generation_payload_and_response() -> None:
     fake = FakeClient(FakeResponse({"data": [{"url": "https://cdn.example/image.png"}]}))
     fake.get_response = FakeResponse({}, content=PNG_BYTES)
@@ -1577,7 +1516,6 @@ async def test_zhipu_image_generation_payload_and_response() -> None:
     assert body["watermark_enabled"] is False
 
 
-@pytest.mark.asyncio
 async def test_zhipu_image_generation_with_explicit_size() -> None:
     fake = FakeClient(FakeResponse({"data": [{"url": "https://cdn.example/image.png"}]}))
     fake.get_response = FakeResponse({}, content=PNG_BYTES)
@@ -1596,7 +1534,6 @@ async def test_zhipu_image_generation_with_explicit_size() -> None:
     assert body["size"] == "1024x1024"
 
 
-@pytest.mark.asyncio
 async def test_zhipu_image_generation_downloads_url_response(
     generated_image_downloads: list[tuple[str, str | None]],
 ) -> None:
@@ -1615,7 +1552,6 @@ async def test_zhipu_image_generation_downloads_url_response(
     assert generated_image_downloads == [("https://cdn.example/image.png", proxy)]
 
 
-@pytest.mark.asyncio
 async def test_zhipu_image_generation_requires_api_key() -> None:
     client = ZhipuImageGenerationClient(api_key=None)
 
@@ -1623,7 +1559,6 @@ async def test_zhipu_image_generation_requires_api_key() -> None:
         await client.generate(prompt="draw", model="glm-image")
 
 
-@pytest.mark.asyncio
 async def test_zhipu_image_generation_no_images_raises() -> None:
     fake = FakeClient(FakeResponse({"data": [{"text": "sorry"}]}))
     client = ZhipuImageGenerationClient(api_key="sk-zhipu-test", client=fake)  # type: ignore[arg-type]
@@ -1632,7 +1567,6 @@ async def test_zhipu_image_generation_no_images_raises() -> None:
         await client.generate(prompt="draw", model="glm-image")
 
 
-@pytest.mark.asyncio
 async def test_zhipu_image_generation_rejects_reference_images() -> None:
     client = ZhipuImageGenerationClient(api_key="sk-zhipu-test")
 
@@ -1691,7 +1625,6 @@ def _modelscope_fast_poll(monkeypatch) -> None:
     )
 
 
-@pytest.mark.asyncio
 async def test_modelscope_image_generation_submit_and_poll(
     generated_image_downloads: list[tuple[str, str | None]],
 ) -> None:
@@ -1735,7 +1668,6 @@ async def test_modelscope_image_generation_submit_and_poll(
     assert poll_headers["X-ModelScope-Task-Type"] == "image_generation"
 
 
-@pytest.mark.asyncio
 async def test_modelscope_image_generation_with_size() -> None:
     submit = FakeResponse({"task_id": "t1"})
     poll = [FakeResponse({"task_status": "SUCCEED", "output_images": ["https://cdn/img.png"]})]
@@ -1765,7 +1697,6 @@ async def test_modelscope_image_generation_with_size() -> None:
         ("4:3", "1472x1140"),
     ],
 )
-@pytest.mark.asyncio
 async def test_modelscope_image_generation_aspect_ratio_mapping(
     aspect_ratio: str,
     expected_size: str,
@@ -1783,7 +1714,6 @@ async def test_modelscope_image_generation_aspect_ratio_mapping(
     assert fake.calls[0]["json"]["size"] == expected_size
 
 
-@pytest.mark.asyncio
 async def test_modelscope_image_generation_task_failed() -> None:
     submit = FakeResponse({"task_id": "bad-task"})
     poll = [FakeResponse({"task_status": "FAILED", "errors": "oom"})]
@@ -1797,7 +1727,6 @@ async def test_modelscope_image_generation_task_failed() -> None:
         await client.generate(prompt="test", model="m")
 
 
-@pytest.mark.asyncio
 async def test_modelscope_image_generation_requires_api_key() -> None:
     client = ModelScopeImageGenerationClient(api_key=None)
 
@@ -1805,7 +1734,6 @@ async def test_modelscope_image_generation_requires_api_key() -> None:
         await client.generate(prompt="draw", model="m")
 
 
-@pytest.mark.asyncio
 async def test_modelscope_image_generation_missing_task_id() -> None:
     submit = FakeResponse({"unexpected": "response"})
     fake = ModelScopeFakeClient(submit, [])
@@ -1818,7 +1746,6 @@ async def test_modelscope_image_generation_missing_task_id() -> None:
         await client.generate(prompt="draw", model="m")
 
 
-@pytest.mark.asyncio
 async def test_modelscope_image_generation_with_reference_image() -> None:
     """Reference images are converted to base64 data URLs for image editing models."""
     submit = FakeResponse({"task_id": "t1"})
@@ -1849,7 +1776,6 @@ async def test_modelscope_image_generation_with_reference_image() -> None:
         Path(ref_path).unlink(missing_ok=True)
 
 
-@pytest.mark.asyncio
 async def test_modelscope_image_generation_extra_body_passthrough() -> None:
     """Extra body fields like loras are passed through to the API."""
     submit = FakeResponse({"task_id": "t1"})
@@ -1868,7 +1794,6 @@ async def test_modelscope_image_generation_extra_body_passthrough() -> None:
     assert body["seed"] == 42
 
 
-@pytest.mark.asyncio
 async def test_modelscope_image_generation_poll_timeout(monkeypatch) -> None:
     """Polling that never reaches SUCCEED/FAILED raises a timeout error."""
     monkeypatch.setattr(

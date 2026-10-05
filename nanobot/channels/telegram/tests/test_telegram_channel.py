@@ -324,7 +324,6 @@ def test_split_telegram_markdown_leading_space_in_fence_body() -> None:
 
 
 
-@pytest.mark.asyncio
 async def test_start_creates_separate_pools_with_proxy(monkeypatch) -> None:
     _FakeHTTPXRequest.clear()
     config = TelegramConfig(
@@ -366,7 +365,6 @@ async def test_start_creates_separate_pools_with_proxy(monkeypatch) -> None:
     assert any(cmd.command == "compact" for cmd in app.bot.commands)
 
 
-@pytest.mark.asyncio
 async def test_start_respects_custom_pool_config(monkeypatch) -> None:
     _FakeHTTPXRequest.clear()
     config = TelegramConfig(
@@ -396,7 +394,6 @@ async def test_start_respects_custom_pool_config(monkeypatch) -> None:
     assert poll_req.kwargs["pool_timeout"] == 10.0
 
 
-@pytest.mark.asyncio
 async def test_stalled_polling_triggers_pool_rebuild(monkeypatch) -> None:
     """When no getUpdates round trip completes for too long, the app is rebuilt."""
     _FakeHTTPXRequest.clear()
@@ -432,7 +429,6 @@ async def test_stalled_polling_triggers_pool_rebuild(monkeypatch) -> None:
     assert len(_FakeHTTPXRequest.instances) == 4
 
 
-@pytest.mark.asyncio
 async def test_startup_failure_retries_with_backoff(monkeypatch) -> None:
     """Transient startup failures back off and retry until the app comes up."""
     from telegram.error import NetworkError
@@ -473,7 +469,6 @@ async def test_startup_failure_retries_with_backoff(monkeypatch) -> None:
     assert apps[1].bot.shutdown_calls == 1
 
 
-@pytest.mark.asyncio
 async def test_terminal_startup_error_is_not_retried(monkeypatch) -> None:
     """Config errors (bad proxy, bound webhook port) must fail the channel."""
     _FakeHTTPXRequest.clear()
@@ -508,7 +503,6 @@ async def test_terminal_startup_error_is_not_retried(monkeypatch) -> None:
     assert channel.is_running is False
 
 
-@pytest.mark.asyncio
 async def test_invalid_token_stops_without_retry(monkeypatch) -> None:
     """A rejected token is a config error: fail the channel instead of retrying."""
     from telegram.error import InvalidToken
@@ -546,7 +540,6 @@ async def test_invalid_token_stops_without_retry(monkeypatch) -> None:
     assert "123:abc" not in str(excinfo.value)  # token must not reach the log
 
 
-@pytest.mark.asyncio
 async def test_stop_during_startup_does_not_leak_app(monkeypatch) -> None:
     """stop() landing while _start_app() is mid-flight must not leave the app running."""
     _FakeHTTPXRequest.clear()
@@ -569,7 +562,6 @@ async def test_stop_during_startup_does_not_leak_app(monkeypatch) -> None:
     assert channel._app is None  # torn down, not leaked
 
 
-@pytest.mark.asyncio
 async def test_stop_waits_for_inflight_watchdog_teardown(monkeypatch) -> None:
     """Manager cancellation after stop() must not interrupt an active teardown."""
     _FakeHTTPXRequest.clear()
@@ -609,7 +601,6 @@ async def test_stop_waits_for_inflight_watchdog_teardown(monkeypatch) -> None:
     assert app.bot.shutdown_calls == 1
 
 
-@pytest.mark.asyncio
 async def test_send_during_rebuild_fails_instead_of_dropping(monkeypatch) -> None:
     """A send that cannot reach Telegram must raise so the manager can retry."""
     monkeypatch.setattr("nanobot.channels.telegram.runtime.APP_RESTART_SEND_WAIT_SECONDS", 0.0)
@@ -632,7 +623,6 @@ async def test_send_during_rebuild_fails_instead_of_dropping(monkeypatch) -> Non
     await channel.send_delta("123", "hello", stream_id="s1")
 
 
-@pytest.mark.asyncio
 async def test_send_waits_for_rebuild_to_finish(monkeypatch) -> None:
     """A fast rebuild is waited out rather than surfaced as a delivery failure."""
     monkeypatch.setattr("nanobot.channels.telegram.runtime.APP_RESTART_SEND_WAIT_SECONDS", 5.0)
@@ -655,7 +645,6 @@ async def test_send_waits_for_rebuild_to_finish(monkeypatch) -> None:
     assert [m["text"] for m in app.bot.sent_messages] == ["hello"]
 
 
-@pytest.mark.asyncio
 async def test_send_waits_for_partially_initialized_app(monkeypatch) -> None:
     """A built app is not available for sends until startup marks it ready."""
     monkeypatch.setattr("nanobot.channels.telegram.runtime.APP_RESTART_SEND_WAIT_SECONDS", 5.0)
@@ -678,7 +667,6 @@ async def test_send_waits_for_partially_initialized_app(monkeypatch) -> None:
     assert [m["text"] for m in app.bot.sent_messages] == ["hello"]
 
 
-@pytest.mark.asyncio
 async def test_liveness_tracked_request_stamps_on_round_trip() -> None:
     from nanobot.channels.telegram.runtime import _LivenessTrackedRequest
 
@@ -723,7 +711,6 @@ def test_webhook_config_requires_https_url_and_secret() -> None:
         )
 
 
-@pytest.mark.asyncio
 async def test_start_webhook_mode(monkeypatch) -> None:
     _FakeHTTPXRequest.clear()
     config = TelegramConfig(
@@ -764,7 +751,6 @@ async def test_start_webhook_mode(monkeypatch) -> None:
     }
 
 
-@pytest.mark.asyncio
 async def test_running_message_handler_reorders_same_session_updates() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"]),
@@ -793,7 +779,6 @@ async def test_running_message_handler_reorders_same_session_updates() -> None:
     assert seen == [1, 2]
 
 
-@pytest.mark.asyncio
 async def test_send_text_retries_on_timeout() -> None:
     """_send_text retries on TimedOut before succeeding."""
     from telegram.error import TimedOut
@@ -828,7 +813,6 @@ async def test_send_text_retries_on_timeout() -> None:
     assert len(channel._app.bot.sent_messages) == 1
 
 
-@pytest.mark.asyncio
 async def test_send_text_gives_up_after_max_retries() -> None:
     """_send_text raises TimedOut after exhausting all retries."""
     from telegram.error import TimedOut
@@ -856,7 +840,6 @@ async def test_send_text_gives_up_after_max_retries() -> None:
     assert channel._app.bot.sent_messages == []
 
 
-@pytest.mark.asyncio
 async def test_send_rich_capability_error_latches_and_falls_back() -> None:
     from telegram.error import BadRequest
 
@@ -875,7 +858,6 @@ async def test_send_rich_capability_error_latches_and_falls_back() -> None:
     assert channel._app.bot.sent_messages[0]["text"]
 
 
-@pytest.mark.asyncio
 async def test_send_rich_bad_request_does_not_latch_capability() -> None:
     from telegram.error import BadRequest
 
@@ -895,7 +877,6 @@ async def test_send_rich_bad_request_does_not_latch_capability() -> None:
     assert len(channel._app.bot.sent_messages) == 1
 
 
-@pytest.mark.asyncio
 async def test_rich_messages_default_skips_send_rich_message() -> None:
     """By default, sendRichMessage should not be called."""
     channel = TelegramChannel(
@@ -912,7 +893,6 @@ async def test_rich_messages_default_skips_send_rich_message() -> None:
     assert channel._app.bot.sent_messages[0]["text"]
 
 
-@pytest.mark.asyncio
 async def test_send_delta_rich_stream_updates_one_draft_then_persists_final() -> None:
     channel = TelegramChannel(
         TelegramConfig(
@@ -965,7 +945,6 @@ async def test_send_delta_rich_stream_updates_one_draft_then_persists_final() ->
     assert "123" not in channel._stream_bufs
 
 
-@pytest.mark.asyncio
 async def test_send_delta_rich_initial_rejection_falls_back_to_legacy_preview() -> None:
     from telegram.error import BadRequest
 
@@ -988,7 +967,6 @@ async def test_send_delta_rich_initial_rejection_falls_back_to_legacy_preview() 
     assert channel._stream_bufs["123"].draft_id is None
 
 
-@pytest.mark.asyncio
 async def test_send_delta_rich_draft_rejection_falls_back_to_legacy_preview() -> None:
     from telegram.error import BadRequest
 
@@ -1019,7 +997,6 @@ async def test_send_delta_rich_draft_rejection_falls_back_to_legacy_preview() ->
     assert channel._stream_bufs["123"].draft_id is None
 
 
-@pytest.mark.asyncio
 async def test_send_delta_rich_stream_end_persists_draft_with_send_rich_message() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"], rich_messages=True),
@@ -1046,7 +1023,6 @@ async def test_send_delta_rich_stream_end_persists_draft_with_send_rich_message(
     assert "123" not in channel._stream_bufs
 
 
-@pytest.mark.asyncio
 async def test_send_delta_rich_stream_end_timeout_is_not_retried() -> None:
     from telegram.error import TimedOut
 
@@ -1071,7 +1047,6 @@ async def test_send_delta_rich_stream_end_timeout_is_not_retried() -> None:
     assert "123" not in channel._stream_bufs
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("rich_error", [None, "can't parse rich message", "method not found"])
 async def test_rich_stream_final_retry_keeps_only_unsent_chunks(
     rich_error: str | None,
@@ -1130,7 +1105,6 @@ async def test_rich_stream_final_retry_keeps_only_unsent_chunks(
     assert "123" not in channel._stream_bufs
 
 
-@pytest.mark.asyncio
 async def test_rich_stream_overflow_failure_does_not_drop_same_text_next_delta(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1175,7 +1149,6 @@ async def test_rich_stream_overflow_failure_does_not_drop_same_text_next_delta(
     assert "123" not in channel._stream_bufs
 
 
-@pytest.mark.asyncio
 async def test_send_delta_rich_does_not_flush_at_legacy_limit() -> None:
     channel = TelegramChannel(
         TelegramConfig(
@@ -1209,7 +1182,6 @@ async def test_send_delta_rich_does_not_flush_at_legacy_limit() -> None:
     assert channel._stream_bufs["123"].text.endswith("y")
 
 
-@pytest.mark.asyncio
 async def test_flush_stream_overflow_uses_rich_limit_and_reanchors_tail() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"], rich_messages=True),
@@ -1245,7 +1217,6 @@ async def test_flush_stream_overflow_uses_rich_limit_and_reanchors_tail() -> Non
     assert channel._app.bot.sent_messages == []
 
 
-@pytest.mark.asyncio
 async def test_flush_stream_overflow_rich_limit_counts_unicode_characters() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"], rich_messages=True),
@@ -1265,7 +1236,6 @@ async def test_flush_stream_overflow_rich_limit_counts_unicode_characters() -> N
     assert buf.text == "尾"
 
 
-@pytest.mark.asyncio
 async def test_send_delta_rich_draft_rate_is_limited_to_40_per_30_seconds() -> None:
     channel = TelegramChannel(
         TelegramConfig(
@@ -1291,7 +1261,6 @@ async def test_send_delta_rich_draft_rate_is_limited_to_40_per_30_seconds() -> N
     assert channel._stream_bufs["123"].last_edit == first_edit
 
 
-@pytest.mark.asyncio
 async def test_send_delta_rich_group_uses_legacy_preview_and_finalization() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"], rich_messages=True),
@@ -1318,7 +1287,6 @@ async def test_send_delta_rich_group_uses_legacy_preview_and_finalization() -> N
     assert "-100123" not in channel._stream_bufs
 
 
-@pytest.mark.asyncio
 async def test_on_error_logs_network_issues_as_warning(monkeypatch) -> None:
     from telegram.error import NetworkError
 
@@ -1344,7 +1312,6 @@ async def test_on_error_logs_network_issues_as_warning(monkeypatch) -> None:
     assert recorded == [("warning", "network issue: proxy disconnected")]
 
 
-@pytest.mark.asyncio
 async def test_on_error_summarizes_empty_network_error(monkeypatch) -> None:
     from telegram.error import NetworkError
 
@@ -1365,7 +1332,6 @@ async def test_on_error_summarizes_empty_network_error(monkeypatch) -> None:
     assert recorded == [("warning", "network issue: NetworkError")]
 
 
-@pytest.mark.asyncio
 async def test_on_error_keeps_non_network_exceptions_as_error(monkeypatch) -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"]),
@@ -1389,7 +1355,6 @@ async def test_on_error_keeps_non_network_exceptions_as_error(monkeypatch) -> No
     assert recorded == [("error", "error: boom")]
 
 
-@pytest.mark.asyncio
 async def test_send_delta_stream_end_raises_and_keeps_buffer_on_failure() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"]),
@@ -1405,7 +1370,6 @@ async def test_send_delta_stream_end_raises_and_keeps_buffer_on_failure() -> Non
     assert "123" in channel._stream_bufs
 
 
-@pytest.mark.asyncio
 async def test_send_delta_merge_next_preserves_buffer() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"]),
@@ -1432,7 +1396,6 @@ async def test_send_delta_merge_next_preserves_buffer() -> None:
     channel._app.bot.edit_message_text.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_send_delta_stream_end_treats_not_modified_as_success() -> None:
     from telegram.error import BadRequest
 
@@ -1449,7 +1412,6 @@ async def test_send_delta_stream_end_treats_not_modified_as_success() -> None:
     assert "123" not in channel._stream_bufs
 
 
-@pytest.mark.asyncio
 async def test_send_delta_stream_end_does_not_fallback_on_network_timeout(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1479,7 +1441,6 @@ async def test_send_delta_stream_end_does_not_fallback_on_network_timeout(
     assert "123" in channel._stream_bufs
 
 
-@pytest.mark.asyncio
 async def test_send_delta_stream_end_does_not_fallback_on_network_error() -> None:
     """NetworkError during HTML edit should propagate, never fall back to plain text."""
     from telegram.error import NetworkError
@@ -1503,7 +1464,6 @@ async def test_send_delta_stream_end_does_not_fallback_on_network_error() -> Non
     assert "123" in channel._stream_bufs
 
 
-@pytest.mark.asyncio
 async def test_send_delta_stream_end_falls_back_on_bad_request() -> None:
     """BadRequest (HTML parse error) should still trigger plain-text fallback."""
     from telegram.error import BadRequest
@@ -1531,7 +1491,6 @@ async def test_send_delta_stream_end_falls_back_on_bad_request() -> None:
     assert "123" not in channel._stream_bufs
 
 
-@pytest.mark.asyncio
 async def test_send_delta_stream_end_splits_oversized_reply() -> None:
     """Final streamed reply exceeding Telegram limit is split into chunks.
 
@@ -1563,7 +1522,6 @@ async def test_send_delta_stream_end_splits_oversized_reply() -> None:
     assert "123" not in channel._stream_bufs
 
 
-@pytest.mark.asyncio
 async def test_send_delta_stream_end_html_expansion_does_not_overflow() -> None:
     """Markdown that expands when converted to HTML is still split correctly.
 
@@ -1602,7 +1560,6 @@ async def test_send_delta_stream_end_html_expansion_does_not_overflow() -> None:
     assert "123" not in channel._stream_bufs
 
 
-@pytest.mark.asyncio
 async def test_send_delta_stream_end_splits_long_code_block_before_html_rendering() -> None:
     """Final streamed replies must not split Telegram HTML inside <pre><code>."""
     channel = TelegramChannel(
@@ -1632,7 +1589,6 @@ async def test_send_delta_stream_end_splits_long_code_block_before_html_renderin
     assert "123" not in channel._stream_bufs
 
 
-@pytest.mark.asyncio
 async def test_send_delta_new_stream_id_replaces_stale_buffer() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"]),
@@ -1654,7 +1610,6 @@ async def test_send_delta_new_stream_id_replaces_stale_buffer() -> None:
     assert buf.message_id == 1
 
 
-@pytest.mark.asyncio
 async def test_send_delta_incremental_edit_treats_not_modified_as_success() -> None:
     from telegram.error import BadRequest
 
@@ -1671,7 +1626,6 @@ async def test_send_delta_incremental_edit_treats_not_modified_as_success() -> N
     assert channel._stream_bufs["123"].last_edit > 0.0
 
 
-@pytest.mark.asyncio
 async def test_send_delta_incremental_edit_splits_oversized_buffer() -> None:
     """Mid-stream overflow: once buf.text exceeds Telegram's limit, split into
     chunks, edit the current message with the first chunk, and re-anchor the
@@ -1708,7 +1662,6 @@ async def test_send_delta_incremental_edit_splits_oversized_buffer() -> None:
     assert buf.last_edit > 0.0
 
 
-@pytest.mark.asyncio
 async def test_send_delta_incremental_html_expansion_does_not_overflow() -> None:
     """Mid-stream HTML chunks stay within Telegram's rendered payload limit."""
     from nanobot.channels.telegram.runtime import TELEGRAM_HTML_MAX_LEN
@@ -1742,7 +1695,6 @@ async def test_send_delta_incremental_html_expansion_does_not_overflow() -> None
     assert "<b>" not in buf.text
 
 
-@pytest.mark.asyncio
 async def test_send_delta_incremental_html_parse_failure_falls_back_to_plain() -> None:
     """Telegram HTML rejections retry overflow chunks as plain text."""
     from telegram.error import BadRequest
@@ -1779,7 +1731,6 @@ async def test_send_delta_incremental_html_parse_failure_falls_back_to_plain() -
     assert channel._stream_bufs["123"].text == tail + "y"
 
 
-@pytest.mark.asyncio
 async def test_send_delta_initial_send_keeps_message_in_thread() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"]),
@@ -1854,7 +1805,6 @@ def test_is_allowed_rejects_invalid_legacy_telegram_sender_shapes() -> None:
     assert channel.is_allowed("not-a-number|alice") is False
 
 
-@pytest.mark.asyncio
 async def test_send_progress_keeps_message_in_topic() -> None:
     config = TelegramConfig(enabled=True, token="123:abc", allow_from=["*"])
     channel = TelegramChannel(config, MessageBus())
@@ -1873,7 +1823,6 @@ async def test_send_progress_keeps_message_in_topic() -> None:
     assert channel._app.bot.sent_messages[0]["message_thread_id"] == 42
 
 
-@pytest.mark.asyncio
 async def test_send_reply_infers_topic_from_message_id_cache() -> None:
     config = TelegramConfig(enabled=True, token="123:abc", allow_from=["*"], reply_to_message=True)
     channel = TelegramChannel(config, MessageBus())
@@ -1893,7 +1842,6 @@ async def test_send_reply_infers_topic_from_message_id_cache() -> None:
     assert channel._app.bot.sent_messages[0]["reply_parameters"].message_id == 10
 
 
-@pytest.mark.asyncio
 async def test_send_remote_media_url_after_security_validation(monkeypatch) -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"]),
@@ -1921,7 +1869,6 @@ async def test_send_remote_media_url_after_security_validation(monkeypatch) -> N
     ]
 
 
-@pytest.mark.asyncio
 async def test_send_local_media_preserves_filename(tmp_path: Path) -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"]),
@@ -1951,7 +1898,6 @@ async def test_send_local_media_preserves_filename(tmp_path: Path) -> None:
     ]
 
 
-@pytest.mark.asyncio
 async def test_send_blocks_unsafe_remote_media_url(monkeypatch) -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"]),
@@ -1982,7 +1928,6 @@ async def test_send_blocks_unsafe_remote_media_url(monkeypatch) -> None:
     ]
 
 
-@pytest.mark.asyncio
 async def test_group_policy_mention_ignores_unmentioned_group_message() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"], group_policy="mention"),
@@ -2004,7 +1949,6 @@ async def test_group_policy_mention_ignores_unmentioned_group_message() -> None:
     assert channel._app.bot.get_me_calls == 1
 
 
-@pytest.mark.asyncio
 async def test_group_policy_mention_accepts_text_mention_and_caches_bot_identity() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"], group_policy="mention"),
@@ -2028,7 +1972,6 @@ async def test_group_policy_mention_accepts_text_mention_and_caches_bot_identity
     assert channel._app.bot.get_me_calls == 1
 
 
-@pytest.mark.asyncio
 async def test_group_policy_mention_accepts_caption_mention() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"], group_policy="mention"),
@@ -2054,7 +1997,6 @@ async def test_group_policy_mention_accepts_caption_mention() -> None:
     assert handled[0]["content"] == "@nanobot_test photo"
 
 
-@pytest.mark.asyncio
 async def test_group_policy_mention_accepts_reply_to_bot() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"], group_policy="mention"),
@@ -2076,7 +2018,6 @@ async def test_group_policy_mention_accepts_reply_to_bot() -> None:
     assert len(handled) == 1
 
 
-@pytest.mark.asyncio
 async def test_group_policy_open_accepts_plain_group_message() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"], group_policy="open"),
@@ -2098,7 +2039,6 @@ async def test_group_policy_open_accepts_plain_group_message() -> None:
     assert channel._app.bot.get_me_calls == 0
 
 
-@pytest.mark.asyncio
 async def test_extract_reply_context_no_reply() -> None:
     """When there is no reply_to_message, _extract_reply_context returns None."""
     channel = TelegramChannel(TelegramConfig(enabled=True, token="123:abc"), MessageBus())
@@ -2106,7 +2046,6 @@ async def test_extract_reply_context_no_reply() -> None:
     assert await channel._extract_reply_context(message) is None
 
 
-@pytest.mark.asyncio
 async def test_extract_reply_context_with_text() -> None:
     """When reply has text, return prefixed string."""
     channel = TelegramChannel(TelegramConfig(enabled=True, token="123:abc"), MessageBus())
@@ -2116,7 +2055,6 @@ async def test_extract_reply_context_with_text() -> None:
     assert await channel._extract_reply_context(message) == "[Reply to @testuser: Hello world]"
 
 
-@pytest.mark.asyncio
 async def test_extract_reply_context_with_caption_only() -> None:
     """When reply has only caption (no text), caption is used."""
     channel = TelegramChannel(TelegramConfig(enabled=True, token="123:abc"), MessageBus())
@@ -2126,7 +2064,6 @@ async def test_extract_reply_context_with_caption_only() -> None:
     assert await channel._extract_reply_context(message) == "[Reply to Test: Photo caption]"
 
 
-@pytest.mark.asyncio
 async def test_extract_reply_context_truncation() -> None:
     """Reply text is truncated at TELEGRAM_REPLY_CONTEXT_MAX_LEN."""
     channel = TelegramChannel(TelegramConfig(enabled=True, token="123:abc"), MessageBus())
@@ -2141,7 +2078,6 @@ async def test_extract_reply_context_truncation() -> None:
     assert len(result) == len("[Reply to: ]") + TELEGRAM_REPLY_CONTEXT_MAX_LEN + len("...")
 
 
-@pytest.mark.asyncio
 async def test_extract_reply_context_no_text_returns_none() -> None:
     """When reply has no text/caption, _extract_reply_context returns None (media handled separately)."""
     channel = TelegramChannel(TelegramConfig(enabled=True, token="123:abc"), MessageBus())
@@ -2150,7 +2086,6 @@ async def test_extract_reply_context_no_text_returns_none() -> None:
     assert await channel._extract_reply_context(message) is None
 
 
-@pytest.mark.asyncio
 async def test_on_message_includes_reply_context() -> None:
     """When user replies to a message, content passed to bus starts with reply context."""
     channel = TelegramChannel(
@@ -2173,7 +2108,6 @@ async def test_on_message_includes_reply_context() -> None:
     assert "translate this" in handled[0]["content"]
 
 
-@pytest.mark.asyncio
 async def test_download_message_media_returns_path_when_download_succeeds(
     monkeypatch, tmp_path
 ) -> None:
@@ -2210,7 +2144,6 @@ async def test_download_message_media_returns_path_when_download_succeeds(
     assert "[image:" in parts[0]
 
 
-@pytest.mark.asyncio
 async def test_download_message_media_uses_file_unique_id_when_available(
     monkeypatch, tmp_path
 ) -> None:
@@ -2260,7 +2193,6 @@ async def test_download_message_media_uses_file_unique_id_when_available(
     assert parts == [f"[image: {media_dir / 'stable-unique-id.jpg'}]"]
 
 
-@pytest.mark.asyncio
 async def test_on_message_attaches_reply_to_media_when_available(monkeypatch, tmp_path) -> None:
     """When user replies to a message with media, that media is downloaded and attached to the turn."""
     media_dir = tmp_path / "media" / "telegram"
@@ -2309,7 +2241,6 @@ async def test_on_message_attaches_reply_to_media_when_available(monkeypatch, tm
     assert "reply_photo_fid" in handled[0]["media"][0]
 
 
-@pytest.mark.asyncio
 async def test_on_message_reply_to_media_fallback_when_download_fails() -> None:
     """When reply has media but download fails, no media attached and no reply tag."""
     channel = TelegramChannel(
@@ -2343,7 +2274,6 @@ async def test_on_message_reply_to_media_fallback_when_download_fails() -> None:
     assert handled[0]["media"] == []
 
 
-@pytest.mark.asyncio
 async def test_on_message_reply_to_caption_and_media(monkeypatch, tmp_path) -> None:
     """When replying to a message with caption + photo, both text context and media are included."""
     media_dir = tmp_path / "media" / "telegram"
@@ -2392,7 +2322,6 @@ async def test_on_message_reply_to_caption_and_media(monkeypatch, tmp_path) -> N
     assert "cat_fid" in handled[0]["media"][0]
 
 
-@pytest.mark.asyncio
 async def test_forward_command_does_not_inject_reply_context() -> None:
     """Slash commands forwarded via _forward_command must not include reply context."""
     channel = TelegramChannel(
@@ -2413,7 +2342,6 @@ async def test_forward_command_does_not_inject_reply_context() -> None:
     assert handled[0]["content"] == "/new"
 
 
-@pytest.mark.asyncio
 async def test_forward_command_pairs_unauthorized_private_user(monkeypatch) -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["999"], group_policy="open"),
@@ -2430,7 +2358,6 @@ async def test_forward_command_pairs_unauthorized_private_user(monkeypatch) -> N
     assert "ABCD-EFGH" in channel._app.bot.sent_messages[0]["text"]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("separator", [" ", "\t", "\n", "\r\n", "  \n"])
 @pytest.mark.parametrize("suffix", ["", "@nanobot_test"])
 async def test_forward_command_preserves_whitespace_and_argument_mentions(separator, suffix) -> None:
@@ -2457,7 +2384,6 @@ def test_bus_command_regex_accepts_multiline_arguments(text) -> None:
     assert TelegramChannel.TELEGRAM_BUS_SLASH_COMMAND_RE.fullmatch(text)
 
 
-@pytest.mark.asyncio
 async def test_forward_command_preserves_dream_log_args_and_strips_bot_suffix() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"], group_policy="open"),
@@ -2478,7 +2404,6 @@ async def test_forward_command_preserves_dream_log_args_and_strips_bot_suffix() 
     assert handled[0]["content"] == "/dream-log deadbeef"
 
 
-@pytest.mark.asyncio
 async def test_forward_command_normalizes_telegram_safe_dream_aliases() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"], group_policy="open"),
@@ -2536,7 +2461,6 @@ def test_telegram_bus_slash_command_regex_matches_agent_loop_commands() -> None:
     assert pat.fullmatch("/dream-prompt init") is None
 
 
-@pytest.mark.asyncio
 async def test_on_help_includes_restart_command() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"], group_policy="open"),
@@ -2564,7 +2488,6 @@ async def test_on_help_includes_restart_command() -> None:
     assert "/dream_restore" in help_text
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("command", ["dream-log", "dream-restore", "dream-prompt", "evaluator-prompt"])
 @pytest.mark.parametrize("underscore", [False, True])
 async def test_telegram_command_handlers_preserve_core_names(monkeypatch, command, underscore):
@@ -2619,7 +2542,6 @@ def test_telegram_command_text_preserves_arguments_paths_and_diffs():
     )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("control_reply", [False, True])
 async def test_send_adapts_command_references_only_in_control_replies(control_reply):
     channel = TelegramChannel(
@@ -2638,7 +2560,6 @@ async def test_send_adapts_command_references_only_in_control_replies(control_re
     assert message.content == content
 
 
-@pytest.mark.asyncio
 async def test_on_start_sends_pairing_code_to_unauthorized_private_user(monkeypatch) -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["999"], group_policy="open"),
@@ -2658,7 +2579,6 @@ async def test_on_start_sends_pairing_code_to_unauthorized_private_user(monkeypa
     assert "ABCD-EFGH" in channel._app.bot.sent_messages[0]["text"]
 
 
-@pytest.mark.asyncio
 async def test_on_help_sends_pairing_code_to_unauthorized_private_user(monkeypatch) -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["999"], group_policy="open"),
@@ -2678,7 +2598,6 @@ async def test_on_help_sends_pairing_code_to_unauthorized_private_user(monkeypat
     assert "ABCD-EFGH" in channel._app.bot.sent_messages[0]["text"]
 
 
-@pytest.mark.asyncio
 async def test_on_message_pairs_unauthorized_private_user_before_side_effects(
     monkeypatch,
 ) -> None:
@@ -2704,7 +2623,6 @@ async def test_on_message_pairs_unauthorized_private_user_before_side_effects(
     assert "ABCD-EFGH" in channel._app.bot.sent_messages[0]["text"]
 
 
-@pytest.mark.asyncio
 async def test_on_message_location_content() -> None:
     """Location messages are forwarded as [location: lat, lon] content."""
     channel = TelegramChannel(
@@ -2726,7 +2644,6 @@ async def test_on_message_location_content() -> None:
     assert handled[0]["content"] == "[location: 48.8566, 2.3522]"
 
 
-@pytest.mark.asyncio
 async def test_on_message_location_with_text() -> None:
     """Location messages with accompanying text include both in content."""
     channel = TelegramChannel(
@@ -2753,7 +2670,6 @@ async def test_on_message_location_with_text() -> None:
 # Tests for retry amplification fix (issue #3050)
 # ---------------------------------------------------------------------------
 
-@pytest.mark.asyncio
 async def test_call_with_retry_accepts_timedelta_retry_after(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -2783,7 +2699,6 @@ async def test_call_with_retry_accepts_timedelta_retry_after(
     sleep.assert_awaited_once_with(1.5)
 
 
-@pytest.mark.asyncio
 async def test_send_text_does_not_fallback_on_network_timeout() -> None:
     """TimedOut should propagate immediately, NOT trigger plain-text fallback.
 
@@ -2825,7 +2740,6 @@ async def test_send_text_does_not_fallback_on_network_timeout() -> None:
     )
 
 
-@pytest.mark.asyncio
 async def test_send_text_does_not_fallback_on_network_error() -> None:
     """NetworkError should propagate immediately, NOT trigger plain-text fallback."""
     from telegram.error import NetworkError
@@ -2862,7 +2776,6 @@ async def test_send_text_does_not_fallback_on_network_error() -> None:
     )
 
 
-@pytest.mark.asyncio
 async def test_send_text_falls_back_on_bad_request() -> None:
     """BadRequest (HTML parse error) should still trigger plain-text fallback."""
     from telegram.error import BadRequest
@@ -2900,7 +2813,6 @@ async def test_send_text_falls_back_on_bad_request() -> None:
     assert channel._app.bot.sent_messages[0].get("parse_mode") is None
 
 
-@pytest.mark.asyncio
 async def test_send_text_bad_request_plain_fallback_exhausted() -> None:
     """When both HTML and plain-text fallback fail with BadRequest, the error propagates."""
     from telegram.error import BadRequest
@@ -3059,7 +2971,6 @@ def test_strip_md_block_strips_links() -> None:
 # Streaming mid-edit uses _strip_md_block
 # ---------------------------------------------------------------------------
 
-@pytest.mark.asyncio
 async def test_send_delta_mid_stream_strips_markdown() -> None:
     """Mid-stream edits should strip markdown so users see clean text."""
     channel = TelegramChannel(
@@ -3157,7 +3068,6 @@ def test_buttons_as_text_format_preserves_rows_and_labels() -> None:
     assert TelegramChannel._buttons_as_text([[], ["A"]]) == "[A]"  # empty rows skipped
 
 
-@pytest.mark.asyncio
 async def test_send_falls_back_buttons_to_inline_text_when_flag_off() -> None:
     """Buttons are semantic options; with ``inline_keyboards=False`` we must
     splice labels into the text so users still see the choices. Silent-drop
@@ -3186,7 +3096,6 @@ async def test_send_falls_back_buttons_to_inline_text_when_flag_off() -> None:
     assert "[Cancel]" in sent["text"]
 
 
-@pytest.mark.asyncio
 async def test_send_uses_native_keyboard_when_flag_on() -> None:
     """With the flag on, the content stays clean and buttons ride in ``reply_markup``."""
     from telegram import InlineKeyboardMarkup
@@ -3211,7 +3120,6 @@ async def test_send_uses_native_keyboard_when_flag_on() -> None:
     assert "[Yes]" not in sent["text"]  # native keyboard owns the rendering
 
 
-@pytest.mark.asyncio
 async def test_callback_query_ignores_unauthorized_user_before_side_effects() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["999"], inline_keyboards=True),
@@ -3240,7 +3148,6 @@ async def test_callback_query_ignores_unauthorized_user_before_side_effects() ->
     channel._handle_message.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_callback_query_handles_inaccessible_message() -> None:
     from telegram import Chat, InaccessibleMessage
 
@@ -3295,7 +3202,6 @@ def test_markdown_to_html_code_block_same_line_no_newline() -> None:
     assert stripped == "Use <tag> here"
 
 
-@pytest.mark.asyncio
 async def test_send_delta_stream_end_rich_disabled_uses_legacy_html() -> None:
     """rich_messages=False (the default) keeps the legacy HTML path untouched."""
     channel = TelegramChannel(
@@ -3332,7 +3238,6 @@ def _compaction_message(phase: str, compaction_id: str = "c1") -> OutboundMessag
     )
 
 
-@pytest.mark.asyncio
 async def test_compaction_terminal_phase_edits_started_notice_in_place() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"]),
@@ -3358,7 +3263,6 @@ async def test_compaction_terminal_phase_edits_started_notice_in_place() -> None
     assert ("999", "c1") not in channel._compaction_notices
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("phase", ["started", "succeeded", "failed", "cancelled"])
 async def test_automatic_compaction_is_received_but_not_sent(phase) -> None:
     channel = TelegramChannel(
@@ -3381,7 +3285,6 @@ async def test_automatic_compaction_is_received_but_not_sent(phase) -> None:
     channel._remove_reaction.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_compaction_edit_failure_falls_back_to_new_message() -> None:
     from telegram.error import BadRequest
 
@@ -3402,7 +3305,6 @@ async def test_compaction_edit_failure_falls_back_to_new_message() -> None:
     assert channel._compaction_notices == {}
 
 
-@pytest.mark.asyncio
 async def test_compaction_terminal_phase_without_notice_sends_message() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"]),
@@ -3418,7 +3320,6 @@ async def test_compaction_terminal_phase_without_notice_sends_message() -> None:
     channel._app.bot.send_message.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_compaction_notices_are_tracked_per_compaction_id() -> None:
     channel = TelegramChannel(
         TelegramConfig(enabled=True, token="123:abc", allow_from=["*"]),

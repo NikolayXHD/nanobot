@@ -1,7 +1,5 @@
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 from nanobot.agent.loop import AgentLoop
 from nanobot.bus.queue import MessageBus
 from nanobot.providers.base import (
@@ -39,7 +37,6 @@ def _make_loop(
     return loop
 
 
-@pytest.mark.asyncio
 async def test_runner_pressure_commits_summary_and_current_delta(tmp_path) -> None:
     loop = _make_loop(
         tmp_path, estimated_tokens=100, context_window_tokens=1_624, max_tokens=100,
@@ -90,7 +87,6 @@ async def test_runner_pressure_commits_summary_and_current_delta(tmp_path) -> No
     ]
 
 
-@pytest.mark.asyncio
 async def test_ephemeral_runner_pressure_summarizes_without_persisting(tmp_path) -> None:
     loop = _make_loop(
         tmp_path, estimated_tokens=100, context_window_tokens=1_624, max_tokens=100,
@@ -143,7 +139,6 @@ async def test_ephemeral_runner_pressure_summarizes_without_persisting(tmp_path)
     assert loop.context.memory.read_unprocessed_history(since_cursor=0) == []
 
 
-@pytest.mark.asyncio
 async def test_ephemeral_tool_loop_pressure_summarizes_before_next_model_call(
     tmp_path,
 ) -> None:
@@ -198,7 +193,6 @@ async def test_ephemeral_tool_loop_pressure_summarizes_before_next_model_call(
     assert loop.context.memory.read_unprocessed_history(since_cursor=0) == []
 
 
-@pytest.mark.asyncio
 async def test_native_provider_compaction_commits_portable_terminal_checkpoint(
     tmp_path,
 ) -> None:

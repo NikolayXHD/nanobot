@@ -152,7 +152,6 @@ def _tool_message(result, tool_call_id: str) -> dict:
     ][0]
 
 
-@pytest.mark.asyncio
 async def test_tool_execution_propagates_preparation_failure():
     tools = MagicMock()
     tools.prepare_call.side_effect = RuntimeError("tool preparation failed")
@@ -172,7 +171,6 @@ async def test_tool_execution_propagates_preparation_failure():
     tools.execute.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_tool_execution_propagates_cancellation_without_error_hook():
     tools = MagicMock()
     tools.prepare_call.return_value = (None, {}, None)
@@ -214,7 +212,6 @@ async def test_tool_execution_propagates_cancellation_without_error_hook():
     assert events == ["before"]
 
 
-@pytest.mark.asyncio
 async def test_tool_execution_batches_read_only_tools_before_exclusive_work():
     tools = ToolRegistry()
     shared_events: list[str] = []
@@ -246,7 +243,6 @@ async def test_tool_execution_batches_read_only_tools_before_exclusive_work():
     assert shared_events[-2:] == ["start:write_a", "end:write_a"]
 
 
-@pytest.mark.asyncio
 async def test_tool_execution_does_not_batch_exclusive_read_only_tools():
     tools = ToolRegistry()
     shared_events: list[str] = []
@@ -282,7 +278,6 @@ async def test_tool_execution_does_not_batch_exclusive_read_only_tools():
     assert shared_events.index("end:ddg_like") < shared_events.index("start:read_b")
 
 
-@pytest.mark.asyncio
 async def test_runner_rejects_near_miss_tool_name_without_executing():
     provider = MagicMock()
     call_count = {"n": 0}
@@ -347,7 +342,6 @@ async def test_runner_rejects_near_miss_tool_name_without_executing():
     assert replayed_assistant["tool_calls"][0]["function"]["name"] == "readFile"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("arguments", ['{path:"notes.txt"}', "null"])
 async def test_runner_rejects_openai_compat_invalid_arguments_without_executing(arguments):
     with patch("nanobot.providers.openai_compat_provider.AsyncOpenAI"):
@@ -378,7 +372,6 @@ async def test_runner_rejects_openai_compat_invalid_arguments_without_executing(
     assert "parameters must be a JSON object" in tool_message["content"]
 
 
-@pytest.mark.asyncio
 async def test_runner_rejects_openai_responses_malformed_arguments_without_executing():
     parsed = parse_response_output({
         "output": [{
@@ -402,7 +395,6 @@ async def test_runner_rejects_openai_responses_malformed_arguments_without_execu
     assert "parameters must be a JSON object" in tool_message["content"]
 
 
-@pytest.mark.asyncio
 async def test_runner_rejects_openai_responses_array_arguments_without_executing():
     parsed = parse_response_output({
         "output": [{
@@ -426,7 +418,6 @@ async def test_runner_rejects_openai_responses_array_arguments_without_executing
     assert "parameters must be a JSON object" in tool_message["content"]
 
 
-@pytest.mark.asyncio
 async def test_runner_returns_legacy_entry_point_error_to_model(tmp_path):
     provider = MagicMock()
     provider.chat_stream_with_retry = AsyncMock(side_effect=[
@@ -453,7 +444,6 @@ async def test_runner_returns_legacy_entry_point_error_to_model(tmp_path):
     ]
 
 
-@pytest.mark.asyncio
 async def test_runner_preserves_structured_plugin_success_that_starts_with_error(tmp_path):
     provider = MagicMock()
     provider.chat_stream_with_retry = AsyncMock(side_effect=[
@@ -485,7 +475,6 @@ async def test_runner_preserves_structured_plugin_success_that_starts_with_error
     ]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(("urls", "expected_fetches"), [
     (["https://example.com"] * 3, 2),
     ([f"https://example.com/{path}" for path in ("API", "Api", "api")], 3),

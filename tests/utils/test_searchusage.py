@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from nanobot.providers.base import LLMUsage
 from nanobot.utils.helpers import build_status_content
 from nanobot.utils.searchusage import (
@@ -151,34 +149,28 @@ class TestParseTavilyUsage:
 # ---------------------------------------------------------------------------
 
 class TestFetchSearchUsageRouting:
-    @pytest.mark.asyncio
     async def test_duckduckgo_returns_unsupported(self):
         info = await fetch_search_usage("duckduckgo")
         assert info.provider == "duckduckgo"
         assert info.supported is False
 
-    @pytest.mark.asyncio
     async def test_searxng_returns_unsupported(self):
         info = await fetch_search_usage("searxng")
         assert info.supported is False
 
-    @pytest.mark.asyncio
     async def test_jina_returns_unsupported(self):
         info = await fetch_search_usage("jina")
         assert info.supported is False
 
-    @pytest.mark.asyncio
     async def test_brave_returns_unsupported(self):
         info = await fetch_search_usage("brave")
         assert info.provider == "brave"
         assert info.supported is False
 
-    @pytest.mark.asyncio
     async def test_unknown_provider_returns_unsupported(self):
         info = await fetch_search_usage("some_unknown_provider")
         assert info.supported is False
 
-    @pytest.mark.asyncio
     async def test_tavily_no_api_key_returns_error(self):
         with patch.dict("os.environ", {}, clear=True):
             # Ensure TAVILY_API_KEY is not set
@@ -190,7 +182,6 @@ class TestFetchSearchUsageRouting:
         assert info.error is not None
         assert "not configured" in info.error
 
-    @pytest.mark.asyncio
     async def test_tavily_success(self):
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -222,7 +213,6 @@ class TestFetchSearchUsageRouting:
         assert info.remaining == 858
         assert info.search_used == 120
 
-    @pytest.mark.asyncio
     async def test_tavily_http_error(self):
         import httpx
 
@@ -243,7 +233,6 @@ class TestFetchSearchUsageRouting:
         assert info.supported is True
         assert info.error == "HTTP 401"
 
-    @pytest.mark.asyncio
     async def test_tavily_network_error(self):
         import httpx
 
@@ -258,7 +247,6 @@ class TestFetchSearchUsageRouting:
         assert info.supported is True
         assert info.error is not None
 
-    @pytest.mark.asyncio
     async def test_provider_name_case_insensitive(self):
         info = await fetch_search_usage("Tavily", api_key=None)
         assert info.provider == "tavily"

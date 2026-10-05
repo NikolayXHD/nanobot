@@ -6,8 +6,6 @@ import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 from nanobot.providers.anthropic_provider import AnthropicProvider
 
 
@@ -86,7 +84,6 @@ class _ConsumingFakeAsyncStream:
         pass
 
 
-@pytest.mark.asyncio
 async def test_chat_stream_without_callback_survives_long_active_stream(monkeypatch) -> None:
     """Regression: the idle timeout must not double as a total timeout.
 
@@ -123,7 +120,6 @@ async def test_chat_stream_without_callback_survives_long_active_stream(monkeypa
     assert res.content == "ok"
 
 
-@pytest.mark.asyncio
 async def test_chat_stream_without_callback_still_enforces_idle_timeout(monkeypatch) -> None:
     """A genuinely stalled stream must still be cut off by the idle timeout."""
     monkeypatch.setenv("NANOBOT_STREAM_IDLE_TIMEOUT_S", "0.05")
@@ -150,7 +146,6 @@ async def test_chat_stream_without_callback_still_enforces_idle_timeout(monkeypa
     assert "stalled" in (res.content or "")
 
 
-@pytest.mark.asyncio
 async def test_chat_stream_calls_on_content_delta_only_for_text_delta() -> None:
     """Thinking deltas must be consumed without invoking on_content_delta."""
     provider = AnthropicProvider(api_key="sk-test")
@@ -187,7 +182,6 @@ async def test_chat_stream_calls_on_content_delta_only_for_text_delta() -> None:
     fake.get_final_message.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_chat_stream_invokes_on_thinking_delta_for_thinking_delta() -> None:
     provider = AnthropicProvider(api_key="sk-test")
     provider._client = MagicMock()
@@ -231,7 +225,6 @@ async def test_chat_stream_invokes_on_thinking_delta_for_thinking_delta() -> Non
     assert text_parts == ["X"]
 
 
-@pytest.mark.asyncio
 async def test_chat_stream_invokes_tool_call_delta_for_input_json_delta() -> None:
     provider = AnthropicProvider(api_key="sk-test")
     provider._client = MagicMock()
@@ -299,7 +292,6 @@ async def test_chat_stream_invokes_tool_call_delta_for_input_json_delta() -> Non
     fake.get_final_message.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_chat_stream_rejects_eof_without_stop_reason() -> None:
     provider = AnthropicProvider(api_key="sk-test")
     provider._client = MagicMock()
@@ -319,7 +311,6 @@ async def test_chat_stream_rejects_eof_without_stop_reason() -> None:
     stream_cm.__aexit__.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_chat_stream_without_callback_still_finalizes() -> None:
     provider = AnthropicProvider(api_key="sk-test")
     provider._client = MagicMock()

@@ -95,7 +95,6 @@ def test_create_fork_stops_before_transcript_work_when_source_is_invalid(
         ({"source_chat_id": "source", "before_user_index": -1}, "invalid before_user_index"),
     ],
 )
-@pytest.mark.asyncio
 async def test_fork_handler_rejects_invalid_protocol_input(
     envelope: dict[str, object],
     detail: str,
@@ -111,7 +110,6 @@ async def test_fork_handler_rejects_invalid_protocol_input(
     channel.send_webui_protocol_error.assert_awaited_once_with(connection, detail)
 
 
-@pytest.mark.asyncio
 async def test_fork_handler_reports_unavailable_session_manager() -> None:
     connection = object()
     channel = SimpleNamespace(
@@ -131,7 +129,6 @@ async def test_fork_handler_reports_unavailable_session_manager() -> None:
     )
 
 
-@pytest.mark.asyncio
 async def test_fork_handler_maps_invalid_source_and_internal_failure_to_stable_errors(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

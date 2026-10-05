@@ -67,7 +67,6 @@ async def _execute(tool, ctx: RequestContext, *, allowed: bool = True, **kwargs)
         return await tool.execute(**kwargs)
 
 
-@pytest.mark.asyncio
 async def test_create_goal_records_goal_metadata(tmp_path):
     sm = SessionManager(tmp_path)
     create, _update, ctx = _tools(sm)
@@ -97,7 +96,6 @@ async def test_create_goal_records_goal_metadata(tmp_path):
     )
 
 
-@pytest.mark.asyncio
 async def test_create_goal_rejects_without_explicit_goal_permission(tmp_path):
     sm = SessionManager(tmp_path)
     create, _update, ctx = _tools(sm)
@@ -118,7 +116,6 @@ async def test_create_goal_rejects_without_explicit_goal_permission(tmp_path):
     assert GOAL_STATE_KEY not in sess.metadata
 
 
-@pytest.mark.asyncio
 async def test_update_goal_complete_closes_active_goal(tmp_path):
     sm = SessionManager(tmp_path)
     create, update, ctx = _tools(sm)
@@ -138,7 +135,6 @@ async def test_update_goal_complete_closes_active_goal(tmp_path):
     assert blob["recap"] == "Done."
 
 
-@pytest.mark.asyncio
 async def test_update_goal_replace_keeps_goal_active_with_new_objective(tmp_path):
     sm = SessionManager(tmp_path)
     create, update, ctx = _tools(sm)
@@ -171,7 +167,6 @@ async def test_update_goal_replace_keeps_goal_active_with_new_objective(tmp_path
     )
 
 
-@pytest.mark.asyncio
 async def test_goal_state_mutations_roll_back_on_save_failure(tmp_path, monkeypatch):
     sm = SessionManager(tmp_path)
     create, update, _context = _tools(sm)
@@ -224,7 +219,6 @@ async def test_goal_state_mutations_roll_back_on_save_failure(tmp_path, monkeypa
     )
 
 
-@pytest.mark.asyncio
 async def test_goal_tools_reject_oversized_objectives(tmp_path):
     sm = SessionManager(tmp_path)
     create = CreateGoalTool(sessions=sm)
@@ -251,7 +245,6 @@ async def test_goal_tools_reject_oversized_objectives(tmp_path):
     )
 
 
-@pytest.mark.asyncio
 async def test_active_goal_create_failure_preserves_permission_for_replace(tmp_path):
     sm = SessionManager(tmp_path)
     create, update, initial_context = _tools(sm)
@@ -268,7 +261,6 @@ async def test_active_goal_create_failure_preserves_permission_for_replace(tmp_p
     assert "Goal replaced" in replace_out
 
 
-@pytest.mark.asyncio
 async def test_update_goal_replace_requires_explicit_goal_permission(tmp_path):
     sm = SessionManager(tmp_path)
     create, update, initial_context = _tools(sm)
@@ -297,7 +289,6 @@ async def test_update_goal_replace_requires_explicit_goal_permission(tmp_path):
     assert sm.get_or_create("websocket:c1").metadata[GOAL_STATE_KEY]["objective"] == "Another"
 
 
-@pytest.mark.asyncio
 async def test_goal_tools_keep_request_context_per_task(tmp_path):
     sm = SessionManager(tmp_path)
     create = CreateGoalTool(sessions=sm)
@@ -342,7 +333,6 @@ async def test_goal_tools_keep_request_context_per_task(tmp_path):
     assert sm.get_or_create("websocket:b").metadata[GOAL_STATE_KEY]["objective"] == "Goal B2"
 
 
-@pytest.mark.asyncio
 async def test_registry_does_not_reuse_goal_context_after_request_scope(tmp_path):
     sm = SessionManager(tmp_path)
     create = CreateGoalTool(sessions=sm)
@@ -375,7 +365,6 @@ async def test_registry_does_not_reuse_goal_context_after_request_scope(tmp_path
     assert sess.metadata[GOAL_STATE_KEY]["status"] == "completed"
 
 
-@pytest.mark.asyncio
 async def test_goal_state_events_publish_active_then_inactive(tmp_path):
     bus = MessageBus()
     bus.publish_outbound = AsyncMock()
@@ -425,7 +414,6 @@ async def test_goal_state_events_publish_active_then_inactive(tmp_path):
     assert call.event.goal_state == {"active": False}
 
 
-@pytest.mark.asyncio
 async def test_update_goal_without_active_is_noop_message(tmp_path):
     sm = SessionManager(tmp_path)
     _create, update, ctx = _tools(sm)
@@ -434,7 +422,6 @@ async def test_update_goal_without_active_is_noop_message(tmp_path):
     assert "No active" in out
 
 
-@pytest.mark.asyncio
 async def test_goal_tools_registered_in_base_registry(tmp_path):
     bus = MessageBus()
     provider = MagicMock()

@@ -25,7 +25,6 @@ def _make_loop(tmp_path: Path) -> AgentLoop:
 class TestMessageToolSuppressLogic:
     """Final reply suppressed only when message tool sends to the same target."""
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("ephemeral", [False, True])
     async def test_suppress_when_sent_to_same_target(
         self,
@@ -55,7 +54,6 @@ class TestMessageToolSuppressLogic:
         assert len(sent) == 1
         assert result is None  # suppressed
 
-    @pytest.mark.asyncio
     async def test_not_suppress_when_sent_to_different_target(self, tmp_path: Path) -> None:
         loop = _make_loop(tmp_path)
         tool_call = ToolCallRequest(
@@ -82,7 +80,6 @@ class TestMessageToolSuppressLogic:
         assert result is not None  # not suppressed
         assert result.channel == "feishu"
 
-    @pytest.mark.asyncio
     async def test_not_suppress_when_no_message_tool_used(self, tmp_path: Path) -> None:
         loop = _make_loop(tmp_path)
         loop.provider.chat_stream_with_retry = AsyncMock(return_value=LLMResponse(content="Hello!", tool_calls=[]))
@@ -94,7 +91,6 @@ class TestMessageToolSuppressLogic:
         assert result is not None
         assert "Hello" in result.content
 
-    @pytest.mark.asyncio
     async def test_internal_message_check_keeps_final_response(self, tmp_path: Path) -> None:
         loop = _make_loop(tmp_path)
         tool_call = ToolCallRequest(
@@ -122,7 +118,6 @@ class TestMessageToolSuppressLogic:
         assert result is not None
         assert result.content == "Heartbeat summary"
 
-    @pytest.mark.asyncio
     async def test_injected_followup_with_message_tool_does_not_emit_empty_fallback(
         self, tmp_path: Path
     ) -> None:

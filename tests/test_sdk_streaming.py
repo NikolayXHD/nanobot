@@ -2,13 +2,10 @@
 
 import asyncio
 
-import pytest
-
 from nanobot.sdk.streaming import SDKStreamEmitter
 from nanobot.sdk.types import STREAM_EVENT_TEXT_DELTA, StreamEvent
 
 
-@pytest.mark.asyncio
 async def test_close_preserves_events_when_queue_is_full():
     queue: asyncio.Queue[StreamEvent | object] = asyncio.Queue(maxsize=1)
     emitter = SDKStreamEmitter(queue)

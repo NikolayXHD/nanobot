@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-import pytest
-
 from nanobot.providers import github_copilot_provider as gc
 
 
@@ -104,7 +102,6 @@ def test_login_uses_enterprise_endpoint_overrides(monkeypatch):
     assert calls[2][0:2] == ("get", "https://api.ghe.example/user")
 
 
-@pytest.mark.asyncio
 async def test_copilot_token_exchange_uses_enterprise_endpoint_override(monkeypatch):
     monkeypatch.setenv(
         "NANOBOT_COPILOT_TOKEN_URL",

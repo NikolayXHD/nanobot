@@ -95,7 +95,6 @@ def test_websocket_gateway_uses_configured_workspace_restriction(tmp_path, monke
     assert scope.restrict_to_workspace is True
 
 
-@pytest.mark.asyncio
 async def test_reasoning_delta_routes_to_send_reasoning_delta(manager):
     channel = manager.channels["mock"]
     msg = outbound_message_for_event(
@@ -113,7 +112,6 @@ async def test_reasoning_delta_routes_to_send_reasoning_delta(manager):
     channel._end_mock.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_reasoning_end_routes_to_send_reasoning_end(manager):
     channel = manager.channels["mock"]
     msg = outbound_message_for_event(
@@ -127,7 +125,6 @@ async def test_reasoning_end_routes_to_send_reasoning_end(manager):
     channel._delta_mock.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_one_shot_reasoning_expands_to_delta_plus_end(manager):
     """One-shot reasoning expands to a single delta + end."""
     channel = manager.channels["mock"]
@@ -141,7 +138,6 @@ async def test_one_shot_reasoning_expands_to_delta_plus_end(manager):
     channel._end_mock.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_dispatch_drops_reasoning_when_channel_opts_out(manager):
     channel = manager.channels["mock"]
     channel.show_reasoning = False
@@ -159,7 +155,6 @@ async def test_dispatch_drops_reasoning_when_channel_opts_out(manager):
     channel._send_mock.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_dispatch_delivers_reasoning_when_channel_opts_in(manager):
     channel = manager.channels["mock"]
     channel.show_reasoning = True
@@ -181,7 +176,6 @@ async def test_dispatch_delivers_reasoning_when_channel_opts_in(manager):
     channel._end_mock.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_dispatch_silently_drops_reasoning_for_unknown_channel(manager):
     msg = outbound_message_for_event(
         channel="ghost",
@@ -196,7 +190,6 @@ async def test_dispatch_silently_drops_reasoning_for_unknown_channel(manager):
     manager.channels["mock"]._send_mock.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_base_channel_reasoning_primitives_are_noop_safe():
     """Plugins that don't override the streaming primitives must not blow up."""
 
@@ -222,7 +215,6 @@ async def test_base_channel_reasoning_primitives_are_noop_safe():
     ) is None
 
 
-@pytest.mark.asyncio
 async def test_file_edit_events_route_to_channel_capability(manager):
     channel = manager.channels["mock"]
     edits = [{"version": 1, "phase": "start", "path": "src/app.py"}]
@@ -240,7 +232,6 @@ async def test_file_edit_events_route_to_channel_capability(manager):
     channel._send_mock.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_base_channel_file_edit_events_are_noop_safe():
     class _Plain(BaseChannel):
         name = "plain"
@@ -259,7 +250,6 @@ async def test_base_channel_file_edit_events_are_noop_safe():
     assert await channel.send_file_edit_events("c", [{"path": "a.py"}]) is None
 
 
-@pytest.mark.asyncio
 async def test_reasoning_routing_does_not_consult_send_progress(manager):
     """`show_reasoning` is orthogonal to `send_progress` — turning off
     progress streaming must not silence reasoning."""

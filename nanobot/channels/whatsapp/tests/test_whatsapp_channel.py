@@ -128,7 +128,6 @@ def _patch_receipt_type(monkeypatch):
     return ReceiptType
 
 
-@pytest.mark.asyncio
 async def test_connect_client_normalizes_proxy_without_a_scheme(monkeypatch) -> None:
     class ProxySettings:
         def __init__(self, *, proxy_address: str) -> None:
@@ -148,7 +147,6 @@ async def test_connect_client_normalizes_proxy_without_a_scheme(monkeypatch) -> 
     assert settings.proxy_address == "http://127.0.0.1:23458"
 
 
-@pytest.mark.asyncio
 async def test_connect_client_without_proxy_uses_default_connection() -> None:
     channel = _make_channel({"proxy": ""})
     client = SimpleNamespace(connect=AsyncMock(return_value=None))
@@ -198,7 +196,6 @@ def test_legacy_bridge_config_fields_are_detected() -> None:
     assert _legacy_bridge_config_fields({"bridgeToken": "secret"}) == ["bridgeToken"]
 
 
-@pytest.mark.asyncio
 async def test_login_succeeds_when_connected(monkeypatch) -> None:
     _patch_neonize_api(monkeypatch)
     client = _FakeLoginClient()
@@ -210,7 +207,6 @@ async def test_login_succeeds_when_connected(monkeypatch) -> None:
     client.stop.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_login_fails_when_connect_task_fails(monkeypatch) -> None:
     _patch_neonize_api(monkeypatch)
     client = _FailingConnectLoginClient()
@@ -221,7 +217,6 @@ async def test_login_fails_when_connect_task_fails(monkeypatch) -> None:
     client.stop.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_send_text_uses_neonize_send_message(monkeypatch) -> None:
     _patch_neonize_api(monkeypatch)
     client = _make_send_client()
@@ -234,7 +229,6 @@ async def test_send_text_uses_neonize_send_message(monkeypatch) -> None:
     client.send_message.assert_awaited_once_with(("12345", "s.whatsapp.net"), "hi")
 
 
-@pytest.mark.asyncio
 async def test_send_media_dispatches_by_mimetype(monkeypatch) -> None:
     _patch_neonize_api(monkeypatch)
     client = _make_send_client()
@@ -263,7 +257,6 @@ async def test_send_media_dispatches_by_mimetype(monkeypatch) -> None:
     )
 
 
-@pytest.mark.asyncio
 async def test_send_mislabeled_audio_as_document(monkeypatch) -> None:
     _patch_neonize_api(monkeypatch, detect_mime=lambda path, *, mime: "audio/x-wav")
     client = _make_send_client()
@@ -290,7 +283,6 @@ async def test_send_mislabeled_audio_as_document(monkeypatch) -> None:
     client.send_video.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_send_remote_mislabeled_audio_as_document(monkeypatch) -> None:
     payload = b"remote wav payload"
     media_url = "https://cdn.example/recording.mpeg?token=secret"
@@ -338,7 +330,6 @@ async def test_send_remote_mislabeled_audio_as_document(monkeypatch) -> None:
     client.send_video.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_send_remote_media_blocks_private_url(monkeypatch) -> None:
     _patch_neonize_api(monkeypatch)
     client = _make_send_client()
@@ -360,7 +351,6 @@ async def test_send_remote_media_blocks_private_url(monkeypatch) -> None:
     client.send_document.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_send_remote_media_enforces_download_limit(monkeypatch) -> None:
     monkeypatch.setattr(whatsapp_module, "_REMOTE_MEDIA_MAX_BYTES", 3)
     monkeypatch.setattr(
@@ -388,7 +378,6 @@ async def test_send_remote_media_enforces_download_limit(monkeypatch) -> None:
     client.send_document.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_send_unsupported_ogg_audio_as_document(monkeypatch) -> None:
     _patch_neonize_api(monkeypatch, detect_mime=lambda path, *, mime: "audio/ogg")
     client = _make_send_client()
@@ -422,7 +411,6 @@ async def test_send_unsupported_ogg_audio_as_document(monkeypatch) -> None:
         ("audio/x-hx-aac-adts", "recording.aac"),
     ],
 )
-@pytest.mark.asyncio
 async def test_send_supported_audio_magic_aliases_inline(
     monkeypatch, detected_mimetype: str, filename: str
 ) -> None:
@@ -448,7 +436,6 @@ async def test_send_supported_audio_magic_aliases_inline(
     client.send_document.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_send_when_disconnected_raises() -> None:
     ch = _make_channel()
 
@@ -456,7 +443,6 @@ async def test_send_when_disconnected_raises() -> None:
         await ch.send(OutboundMessage(channel="whatsapp", chat_id="123", content="hi"))
 
 
-@pytest.mark.asyncio
 async def test_group_policy_mention_skips_unmentioned_group_message() -> None:
     ch = _make_channel({"groupPolicy": "mention"})
     ch._self_jids = {"bot@s.whatsapp.net", "bot"}
@@ -475,7 +461,6 @@ async def test_group_policy_mention_skips_unmentioned_group_message() -> None:
     ch._handle_message.assert_not_called()
 
 
-@pytest.mark.asyncio
 async def test_group_policy_mention_accepts_mention_and_prefers_phone_sender() -> None:
     ch = _make_channel({"groupPolicy": "mention"})
     ch._self_jids = {"bot@s.whatsapp.net", "bot"}
@@ -501,7 +486,6 @@ async def test_group_policy_mention_accepts_mention_and_prefers_phone_sender() -
     assert kwargs["metadata"]["phone"] == "15559998888"
 
 
-@pytest.mark.asyncio
 async def test_group_policy_mention_accepts_reply_to_bot() -> None:
     ch = _make_channel({"groupPolicy": "mention"})
     ch._self_jids = {"bot@s.whatsapp.net", "bot"}
@@ -523,7 +507,6 @@ async def test_group_policy_mention_accepts_reply_to_bot() -> None:
     assert kwargs["metadata"]["is_reply_to_bot"] is True
 
 
-@pytest.mark.asyncio
 async def test_group_sender_id_uses_participant_not_group_jid() -> None:
     ch = WhatsAppChannel({"enabled": True, "allowFrom": ["SENDERLID"]}, MagicMock())
     ch._started_at = 0
@@ -545,7 +528,6 @@ async def test_group_sender_id_uses_participant_not_group_jid() -> None:
 
 
 @pytest.mark.parametrize("allowed_group", ["120363000@g.us", "120363000"])
-@pytest.mark.asyncio
 async def test_group_allow_from_accepts_group_jid_or_bare_id(allowed_group: str) -> None:
     bus = MessageBus()
     ch = WhatsAppChannel({"enabled": True, "allowFrom": [allowed_group]}, bus)
@@ -569,7 +551,6 @@ async def test_group_allow_from_accepts_group_jid_or_bare_id(allowed_group: str)
     assert msg.metadata["participant"] == "SENDERLID@lid"
 
 
-@pytest.mark.asyncio
 async def test_group_allow_from_does_not_allow_same_participant_in_other_group() -> None:
     bus = MessageBus()
     ch = WhatsAppChannel({"enabled": True, "allowFrom": ["120363000"]}, bus)
@@ -588,7 +569,6 @@ async def test_group_allow_from_does_not_allow_same_participant_in_other_group()
     assert bus.inbound_size == 0
 
 
-@pytest.mark.asyncio
 async def test_read_receipt_is_requested_once_after_dedup() -> None:
     ch = _make_channel()
     ch._send_read_receipt = AsyncMock()
@@ -610,7 +590,6 @@ async def test_read_receipt_is_requested_once_after_dedup() -> None:
     ch._handle_message.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_send_read_receipt_uses_mark_read_and_swallows_failures(monkeypatch) -> None:
     receipt_type = _patch_receipt_type(monkeypatch)
     ch = _make_channel()
@@ -642,7 +621,6 @@ async def test_send_read_receipt_uses_mark_read_and_swallows_failures(monkeypatc
     failing_client.mark_read.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_lid_to_phone_cache_resolves_lid_only_messages() -> None:
     ch = _make_channel()
     ch._handle_message = AsyncMock()
@@ -679,7 +657,6 @@ def test_lid_mappings_from_config() -> None:
     assert ch._lid_to_phone == {"123456789012345": "15551234567"}
 
 
-@pytest.mark.asyncio
 async def test_image_media_is_downloaded_and_forwarded(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(whatsapp_module, "get_media_dir", lambda channel: tmp_path / channel)
     ch = _make_channel()
@@ -704,7 +681,6 @@ async def test_image_media_is_downloaded_and_forwarded(monkeypatch, tmp_path) ->
     assert kwargs["media"][0].endswith(".jpg")
 
 
-@pytest.mark.asyncio
 async def test_voice_message_transcribes_and_drops_media_when_successful(
     monkeypatch, tmp_path
 ) -> None:
@@ -726,7 +702,6 @@ async def test_voice_message_transcribes_and_drops_media_when_successful(
     assert kwargs["media"] == []
 
 
-@pytest.mark.asyncio
 async def test_unauthorized_voice_message_does_not_download_or_transcribe(
     monkeypatch, tmp_path
 ) -> None:
@@ -756,7 +731,6 @@ async def test_unauthorized_voice_message_does_not_download_or_transcribe(
     assert kwargs["is_dm"] is True
 
 
-@pytest.mark.asyncio
 async def test_unauthorized_dm_uses_base_pairing_flow(monkeypatch) -> None:
     _patch_neonize_api(monkeypatch)
     monkeypatch.setattr("nanobot.channels.base.generate_code", lambda _ch, _sid: "ABCD-EFGH")

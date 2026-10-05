@@ -115,7 +115,6 @@ def test_runtime_snapshot_is_detached_from_mutable_config(tmp_path: Path) -> Non
     assert "mutated" not in refreshed.tool_names
 
 
-@pytest.mark.asyncio
 async def test_unlisted_loop_attributes_cannot_be_read_or_modified(tmp_path: Path) -> None:
     loop = _make_loop(tmp_path, allow_set=True)
     loop.unlisted_control_plane = "internal-secret"
@@ -142,7 +141,6 @@ async def test_unlisted_loop_attributes_cannot_be_read_or_modified(tmp_path: Pat
     assert loop.workspace_scopes.default_workspace == original_workspace_root
 
 
-@pytest.mark.asyncio
 async def test_default_allow_set_and_public_parameter_schema_are_unchanged(
     tmp_path: Path,
 ) -> None:
@@ -183,7 +181,6 @@ async def test_default_allow_set_and_public_parameter_schema_are_unchanged(
     assert loop.max_iterations != 80
 
 
-@pytest.mark.asyncio
 async def test_allowlisted_commands_preserve_runtime_side_effects(tmp_path: Path) -> None:
     loop = _make_loop(tmp_path, allow_set=True)
     tool = _my_tool(loop)
@@ -215,7 +212,6 @@ async def test_allowlisted_commands_preserve_runtime_side_effects(tmp_path: Path
     }
 
 
-@pytest.mark.asyncio
 async def test_registry_exposes_unchanged_my_tool_actions(tmp_path: Path) -> None:
     loop = _make_loop(tmp_path, allow_set=True)
 
@@ -230,7 +226,6 @@ async def test_registry_exposes_unchanged_my_tool_actions(tmp_path: Path) -> Non
     assert loop.max_iterations == 80
 
 
-@pytest.mark.asyncio
 async def test_workspace_display_command_cannot_change_path_enforcement(tmp_path: Path) -> None:
     loop = _make_loop(tmp_path, allow_set=True)
     tool = _my_tool(loop)

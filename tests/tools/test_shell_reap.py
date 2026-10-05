@@ -47,7 +47,6 @@ def test_reap_pid_swallows_already_reaped_errors():
         _reap_pid(99)
 
 
-@pytest.mark.asyncio
 async def test_kill_process_skips_kill_when_already_exited():
     """Already-dead processes must not raise ProcessLookupError from kill()."""
     process = AsyncMock()
@@ -63,7 +62,6 @@ async def test_kill_process_skips_kill_when_already_exited():
     reap.assert_called_once_with(4242)
 
 
-@pytest.mark.asyncio
 async def test_kill_process_kills_and_reaps_live_process():
     process = AsyncMock()
     process.pid = 77
@@ -79,7 +77,6 @@ async def test_kill_process_kills_and_reaps_live_process():
     reap.assert_called_once_with(77)
 
 
-@pytest.mark.asyncio
 async def test_kill_process_reaps_even_if_kill_races_exit():
     """If the child exits between returncode check and kill(), still reap."""
     process = AsyncMock()
@@ -95,7 +92,6 @@ async def test_kill_process_reaps_even_if_kill_races_exit():
     reap.assert_called_once_with(88)
 
 
-@pytest.mark.asyncio
 async def test_execute_reaps_after_normal_completion():
     mock_proc = AsyncMock()
     mock_proc.pid = 1001
@@ -115,7 +111,6 @@ async def test_execute_reaps_after_normal_completion():
     reap.assert_called_with(1001)
 
 
-@pytest.mark.asyncio
 async def test_execute_timeout_kills_and_reaps():
     mock_proc = AsyncMock()
     mock_proc.pid = 1002
@@ -135,7 +130,6 @@ async def test_execute_timeout_kills_and_reaps():
     assert spawn.await_args.kwargs["process_tree"] is True
 
 
-@pytest.mark.asyncio
 async def test_execute_cancellation_kills_process_tree():
     mock_proc = AsyncMock()
     mock_proc.pid = 1005
@@ -154,7 +148,6 @@ async def test_execute_cancellation_kills_process_tree():
     assert spawn.await_args.kwargs["process_tree"] is True
 
 
-@pytest.mark.asyncio
 async def test_execute_exception_after_success_does_not_raise_on_dead_process():
     """Generic except must return ToolResult.error, not ProcessLookupError."""
     mock_proc = AsyncMock()
@@ -181,7 +174,6 @@ async def test_execute_exception_after_success_does_not_raise_on_dead_process():
     assert reap.called
 
 
-@pytest.mark.asyncio
 async def test_execute_exception_during_communicate_kills_live_process():
     mock_proc = AsyncMock()
     mock_proc.pid = 1004
@@ -201,7 +193,6 @@ async def test_execute_exception_during_communicate_kills_live_process():
     kill_tree.assert_awaited_once_with(mock_proc)
 
 
-@pytest.mark.asyncio
 async def test_kill_process_tree_targets_group_after_root_exits():
     process = AsyncMock()
     process.pid = 1006
@@ -221,7 +212,6 @@ async def test_kill_process_tree_targets_group_after_root_exits():
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="requires Unix process groups")
-@pytest.mark.asyncio
 async def test_execute_timeout_kills_background_process_tree(tmp_path):
     """A one-shot timeout must stop background descendants before they write."""
     marker = tmp_path / "child-survived"
@@ -237,7 +227,6 @@ async def test_execute_timeout_kills_background_process_tree(tmp_path):
     assert not marker.exists()
 
 
-@pytest.mark.asyncio
 async def test_kill_process_tree_kills_descendant_after_root_exits(tmp_path):
     """Tree ownership must outlive a root shell that has demonstrably exited."""
     marker = tmp_path / "child-survived-root"
@@ -298,7 +287,6 @@ def _mock_session_process(*, pid: int, returncode: int | None):
     return process
 
 
-@pytest.mark.asyncio
 async def test_exec_session_kill_reaps():
     process = _mock_session_process(pid=2001, returncode=None)
     session = _ExecSession(
@@ -318,7 +306,6 @@ async def test_exec_session_kill_reaps():
         await asyncio.gather(session._stdout_task, session._stderr_task, return_exceptions=True)
 
 
-@pytest.mark.asyncio
 async def test_exec_session_kill_reaps_if_process_exits_before_kill():
     process = _mock_session_process(pid=2002, returncode=None)
     process.kill.side_effect = ProcessLookupError("raced exit")
@@ -338,7 +325,6 @@ async def test_exec_session_kill_reaps_if_process_exits_before_kill():
         await asyncio.gather(session._stdout_task, session._stderr_task, return_exceptions=True)
 
 
-@pytest.mark.asyncio
 async def test_exec_session_kill_waits_for_reader_tasks():
     process = _mock_session_process(pid=2003, returncode=None)
     session = _ExecSession(
@@ -374,7 +360,6 @@ async def test_exec_session_kill_waits_for_reader_tasks():
         await asyncio.gather(session._stdout_task, session._stderr_task)
 
 
-@pytest.mark.asyncio
 async def test_exec_session_poll_reaps_after_exit():
     process = _mock_session_process(pid=2002, returncode=0)
     session = _ExecSession(
@@ -396,7 +381,6 @@ async def test_exec_session_poll_reaps_after_exit():
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="zombie reaping is a Unix waitpid concern")
-@pytest.mark.asyncio
 async def test_real_timeout_leaves_no_zombie(tmp_path):
     """Integration: timed-out sleep should not leave a defunct child of this process."""
     import os

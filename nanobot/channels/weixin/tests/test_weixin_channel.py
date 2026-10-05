@@ -204,7 +204,6 @@ def test_save_state_with_empty_runtime_token_preserves_persisted_account(tmp_pat
     assert json.loads((tmp_path / "account.json").read_text()) == persisted
 
 
-@pytest.mark.asyncio
 async def test_login_force_ignores_persisted_account_through_qr_flow(tmp_path) -> None:
     persisted = {
         "token": "persisted-token",
@@ -255,7 +254,6 @@ async def test_login_force_ignores_persisted_account_through_qr_flow(tmp_path) -
     assert json.loads((tmp_path / "account.json").read_text()) == persisted
 
 
-@pytest.mark.asyncio
 async def test_login_without_force_reuses_persisted_account(tmp_path) -> None:
     channel = WeixinChannel(
         WeixinConfig(enabled=True, allow_from=["*"], state_dir=str(tmp_path)),
@@ -284,7 +282,6 @@ async def test_login_without_force_reuses_persisted_account(tmp_path) -> None:
     assert channel.config.base_url == "https://persisted.example"
 
 
-@pytest.mark.asyncio
 async def test_process_message_deduplicates_inbound_ids() -> None:
     channel, bus = _make_channel()
     msg = {
@@ -307,7 +304,6 @@ async def test_process_message_deduplicates_inbound_ids() -> None:
     assert bus.inbound_size == 0
 
 
-@pytest.mark.asyncio
 async def test_process_message_caches_context_token_and_send_uses_it() -> None:
     channel, _bus = _make_channel()
     channel._client = object()
@@ -333,7 +329,6 @@ async def test_process_message_caches_context_token_and_send_uses_it() -> None:
     channel._send_text.assert_awaited_once_with("wx-user", "pong", "ctx-2")
 
 
-@pytest.mark.asyncio
 async def test_process_message_pairs_unauthorized_sender_before_media_side_effects(
     monkeypatch,
     tmp_path,
@@ -376,7 +371,6 @@ async def test_process_message_pairs_unauthorized_sender_before_media_side_effec
     assert bus.inbound_size == 0
 
 
-@pytest.mark.asyncio
 async def test_process_message_persists_context_token_to_state_file(tmp_path) -> None:
     bus = MessageBus()
     channel = WeixinChannel(
@@ -400,7 +394,6 @@ async def test_process_message_persists_context_token_to_state_file(tmp_path) ->
     assert saved["context_tokens"] == {"wx-user": "ctx-2b"}
 
 
-@pytest.mark.asyncio
 async def test_process_message_extracts_media_and_preserves_paths() -> None:
     channel, bus = _make_channel()
     channel._download_media_item = AsyncMock(return_value="/tmp/test.jpg")
@@ -424,7 +417,6 @@ async def test_process_message_extracts_media_and_preserves_paths() -> None:
     assert inbound.media == ["/tmp/test.jpg"]
 
 
-@pytest.mark.asyncio
 async def test_process_message_falls_back_to_referenced_media_when_no_top_level_media() -> None:
     channel, bus = _make_channel()
     channel._download_media_item = AsyncMock(return_value="/tmp/ref.jpg")
@@ -461,7 +453,6 @@ async def test_process_message_falls_back_to_referenced_media_when_no_top_level_
     assert "[image]" in inbound.content
 
 
-@pytest.mark.asyncio
 async def test_process_message_does_not_use_referenced_fallback_when_top_level_media_exists() -> None:
     channel, bus = _make_channel()
     channel._download_media_item = AsyncMock(side_effect=["/tmp/top.jpg", "/tmp/ref.jpg"])
@@ -498,7 +489,6 @@ async def test_process_message_does_not_use_referenced_fallback_when_top_level_m
     assert "/tmp/ref.jpg" not in inbound.content
 
 
-@pytest.mark.asyncio
 async def test_process_message_does_not_fallback_when_top_level_media_exists_but_download_fails() -> None:
     channel, bus = _make_channel()
     # Top-level image download fails (None), referenced image would succeed if fallback were triggered.
@@ -538,7 +528,6 @@ async def test_process_message_does_not_fallback_when_top_level_media_exists_but
     assert "/tmp/ref.jpg" not in inbound.content
 
 
-@pytest.mark.asyncio
 async def test_send_without_context_token_raises() -> None:
     channel, _bus = _make_channel()
     channel._client = object()
@@ -553,7 +542,6 @@ async def test_send_without_context_token_raises() -> None:
     channel._send_text.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_send_raises_when_authentication_is_required() -> None:
     channel, _bus = _make_channel()
     channel._client = object()
@@ -570,7 +558,6 @@ async def test_send_raises_when_authentication_is_required() -> None:
     channel._send_text.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_get_typing_ticket_fetches_and_caches_per_user() -> None:
     channel, _bus = _make_channel()
     channel._client = object()
@@ -588,7 +575,6 @@ async def test_get_typing_ticket_fetches_and_caches_per_user() -> None:
     )
 
 
-@pytest.mark.asyncio
 async def test_send_uses_typing_start_and_cancel_when_ticket_available() -> None:
     channel, _bus = _make_channel()
     channel._client = object()
@@ -617,7 +603,6 @@ async def test_send_uses_typing_start_and_cancel_when_ticket_available() -> None
     assert channel._api_post.await_args_list[2].args[1]["status"] == 2
 
 
-@pytest.mark.asyncio
 async def test_send_still_sends_text_when_typing_ticket_missing() -> None:
     channel, _bus = _make_channel()
     channel._client = object()
@@ -636,7 +621,6 @@ async def test_send_still_sends_text_when_typing_ticket_missing() -> None:
     assert channel._api_post.await_args_list[0].args[0] == "ilink/bot/getconfig"
 
 
-@pytest.mark.asyncio
 async def test_poll_once_requires_login_on_stale_token() -> None:
     channel, _bus = _make_channel()
     channel._client = SimpleNamespace(timeout=None)
@@ -649,7 +633,6 @@ async def test_poll_once_requires_login_on_stale_token() -> None:
     assert channel._auth_required is True
 
 
-@pytest.mark.asyncio
 async def test_poll_once_reloads_refreshed_state_after_stale_token(
     tmp_path,
 ) -> None:
@@ -677,7 +660,6 @@ async def test_poll_once_reloads_refreshed_state_after_stale_token(
     assert channel.config.base_url == "https://new.example"
 
 
-@pytest.mark.asyncio
 async def test_poll_once_keeps_explicit_token_and_requires_login(
     tmp_path,
 ) -> None:
@@ -707,7 +689,6 @@ async def test_poll_once_keeps_explicit_token_and_requires_login(
     assert channel.config.base_url == "https://ilinkai.weixin.qq.com"
 
 
-@pytest.mark.asyncio
 async def test_poll_once_loads_qr_replacement_for_configured_token(tmp_path) -> None:
     config = WeixinConfig(
         enabled=True,
@@ -737,7 +718,6 @@ async def test_poll_once_loads_qr_replacement_for_configured_token(tmp_path) -> 
     assert channel.config.base_url == "https://new.example"
 
 
-@pytest.mark.asyncio
 async def test_start_uses_qr_replacement_for_configured_token(tmp_path) -> None:
     config = WeixinConfig(
         enabled=True,
@@ -768,7 +748,6 @@ async def test_start_uses_qr_replacement_for_configured_token(tmp_path) -> None:
     assert channel.config.base_url == "https://new.example"
 
 
-@pytest.mark.asyncio
 async def test_manager_surfaces_actionable_weixin_auth_error_without_traceback(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -812,7 +791,6 @@ async def test_manager_surfaces_actionable_weixin_auth_error_without_traceback(
     assert tracebacks == []
 
 
-@pytest.mark.asyncio
 async def test_qr_login_refreshes_expired_qr_and_then_succeeds(
     no_qr_poll_delay,
 ) -> None:
@@ -846,7 +824,6 @@ async def test_qr_login_refreshes_expired_qr_and_then_succeeds(
     assert channel.config.base_url == "https://example.test"
 
 
-@pytest.mark.asyncio
 async def test_qr_login_returns_false_after_too_many_expired_qr_codes(
     no_qr_poll_delay,
 ) -> None:
@@ -875,7 +852,6 @@ async def test_qr_login_returns_false_after_too_many_expired_qr_codes(
     assert ok is False
 
 
-@pytest.mark.asyncio
 async def test_qr_login_switches_polling_base_url_on_redirect_status(
     no_qr_poll_delay,
 ) -> None:
@@ -908,7 +884,6 @@ async def test_qr_login_switches_polling_base_url_on_redirect_status(
     assert second_call.kwargs["base_url"] == "https://idc.redirect.test"
 
 
-@pytest.mark.asyncio
 async def test_qr_login_redirect_without_host_keeps_current_polling_base_url(
     no_qr_poll_delay,
 ) -> None:
@@ -941,7 +916,6 @@ async def test_qr_login_redirect_without_host_keeps_current_polling_base_url(
     assert second_call.kwargs["base_url"] == "https://ilinkai.weixin.qq.com"
 
 
-@pytest.mark.asyncio
 async def test_qr_login_resets_redirect_base_url_after_qr_refresh(
     no_qr_poll_delay,
 ) -> None:
@@ -978,7 +952,6 @@ async def test_qr_login_resets_redirect_base_url_after_qr_refresh(
     assert third_call.kwargs["base_url"] == "https://ilinkai.weixin.qq.com"
 
 
-@pytest.mark.asyncio
 async def test_process_message_skips_bot_messages() -> None:
     channel, bus = _make_channel()
 
@@ -996,7 +969,6 @@ async def test_process_message_skips_bot_messages() -> None:
     assert bus.inbound_size == 0
 
 
-@pytest.mark.asyncio
 async def test_process_message_starts_typing_on_inbound() -> None:
     """Typing indicator fires immediately when user message arrives."""
     channel, _bus = _make_channel()
@@ -1020,7 +992,6 @@ async def test_process_message_starts_typing_on_inbound() -> None:
     channel._start_typing.assert_awaited_once_with("wx-user", "ctx-typing")
 
 
-@pytest.mark.asyncio
 async def test_send_final_message_clears_typing_indicator() -> None:
     """Non-progress send should cancel typing status."""
     channel, _bus = _make_channel()
@@ -1043,7 +1014,6 @@ async def test_send_final_message_clears_typing_indicator() -> None:
     assert len(typing_cancel_calls) >= 1
 
 
-@pytest.mark.asyncio
 async def test_send_progress_message_keeps_typing_indicator() -> None:
     """Progress messages must not cancel typing status."""
     channel, _bus = _make_channel()
@@ -1085,7 +1055,6 @@ class _DummyHttpResponse:
         return None
 
 
-@pytest.mark.asyncio
 async def test_send_media_uses_upload_full_url_when_present(tmp_path) -> None:
     channel, _bus = _make_channel()
 
@@ -1111,7 +1080,6 @@ async def test_send_media_uses_upload_full_url_when_present(tmp_path) -> None:
     assert cdn_url == "https://upload-full.example.test/path?foo=bar"
 
 
-@pytest.mark.asyncio
 async def test_send_media_falls_back_to_upload_param_url(tmp_path) -> None:
     channel, _bus = _make_channel()
 
@@ -1134,7 +1102,6 @@ async def test_send_media_falls_back_to_upload_param_url(tmp_path) -> None:
     assert "&filekey=" in cdn_url
 
 
-@pytest.mark.asyncio
 async def test_send_media_voice_file_uses_voice_item_and_voice_upload_type(tmp_path) -> None:
     channel, _bus = _make_channel()
 
@@ -1163,7 +1130,6 @@ async def test_send_media_voice_file_uses_voice_item_and_voice_upload_type(tmp_p
     assert item["voice_item"]["media"]["encrypt_query_param"] == "voice-dl-param"
 
 
-@pytest.mark.asyncio
 async def test_send_typing_uses_keepalive_until_send_finishes() -> None:
     channel, _bus = _make_channel()
     channel._client = object()
@@ -1203,7 +1169,6 @@ async def test_send_typing_uses_keepalive_until_send_finishes() -> None:
     assert typing_statuses[-1] == 2
 
 
-@pytest.mark.asyncio
 async def test_get_typing_ticket_failure_uses_backoff_and_cached_ticket(monkeypatch) -> None:
     channel, _bus = _make_channel()
     channel._client = object()
@@ -1233,7 +1198,6 @@ async def test_get_typing_ticket_failure_uses_backoff_and_cached_ticket(monkeypa
     assert channel._api_post.await_count == 1
 
 
-@pytest.mark.asyncio
 async def test_qr_login_treats_temporary_connect_error_as_wait_and_recovers(
     no_qr_poll_delay,
 ) -> None:
@@ -1263,7 +1227,6 @@ async def test_qr_login_treats_temporary_connect_error_as_wait_and_recovers(
     assert channel._token == "token-net-ok"
 
 
-@pytest.mark.asyncio
 async def test_qr_login_treats_5xx_gateway_response_error_as_wait_and_recovers(
     no_qr_poll_delay,
 ) -> None:
@@ -1354,7 +1317,6 @@ class _DummyErrorDownloadResponse(_DummyDownloadResponse):
         )
 
 
-@pytest.mark.asyncio
 async def test_download_media_item_uses_full_url_when_present(tmp_path) -> None:
     channel, _bus = _make_channel()
     weixin_mod.get_media_dir = lambda _name: tmp_path
@@ -1377,7 +1339,6 @@ async def test_download_media_item_uses_full_url_when_present(tmp_path) -> None:
     channel._client.get.assert_awaited_once_with(full_url)
 
 
-@pytest.mark.asyncio
 async def test_download_media_item_falls_back_when_full_url_returns_retryable_error(tmp_path) -> None:
     channel, _bus = _make_channel()
     weixin_mod.get_media_dir = lambda _name: tmp_path
@@ -1408,7 +1369,6 @@ async def test_download_media_item_falls_back_when_full_url_returns_retryable_er
     assert fallback_url.startswith(f"{channel.config.cdn_base_url}/download?encrypted_query_param=enc-fallback")
 
 
-@pytest.mark.asyncio
 async def test_download_media_item_falls_back_to_encrypt_query_param(tmp_path) -> None:
     channel, _bus = _make_channel()
     weixin_mod.get_media_dir = lambda _name: tmp_path
@@ -1426,7 +1386,6 @@ async def test_download_media_item_falls_back_to_encrypt_query_param(tmp_path) -
     assert called_url.startswith(f"{channel.config.cdn_base_url}/download?encrypted_query_param=enc-fallback")
 
 
-@pytest.mark.asyncio
 async def test_download_media_item_does_not_retry_when_full_url_fails_without_fallback(tmp_path) -> None:
     channel, _bus = _make_channel()
     weixin_mod.get_media_dir = lambda _name: tmp_path
@@ -1443,7 +1402,6 @@ async def test_download_media_item_does_not_retry_when_full_url_fails_without_fa
     channel._client.get.assert_awaited_once_with(full_url)
 
 
-@pytest.mark.asyncio
 async def test_download_media_item_non_image_requires_aes_key_even_with_full_url(tmp_path) -> None:
     channel, _bus = _make_channel()
     weixin_mod.get_media_dir = lambda _name: tmp_path
@@ -1482,7 +1440,6 @@ def _make_outbound_msg(chat_id: str = "wx-user", content: str = "", media: list 
     )
 
 
-@pytest.mark.asyncio
 async def test_send_media_timeout_error_propagates_without_text_fallback() -> None:
     """httpx.TimeoutException during media send must re-raise immediately,
     NOT fall back to _send_text (which would also fail during network issues)."""
@@ -1502,7 +1459,6 @@ async def test_send_media_timeout_error_propagates_without_text_fallback() -> No
     channel._send_text.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_send_media_transport_error_propagates_without_text_fallback() -> None:
     """httpx.TransportError during media send must re-raise immediately."""
     channel, _bus = _make_channel()
@@ -1522,7 +1478,6 @@ async def test_send_media_transport_error_propagates_without_text_fallback() -> 
     channel._send_text.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_send_media_5xx_http_status_error_propagates_without_text_fallback() -> None:
     """httpx.HTTPStatusError with a 5xx status must re-raise immediately."""
     channel, _bus = _make_channel()
@@ -1549,7 +1504,6 @@ async def test_send_media_5xx_http_status_error_propagates_without_text_fallback
     channel._send_text.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_send_media_4xx_http_status_error_falls_back_to_text() -> None:
     """httpx.HTTPStatusError with a 4xx status should fall back to text, not re-raise."""
     channel, _bus = _make_channel()
@@ -1579,7 +1533,6 @@ async def test_send_media_4xx_http_status_error_falls_back_to_text() -> None:
     )
 
 
-@pytest.mark.asyncio
 async def test_send_media_file_not_found_falls_back_to_text() -> None:
     """FileNotFoundError (a non-network error) should fall back to text."""
     channel, _bus = _make_channel()
@@ -1601,7 +1554,6 @@ async def test_send_media_file_not_found_falls_back_to_text() -> None:
     )
 
 
-@pytest.mark.asyncio
 async def test_send_media_value_error_falls_back_to_text() -> None:
     """ValueError (e.g. unsupported format) should fall back to text."""
     channel, _bus = _make_channel()
@@ -1623,7 +1575,6 @@ async def test_send_media_value_error_falls_back_to_text() -> None:
     )
 
 
-@pytest.mark.asyncio
 async def test_send_media_network_error_does_not_double_api_calls() -> None:
     """During network issues, media send should make exactly 1 API call attempt,
     not 2 (media + text fallback).  Verify total call count."""
@@ -1651,7 +1602,6 @@ async def test_send_media_network_error_does_not_double_api_calls() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_send_text_raises_on_api_error() -> None:
     """_send_text must raise RuntimeError when the API returns a non-zero errcode,
     matching _send_media_file behavior. This ensures ChannelManager can retry."""
@@ -1668,7 +1618,6 @@ async def test_send_text_raises_on_api_error() -> None:
     channel._api_post.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_send_text_succeeds_on_zero_errcode() -> None:
     """_send_text must NOT raise when errcode is 0."""
     channel, _bus = _make_channel()
@@ -1681,7 +1630,6 @@ async def test_send_text_succeeds_on_zero_errcode() -> None:
     channel._api_post.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_send_text_raises_on_nonzero_ret_even_when_errcode_zero() -> None:
     """_send_text must raise when the API returns ret != 0, even if errcode is 0.
 
@@ -1706,7 +1654,6 @@ async def test_send_text_raises_on_nonzero_ret_even_when_errcode_zero() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_poll_once_logs_exception_on_process_message_failure(monkeypatch) -> None:
     """When _process_message raises, _poll_once must log the error and continue
     processing remaining messages instead of silently swallowing the exception."""
@@ -1753,7 +1700,6 @@ async def test_poll_once_logs_exception_on_process_message_failure(monkeypatch) 
     assert any("Failed to process WeChat message" in m for m in logged_messages)
 
 
-@pytest.mark.asyncio
 async def test_poll_loop_logs_exception_and_continues_on_poll_failure(monkeypatch) -> None:
     """When _poll_once raises a non-timeout exception, the start() loop must log
     the error and continue polling instead of exiting silently."""
@@ -1798,7 +1744,6 @@ async def test_poll_loop_logs_exception_and_continues_on_poll_failure(monkeypatc
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_buffer_single_tool_hint_not_sent_immediately() -> None:
     channel, _bus = _make_channel()
     channel._client = object()
@@ -1826,7 +1771,6 @@ async def test_buffer_single_tool_hint_not_sent_immediately() -> None:
     assert channel._pending_tool_hints["wx-user"] == ["Using tool"]
 
 
-@pytest.mark.asyncio
 async def test_buffer_multiple_tool_hints_flushed_on_final_answer() -> None:
     channel, _bus = _make_channel()
     channel._client = object()
@@ -1870,7 +1814,6 @@ async def test_buffer_multiple_tool_hints_flushed_on_final_answer() -> None:
     assert "wx-user" not in channel._pending_tool_hints
 
 
-@pytest.mark.asyncio
 async def test_thought_progress_flushes_tool_hints() -> None:
     """Thoughts are visible progress messages and must act as separators,
     flushing buffered tool hints before they are sent."""
@@ -1936,7 +1879,6 @@ async def test_thought_progress_flushes_tool_hints() -> None:
     channel._send_text.assert_any_await("wx-user", "Done", "ctx-1")
 
 
-@pytest.mark.asyncio
 async def test_reasoning_delta_does_not_flush_tool_hints() -> None:
     """Reasoning deltas are invisible in WeChat and must NOT flush buffered
     tool hints — otherwise hints separated only by hidden reasoning would
@@ -2002,7 +1944,6 @@ async def test_reasoning_delta_does_not_flush_tool_hints() -> None:
     assert "wx-user" not in channel._pending_tool_hints
 
 
-@pytest.mark.asyncio
 async def test_empty_progress_message_does_not_flush_tool_hints() -> None:
     """Empty progress messages (e.g. after_iteration tool_events) have no
     visible content and must NOT act as separators."""
@@ -2067,7 +2008,6 @@ async def test_empty_progress_message_does_not_flush_tool_hints() -> None:
     assert "wx-user" not in channel._pending_tool_hints
 
 
-@pytest.mark.asyncio
 async def test_buffer_flush_refreshes_context_token() -> None:
     channel, _bus = _make_channel()
     channel._client = object()
@@ -2110,7 +2050,6 @@ async def test_buffer_flush_refreshes_context_token() -> None:
     channel._send_text.assert_any_await("wx-user", "hint", "ctx-refreshed")
 
 
-@pytest.mark.asyncio
 async def test_buffer_flush_failure_does_not_block_final_answer() -> None:
     channel, _bus = _make_channel()
     channel._client = object()
@@ -2152,7 +2091,6 @@ async def test_buffer_flush_failure_does_not_block_final_answer() -> None:
     channel._send_text.assert_any_await("wx-user", "Done", "ctx-1")
 
 
-@pytest.mark.asyncio
 async def test_buffer_flushed_on_stream_end() -> None:
     channel, _bus = _make_channel()
     channel._client = object()
@@ -2182,7 +2120,6 @@ async def test_buffer_flushed_on_stream_end() -> None:
     assert "wx-user" not in channel._pending_tool_hints
 
 
-@pytest.mark.asyncio
 async def test_stream_end_flushes_buffered_answer() -> None:
     channel, _bus = _make_channel()
     channel._client = object()
@@ -2198,7 +2135,6 @@ async def test_stream_end_flushes_buffered_answer() -> None:
     assert "wx-user" not in channel._stream_buffers
 
 
-@pytest.mark.asyncio
 async def test_stream_end_merge_next_preserves_buffer_until_final_end() -> None:
     channel, _bus = _make_channel()
     channel._client = object()
@@ -2221,7 +2157,6 @@ async def test_stream_end_merge_next_preserves_buffer_until_final_end() -> None:
     assert "s1" not in channel._stream_buffers
 
 
-@pytest.mark.asyncio
 async def test_stream_end_send_failure_keeps_buffer_for_retry() -> None:
     channel, _bus = _make_channel()
     channel._client = object()
@@ -2243,7 +2178,6 @@ async def test_stream_end_send_failure_keeps_buffer_for_retry() -> None:
     assert "wx-user" not in channel._stream_buffers
 
 
-@pytest.mark.asyncio
 async def test_stop_clears_buffer() -> None:
     channel, _bus = _make_channel()
     channel._pending_tool_hints["wx-user"] = ["hint1", "hint2"]
@@ -2251,7 +2185,6 @@ async def test_stop_clears_buffer() -> None:
     assert "wx-user" not in channel._pending_tool_hints
 
 
-@pytest.mark.asyncio
 async def test_send_tool_hints_false_drops_tool_hints() -> None:
     channel, _bus = _make_channel()
     channel._client = object()

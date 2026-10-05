@@ -6,7 +6,6 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 from urllib.parse import quote
 
-import pytest
 from websockets.datastructures import Headers
 from websockets.http11 import Request
 
@@ -20,7 +19,6 @@ from nanobot.utils.llm_runtime import LLMRuntime
 from nanobot.webui.gateway_services import build_gateway_services
 
 
-@pytest.mark.asyncio
 async def test_webui_task_access_and_targeted_idempotent_cancel(tmp_path):
     bus = MessageBus()
     manager = SubagentManager(

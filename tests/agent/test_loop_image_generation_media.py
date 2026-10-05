@@ -28,7 +28,6 @@ class FakeImageClient:
         return GeneratedImageResponse(images=[PNG_DATA_URL], content="", raw={})
 
 
-@pytest.mark.asyncio
 async def test_outbound_no_longer_carries_generated_media(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

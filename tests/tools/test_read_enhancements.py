@@ -49,7 +49,6 @@ class TestReadDedup:
     def write_tool(self, tmp_path):
         return WriteFileTool(workspace=tmp_path)
 
-    @pytest.mark.asyncio
     async def test_second_read_returns_unchanged_stub(self, tool, tmp_path):
         f = tmp_path / "data.txt"
         f.write_text("\n".join(f"line {i}" for i in range(100)), encoding="utf-8")
@@ -62,7 +61,6 @@ class TestReadDedup:
         # Stub should not contain file content
         assert "line 0" not in second
 
-    @pytest.mark.asyncio
     async def test_read_after_external_modification_returns_full(self, tool, tmp_path):
         f = tmp_path / "data.txt"
         f.write_text("original", encoding="utf-8")
@@ -74,7 +72,6 @@ class TestReadDedup:
             second = await tool.execute(path=str(f))
         assert "modified content" in second
 
-    @pytest.mark.asyncio
     async def test_different_offset_returns_full(self, tool, tmp_path):
         f = tmp_path / "data.txt"
         f.write_text("\n".join(f"line {i}" for i in range(1, 21)), encoding="utf-8")
@@ -85,7 +82,6 @@ class TestReadDedup:
         # Different offset → full read, not stub
         assert "line 6" in second
 
-    @pytest.mark.asyncio
     async def test_first_read_after_write_returns_full_content(self, tool, write_tool, tmp_path):
         f = tmp_path / "fresh.txt"
         result = await write_tool.execute(path=str(f), content="hello")
@@ -94,7 +90,6 @@ class TestReadDedup:
         assert "hello" in read_result
         assert "unchanged" not in read_result.lower()
 
-    @pytest.mark.asyncio
     async def test_dedup_does_not_apply_to_images(self, tool, tmp_path):
         f = tmp_path / "img.png"
         f.write_bytes(b"\x89PNG\r\n\x1a\nfake-png-data")
@@ -104,7 +99,6 @@ class TestReadDedup:
         # Images should always return full content blocks, not a stub
         assert isinstance(second, list)
 
-    @pytest.mark.asyncio
     async def test_known_text_extension_falls_back_to_latin1(self, tool, tmp_path):
         f = tmp_path / "legacy.csv"
         f.write_bytes("name\ncafé".encode("latin-1"))
@@ -115,7 +109,6 @@ class TestReadDedup:
         assert "2| café" in result
 
     @pytest.mark.parametrize("encoding", ["utf-8-sig", "utf-16", "utf-32"])
-    @pytest.mark.asyncio
     async def test_bom_marked_unicode_text_uses_declared_encoding(
         self,
         tool,
@@ -132,7 +125,6 @@ class TestReadDedup:
         assert "\x00" not in result
 
     @pytest.mark.parametrize("encoding", ["utf-8-sig", "utf-16", "utf-32"])
-    @pytest.mark.asyncio
     async def test_bom_only_unicode_text_is_empty_file(self, tool, tmp_path, encoding):
         f = tmp_path / "empty.txt"
         f.write_bytes("".encode(encoding))
@@ -152,7 +144,6 @@ class TestReadDedup:
 
 class TestReadDedupSessionIsolation:
 
-    @pytest.mark.asyncio
     async def test_separate_sessions_do_not_share_dedup_state(self, tmp_path):
         f = tmp_path / "shared.txt"
         f.write_text("\n".join(f"line {i}" for i in range(10)), encoding="utf-8")
@@ -172,7 +163,6 @@ class TestReadDedupSessionIsolation:
         )
         assert "line 0" in second
 
-    @pytest.mark.asyncio
     async def test_shared_loop_tool_uses_bound_session_state(self, tmp_path):
         f = tmp_path / "shared.txt"
         f.write_text("\n".join(f"line {i}" for i in range(10)), encoding="utf-8")
@@ -215,7 +205,6 @@ class TestReadPdf:
     def tool(self, tmp_path):
         return ReadFileTool(workspace=tmp_path)
 
-    @pytest.mark.asyncio
     async def test_pdf_returns_text_content(self, tool, tmp_path):
         fitz = pytest.importorskip("fitz")
         pdf_path = tmp_path / "test.pdf"
@@ -228,7 +217,6 @@ class TestReadPdf:
         result = await tool.execute(path=str(pdf_path))
         assert "Hello PDF World" in result
 
-    @pytest.mark.asyncio
     async def test_pdf_pages_parameter(self, tool, tmp_path):
         fitz = pytest.importorskip("fitz")
         pdf_path = tmp_path / "multi.pdf"
@@ -244,7 +232,6 @@ class TestReadPdf:
         assert "Page 3 content" in result
         assert "Page 1 content" not in result
 
-    @pytest.mark.asyncio
     async def test_pdf_rejects_invalid_page_range(self, tool, tmp_path):
         fitz = pytest.importorskip("fitz")
         pdf_path = tmp_path / "test.pdf"
@@ -263,7 +250,6 @@ class TestReadPdf:
             "use a page number or range within 1-1."
         )
 
-    @pytest.mark.asyncio
     async def test_pdf_file_not_found_error(self, tool, tmp_path):
         result = await tool.execute(path=str(tmp_path / "nope.pdf"))
         assert "Error" in result
@@ -281,28 +267,23 @@ class TestReadDeviceBlacklist:
     def tool(self):
         return ReadFileTool()
 
-    @pytest.mark.asyncio
     async def test_dev_random_blocked(self, tool):
         result = await tool.execute(path="/dev/random")
         assert "Error" in result
         assert "blocked" in result.lower() or "device" in result.lower()
 
-    @pytest.mark.asyncio
     async def test_dev_urandom_blocked(self, tool):
         result = await tool.execute(path="/dev/urandom")
         assert "Error" in result
 
-    @pytest.mark.asyncio
     async def test_dev_zero_blocked(self, tool):
         result = await tool.execute(path="/dev/zero")
         assert "Error" in result
 
-    @pytest.mark.asyncio
     async def test_proc_fd_blocked(self, tool):
         result = await tool.execute(path="/proc/self/fd/0")
         assert "Error" in result
 
-    @pytest.mark.asyncio
     async def test_symlink_to_dev_zero_blocked(self, tmp_path):
         tool = ReadFileTool(workspace=tmp_path)
         link = tmp_path / "zero-link"
@@ -353,7 +334,6 @@ class TestReadFileLineEndingNormalization:
     def tool(self, tmp_path):
         return ReadFileTool(workspace=tmp_path)
 
-    @pytest.mark.asyncio
     async def test_crlf_is_normalized_to_lf(self, tool, tmp_path):
         f = tmp_path / "crlf.txt"
         f.write_bytes(b"alpha\r\nbeta\r\ngamma\r\n")
@@ -361,7 +341,6 @@ class TestReadFileLineEndingNormalization:
         assert "\r" not in result
         assert "alpha" in result and "beta" in result and "gamma" in result
 
-    @pytest.mark.asyncio
     async def test_lf_only_is_preserved(self, tool, tmp_path):
         f = tmp_path / "lf.txt"
         f.write_bytes(b"alpha\nbeta\ngamma\n")
@@ -380,7 +359,6 @@ class TestReadOfficeDocuments:
     def tool(self, tmp_path):
         return ReadFileTool(workspace=tmp_path)
 
-    @pytest.mark.asyncio
     async def test_docx_returns_extracted_text(self, tool, tmp_path):
         with patch(
             "nanobot.utils.document.open_document_line_source",
@@ -393,7 +371,6 @@ class TestReadOfficeDocuments:
         assert "Paragraph 1" in result
         assert "Error" not in result
 
-    @pytest.mark.asyncio
     async def test_xlsx_returns_extracted_text(self, tool, tmp_path):
         with patch(
             "nanobot.utils.document.open_document_line_source",
@@ -405,7 +382,6 @@ class TestReadOfficeDocuments:
         assert "Sheet1" in result
         assert "Alice" in result
 
-    @pytest.mark.asyncio
     async def test_office_documents_support_extracted_line_ranges(self, tool, tmp_path):
         extracted = "--- Sheet: Sheet1 ---\nName\tAge\nAlice\t30\nBob\t25"
         with patch(
@@ -420,7 +396,6 @@ class TestReadOfficeDocuments:
         assert "Name\tAge" not in result
         assert "Use offset=4 to continue" in result
 
-    @pytest.mark.asyncio
     async def test_office_range_reaches_beyond_attachment_preview_limit(
         self,
         tool,
@@ -450,7 +425,6 @@ class TestReadOfficeDocuments:
         assert "21| late-content" in result
         assert "beyond end" not in result
 
-    @pytest.mark.asyncio
     async def test_pptx_returns_extracted_text(self, tool, tmp_path):
         with patch(
             "nanobot.utils.document.open_document_line_source",
@@ -464,7 +438,6 @@ class TestReadOfficeDocuments:
         assert "Welcome" in result
         assert "Content" in result
 
-    @pytest.mark.asyncio
     async def test_docx_missing_library(self, tool, tmp_path):
         with patch(
             "nanobot.utils.document.open_document_line_source",
@@ -476,7 +449,6 @@ class TestReadOfficeDocuments:
         assert "Error" in result
         assert "python-docx not installed" in result
 
-    @pytest.mark.asyncio
     async def test_docx_corrupt_file(self, tool, tmp_path):
         with patch(
             "nanobot.utils.document.open_document_line_source",
@@ -488,7 +460,6 @@ class TestReadOfficeDocuments:
         assert "Error" in result
         assert "failed to extract DOCX" in result
 
-    @pytest.mark.asyncio
     async def test_unsupported_extension(self, tool, tmp_path):
         with patch("nanobot.utils.document.open_document_line_source", return_value=None):
             f = tmp_path / "test.docx"
@@ -497,7 +468,6 @@ class TestReadOfficeDocuments:
         assert "Error" in result
         assert "Unsupported" in result
 
-    @pytest.mark.asyncio
     async def test_empty_document_returns_descriptive_message(self, tool, tmp_path):
         with patch(
             "nanobot.utils.document.open_document_line_source",
@@ -515,7 +485,6 @@ class TestOfficeDocTruncation:
     def tool(self, tmp_path):
         return ReadFileTool(workspace=tmp_path)
 
-    @pytest.mark.asyncio
     async def test_large_document_truncated(self, tool, tmp_path):
         with patch(
             "nanobot.utils.document.open_document_line_source",
@@ -527,7 +496,6 @@ class TestOfficeDocTruncation:
         assert len(result) <= ReadFileTool._MAX_CHARS + 100
         assert "truncated at ~128K chars" in result
 
-    @pytest.mark.asyncio
     async def test_small_document_not_truncated(self, tool, tmp_path):
         with patch(
             "nanobot.utils.document.open_document_line_source",
@@ -539,7 +507,6 @@ class TestOfficeDocTruncation:
         assert "truncated" not in result
         assert "Hello world" in result
 
-    @pytest.mark.asyncio
     async def test_error_response_not_truncated(self, tool, tmp_path):
         with patch(
             "nanobot.utils.document.open_document_line_source",

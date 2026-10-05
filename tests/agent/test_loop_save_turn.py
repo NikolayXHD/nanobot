@@ -267,7 +267,6 @@ def test_persist_local_trigger_turn_uses_hidden_automation_marker(tmp_path: Path
     assert message["trigger_delivery_id"] == "tdel_456"
 
 
-@pytest.mark.asyncio
 async def test_new_with_bot_suffix_does_not_persist_command(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
 
@@ -286,7 +285,6 @@ async def test_new_with_bot_suffix_does_not_persist_command(tmp_path: Path) -> N
     assert session.messages == []
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("content", "expected"),
     [
@@ -332,7 +330,6 @@ def test_clean_generated_title_strips_reasoning_tags() -> None:
     assert clean_generated_title("Title: <think> The user said hello") == ""
 
 
-@pytest.mark.asyncio
 async def test_generate_webui_title_only_for_marked_webui_sessions(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
     loop.provider.chat_stream_with_retry = AsyncMock(
@@ -361,7 +358,6 @@ async def test_generate_webui_title_only_for_marked_webui_sessions(tmp_path: Pat
     )
 
 
-@pytest.mark.asyncio
 async def test_generate_webui_title_skips_plain_websocket_sessions(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
     loop.provider.chat_stream_with_retry = AsyncMock(
@@ -383,7 +379,6 @@ async def test_generate_webui_title_skips_plain_websocket_sessions(tmp_path: Pat
     loop.provider.chat_stream_with_retry.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_generate_webui_title_ignores_command_only_sessions(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
     session = loop.sessions.get_or_create("websocket:command-title")
@@ -408,7 +403,6 @@ async def test_generate_webui_title_ignores_command_only_sessions(tmp_path: Path
     loop.provider.chat_stream_with_retry.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_generate_webui_title_ignores_cron_internal_turns(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
     session = loop.sessions.get_or_create("websocket:cron-title")
@@ -433,7 +427,6 @@ async def test_generate_webui_title_ignores_cron_internal_turns(tmp_path: Path) 
     loop.provider.chat_stream_with_retry.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_generate_webui_title_projects_onto_chat_session_under_unified_routing(
     tmp_path: Path,
 ) -> None:
@@ -469,7 +462,6 @@ async def test_generate_webui_title_projects_onto_chat_session_under_unified_rou
     assert "很早以前的问题" not in prompt
 
 
-@pytest.mark.asyncio
 async def test_projected_title_generation_skips_existing_chat_title(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
     unified = loop.sessions.get_or_create(UNIFIED_SESSION_KEY)
@@ -1009,7 +1001,6 @@ def test_restore_runtime_checkpoint_dedupes_overlapping_tail() -> None:
     assert session.messages[2]["tool_call_id"] == "call_pending"
 
 
-@pytest.mark.asyncio
 async def test_runtime_checkpoint_keeps_provider_state_out_of_public_metadata(
     tmp_path: Path,
 ) -> None:
@@ -1061,7 +1052,6 @@ async def test_runtime_checkpoint_keeps_provider_state_out_of_public_metadata(
     assert "private-checkpoint-blob" in raw
 
 
-@pytest.mark.asyncio
 async def test_process_message_persists_user_message_before_turn_completes(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
     loop._run_agent_loop = AsyncMock(side_effect=RuntimeError("boom"))  # type: ignore[method-assign]
@@ -1078,7 +1068,6 @@ async def test_process_message_persists_user_message_before_turn_completes(tmp_p
     assert persisted.updated_at >= persisted.created_at
 
 
-@pytest.mark.asyncio
 async def test_subagent_followup_stages_provider_state_before_turn_runs(
     tmp_path: Path,
 ) -> None:
@@ -1108,7 +1097,6 @@ async def test_subagent_followup_stages_provider_state_before_turn_runs(
     assert persisted.provider_state.pending_messages[-1]["content"] == "subagent result"
 
 
-@pytest.mark.asyncio
 async def test_subagent_followup_state_is_durable_before_prompt_assembly(
     tmp_path: Path,
 ) -> None:
@@ -1141,7 +1129,6 @@ async def test_subagent_followup_state_is_durable_before_prompt_assembly(
     )
 
 
-@pytest.mark.asyncio
 async def test_subagent_redelivery_does_not_duplicate_staged_provider_input(
     tmp_path: Path,
 ) -> None:
@@ -1193,7 +1180,6 @@ async def test_subagent_redelivery_does_not_duplicate_staged_provider_input(
     ]
 
 
-@pytest.mark.asyncio
 async def test_subagent_followup_clears_state_before_compatibility_failure(
     tmp_path: Path,
 ) -> None:
@@ -1222,7 +1208,6 @@ async def test_subagent_followup_clears_state_before_compatibility_failure(
     assert persisted.provider_state is None
 
 
-@pytest.mark.asyncio
 async def test_process_message_persists_unified_session_delivery_route(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
     loop._unified_session = True
@@ -1318,7 +1303,6 @@ _PNG_1X1 = (
 )
 
 
-@pytest.mark.asyncio
 async def test_process_message_persists_media_paths_on_user_turn(tmp_path: Path) -> None:
     """User turns that attach images must record the media paths alongside
     the text so the webui can rehydrate previews on session replay.
@@ -1351,7 +1335,6 @@ async def test_process_message_persists_media_paths_on_user_turn(tmp_path: Path)
     assert persisted.messages[0]["media"] == [str(img_a), str(img_b)]
 
 
-@pytest.mark.asyncio
 async def test_process_message_persists_media_only_turn_without_text(tmp_path: Path) -> None:
     """A turn with images but no text still persists (previously silent-dropped).
 
@@ -1383,7 +1366,6 @@ async def test_process_message_persists_media_only_turn_without_text(tmp_path: P
     assert persisted.messages[0]["media"] == [str(img)]
 
 
-@pytest.mark.asyncio
 async def test_process_message_does_not_duplicate_early_persisted_user_message(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
     loop._run_agent_loop = AsyncMock(return_value=_agent_run_result(
@@ -1413,7 +1395,6 @@ async def test_process_message_does_not_duplicate_early_persisted_user_message(t
     assert AgentLoop._PENDING_USER_TURN_KEY not in session.metadata
 
 
-@pytest.mark.asyncio
 async def test_internal_continuation_queues_turn_without_fake_user_history(
     tmp_path: Path,
 ) -> None:
@@ -1481,7 +1462,6 @@ async def test_internal_continuation_queues_turn_without_fake_user_history(
     ]
 
 
-@pytest.mark.asyncio
 async def test_internal_continuation_preserves_streaming_route_metadata(
     tmp_path: Path,
 ) -> None:
@@ -1546,7 +1526,6 @@ async def test_internal_continuation_preserves_streaming_route_metadata(
     assert calls == 2
 
 
-@pytest.mark.asyncio
 async def test_websocket_internal_continuation_keeps_single_visible_run(
     tmp_path: Path,
 ) -> None:
@@ -1600,7 +1579,6 @@ async def test_websocket_internal_continuation_keeps_single_visible_run(
     assert calls == 2
 
 
-@pytest.mark.asyncio
 async def test_process_message_keeps_delivery_chat_for_thread_session(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
     loop.context.build_messages = MagicMock(  # type: ignore[method-assign]
@@ -1636,7 +1614,6 @@ async def test_process_message_keeps_delivery_chat_for_thread_session(tmp_path: 
     assert request.chat_id == "thread-777"
 
 
-@pytest.mark.asyncio
 async def test_process_message_uses_explicit_session_for_goal_context(
     tmp_path: Path,
 ) -> None:
@@ -1685,7 +1662,6 @@ async def test_process_message_uses_explicit_session_for_goal_context(
     assert GOAL_STATE_KEY not in kwargs["session"].metadata
 
 
-@pytest.mark.asyncio
 async def test_run_agent_loop_continuation_reads_latest_goal_metadata(
     tmp_path: Path,
 ) -> None:
@@ -1725,7 +1701,6 @@ async def test_run_agent_loop_continuation_reads_latest_goal_metadata(
     assert "Goal created during this runner call." in (seen["goal_continue"] or "")
 
 
-@pytest.mark.asyncio
 async def test_process_direct_rejects_reserved_system_channel(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
     loop._process_message = AsyncMock(return_value=None)  # type: ignore[method-assign]
@@ -1736,7 +1711,6 @@ async def test_process_direct_rejects_reserved_system_channel(tmp_path: Path) ->
     loop._process_message.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_process_direct_skip_user_persist_does_not_save_retry_user(
     tmp_path: Path,
 ) -> None:
@@ -1762,7 +1736,6 @@ async def test_process_direct_skip_user_persist_does_not_save_retry_user(
     ]
 
 
-@pytest.mark.asyncio
 async def test_request_context_uses_effective_key_for_subagent_tool(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
     subagent_tool = loop.tools.get("subagent")
@@ -1785,7 +1758,6 @@ async def test_request_context_uses_effective_key_for_subagent_tool(tmp_path: Pa
     assert call["runtime"] is runtime
 
 
-@pytest.mark.asyncio
 async def test_next_turn_after_crash_closes_pending_user_turn_before_new_input(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
     loop.provider.chat_stream_with_retry = AsyncMock(return_value=MagicMock())  # unused because _run_agent_loop is stubbed
@@ -1830,7 +1802,6 @@ async def test_next_turn_after_crash_closes_pending_user_turn_before_new_input(t
     assert session.provider_state is None
 
 
-@pytest.mark.asyncio
 async def test_stop_preserves_runtime_checkpoint_for_next_turn(tmp_path: Path) -> None:
     from nanobot.command.builtin import cmd_stop
     from nanobot.command.router import CommandContext
@@ -1936,7 +1907,6 @@ async def test_stop_preserves_runtime_checkpoint_for_next_turn(tmp_path: Path) -
     assert AgentLoop._RUNTIME_CHECKPOINT_KEY not in session.metadata
 
 
-@pytest.mark.asyncio
 async def test_system_subagent_followup_is_persisted_before_prompt_assembly(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
 
@@ -2017,7 +1987,6 @@ async def test_system_subagent_followup_is_persisted_before_prompt_assembly(tmp_
     ]
 
 
-@pytest.mark.asyncio
 async def test_turn_usage_is_persisted_with_the_saved_session(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
     turn_usage = LLMUsage.reported(input_tokens=64, output_tokens=9)
@@ -2042,7 +2011,6 @@ async def test_turn_usage_is_persisted_with_the_saved_session(tmp_path: Path) ->
     )
 
 
-@pytest.mark.asyncio
 async def test_system_subagent_followup_does_not_log_content(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
     save_completed_subagent(loop, "sub-logs", "cli:logs")
@@ -2079,7 +2047,6 @@ async def test_system_subagent_followup_does_not_log_content(tmp_path: Path) -> 
     assert secret not in logged
 
 
-@pytest.mark.asyncio
 async def test_system_subagent_followup_uses_common_turn_lifecycle(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
     save_completed_subagent(loop, "sub-1", "cli:test")
@@ -2161,7 +2128,6 @@ async def test_system_subagent_followup_uses_common_turn_lifecycle(tmp_path: Pat
     assert "response=[content hidden]" in completion["message"]
 
 
-@pytest.mark.asyncio
 async def test_failed_turn_stage_logs_exception_and_correlation(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
 
@@ -2196,7 +2162,6 @@ async def test_failed_turn_stage_logs_exception_and_correlation(tmp_path: Path) 
     assert failure["extra"]["turn_id"].startswith("cli:failure:")
 
 
-@pytest.mark.asyncio
 async def test_multiple_subagent_followups_all_persist_as_standalone_history(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
 
@@ -2298,7 +2263,6 @@ def test_subagent_followup_skips_empty_content() -> None:
     assert session.messages == []
 
 
-@pytest.mark.asyncio
 async def test_request_context_passes_thread_session_key_to_subagent_create(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
     subagent_tool = loop.tools.get("subagent")
@@ -2322,7 +2286,6 @@ async def test_request_context_passes_thread_session_key_to_subagent_create(tmp_
     assert call["runtime"] is runtime
 
 
-@pytest.mark.asyncio
 async def test_system_subagent_followup_uses_thread_session_and_slack_metadata(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
 
@@ -2381,7 +2344,6 @@ async def test_system_subagent_followup_uses_thread_session_and_slack_metadata(t
     assert any(m.get("subagent_task_id") == "sub-1" for m in persisted.messages)
 
 
-@pytest.mark.asyncio
 async def test_turn_after_unanswered_user_keeps_tool_call_pairing(tmp_path: Path) -> None:
     loop = _make_full_loop(tmp_path)
 

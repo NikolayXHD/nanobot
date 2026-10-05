@@ -4,7 +4,6 @@ import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
-import pytest
 from mcp import types as mcp_types
 from mcp.shared.exceptions import McpError
 from mcp.types import ErrorData
@@ -103,7 +102,6 @@ def _make_tool_result(text):
     return SimpleNamespace(content=[mcp_types.TextContent(type="text", text=text)])
 
 
-@pytest.mark.asyncio
 async def test_tool_retries_on_transient_error():
     """Tool should retry once when a transient error occurs, then succeed."""
     session = AsyncMock()
@@ -120,7 +118,6 @@ async def test_tool_retries_on_transient_error():
     assert session.call_tool.call_count == 2
 
 
-@pytest.mark.asyncio
 async def test_tool_fails_after_retry_exhausted():
     """Tool should fail with retry message when both attempts hit transient errors."""
     session = AsyncMock()
@@ -139,7 +136,6 @@ async def test_tool_fails_after_retry_exhausted():
     assert session.call_tool.call_count == 2
 
 
-@pytest.mark.asyncio
 async def test_tool_no_retry_on_non_transient_error():
     """Tool should NOT retry on non-transient errors like ValueError."""
     session = AsyncMock()
@@ -153,7 +149,6 @@ async def test_tool_no_retry_on_non_transient_error():
     assert session.call_tool.call_count == 1
 
 
-@pytest.mark.asyncio
 async def test_tool_no_retry_on_timeout():
     """Timeouts should not trigger retry (they have their own handling)."""
     session = AsyncMock()
@@ -166,7 +161,6 @@ async def test_tool_no_retry_on_timeout():
     assert session.call_tool.call_count == 1
 
 
-@pytest.mark.asyncio
 async def test_tool_success_on_first_try_no_retry():
     """Normal success path — no retry logic involved."""
     session = AsyncMock()
@@ -180,7 +174,6 @@ async def test_tool_success_on_first_try_no_retry():
     assert session.call_tool.call_count == 1
 
 
-@pytest.mark.asyncio
 async def test_tool_does_not_retry_on_cancelled_error():
     """`asyncio.CancelledError` must short-circuit the retry loop.
 
@@ -204,7 +197,6 @@ async def test_tool_does_not_retry_on_cancelled_error():
     mock_sleep.assert_not_called()
 
 
-@pytest.mark.asyncio
 async def test_tool_retry_on_connection_reset():
     """ConnectionResetError (a stdlib exception) should also trigger retry."""
     session = AsyncMock()
@@ -222,7 +214,6 @@ async def test_tool_retry_on_connection_reset():
     assert session.call_tool.call_count == 2
 
 
-@pytest.mark.asyncio
 async def test_tool_retry_on_end_of_stream():
     """EndOfStream (anyio) should trigger retry."""
     session = AsyncMock()
@@ -238,7 +229,6 @@ async def test_tool_retry_on_end_of_stream():
     assert session.call_tool.call_count == 2
 
 
-@pytest.mark.asyncio
 async def test_tool_reconnects_on_transient_failure():
     """Tool should reconnect when a stale session reports a transient stream failure."""
     old_session = AsyncMock()
@@ -285,7 +275,6 @@ def _make_resource_result(text):
     )
 
 
-@pytest.mark.asyncio
 async def test_resource_retries_on_transient_error():
     """Resource should retry once on transient connection error."""
     session = AsyncMock()
@@ -302,7 +291,6 @@ async def test_resource_retries_on_transient_error():
     assert session.read_resource.call_count == 2
 
 
-@pytest.mark.asyncio
 async def test_resource_fails_after_retry_exhausted():
     """Resource should fail with retry message when both attempts fail."""
     session = AsyncMock()
@@ -318,7 +306,6 @@ async def test_resource_fails_after_retry_exhausted():
     assert session.read_resource.call_count == 2
 
 
-@pytest.mark.asyncio
 async def test_resource_no_retry_on_non_transient():
     """Resource should not retry on non-transient errors."""
     session = AsyncMock()
@@ -331,7 +318,6 @@ async def test_resource_no_retry_on_non_transient():
     assert session.read_resource.call_count == 1
 
 
-@pytest.mark.asyncio
 async def test_resource_reconnects_on_session_terminated():
     """Resource should reconnect once when the MCP SDK reports a dead session."""
     old_session = AsyncMock()
@@ -380,7 +366,6 @@ def _make_prompt_result(text):
     )
 
 
-@pytest.mark.asyncio
 async def test_prompt_retries_on_transient_error():
     """Prompt should retry once on transient connection error."""
     session = AsyncMock()
@@ -397,7 +382,6 @@ async def test_prompt_retries_on_transient_error():
     assert session.get_prompt.call_count == 2
 
 
-@pytest.mark.asyncio
 async def test_prompt_fails_after_retry_exhausted():
     """Prompt should fail with retry message when both attempts fail."""
     session = AsyncMock()
@@ -413,7 +397,6 @@ async def test_prompt_fails_after_retry_exhausted():
     assert session.get_prompt.call_count == 2
 
 
-@pytest.mark.asyncio
 async def test_prompt_no_retry_on_mcp_error():
     """McpError (application-level) should NOT trigger retry."""
     session = AsyncMock()
@@ -428,7 +411,6 @@ async def test_prompt_no_retry_on_mcp_error():
     assert session.get_prompt.call_count == 1
 
 
-@pytest.mark.asyncio
 async def test_prompt_no_retry_on_non_transient():
     """Non-transient errors should not trigger retry for prompts."""
     session = AsyncMock()
@@ -441,7 +423,6 @@ async def test_prompt_no_retry_on_non_transient():
     assert session.get_prompt.call_count == 1
 
 
-@pytest.mark.asyncio
 async def test_prompt_reconnects_on_session_terminated():
     """Prompt should reconnect once before falling back to McpError handling."""
     old_session = AsyncMock()
@@ -467,7 +448,6 @@ async def test_prompt_reconnects_on_session_terminated():
     assert new_session.get_prompt.call_count == 1
 
 
-@pytest.mark.asyncio
 async def test_prompt_reconnects_on_connection_closed_exception():
     """Prompt should reconnect when the SDK reports a closed session as a generic exception."""
     old_session = AsyncMock()

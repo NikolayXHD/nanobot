@@ -53,7 +53,6 @@ def _loop(tmp_path, responses: list[str], **kwargs) -> AgentLoop:
     )
 
 
-@pytest.mark.asyncio
 async def test_transient_session_keeps_history_without_persisting_or_durable_tools(tmp_path) -> None:
     loop = _loop(tmp_path, ["first answer", "second answer"])
     loop.context.memory.write_memory("private durable memory")
@@ -271,7 +270,6 @@ async def test_session_worker_errors_keep_private_content_out_of_logs(
         assert secret not in str([r["message"] for r in records])
 
 
-@pytest.mark.asyncio
 async def test_transient_session_stays_outside_unified_session(tmp_path) -> None:
     loop = _loop(tmp_path, ["private answer"], unified_session=True)
     durable = loop.sessions.get_or_create(UNIFIED_SESSION_KEY)
@@ -290,7 +288,6 @@ async def test_transient_session_stays_outside_unified_session(tmp_path) -> None
     assert loop.sessions.read_session_file(key) is None
 
 
-@pytest.mark.asyncio
 async def test_missing_required_session_cannot_fall_back_to_disk(tmp_path) -> None:
     loop = _loop(tmp_path, [])
     key = "websocket:transient-stale"
@@ -304,7 +301,6 @@ async def test_missing_required_session_cannot_fall_back_to_disk(tmp_path) -> No
     assert loop.sessions.read_session_file(key) is None
 
 
-@pytest.mark.asyncio
 async def test_required_durable_session_survives_cache_eviction(tmp_path) -> None:
     loop = _loop(tmp_path, ["received"])
     key = "websocket:durable-parent"
@@ -320,7 +316,6 @@ async def test_required_durable_session_survives_cache_eviction(tmp_path) -> Non
         await loop.aclose()
 
 
-@pytest.mark.asyncio
 async def test_deleted_child_cannot_notify_a_recreated_parent(tmp_path) -> None:
     loop = _loop(tmp_path, [])
     key = "websocket:recreated-parent"
@@ -345,7 +340,6 @@ async def test_deleted_child_cannot_notify_a_recreated_parent(tmp_path) -> None:
         await loop.aclose()
 
 
-@pytest.mark.asyncio
 async def test_session_discard_control_cancels_active_turn(tmp_path, monkeypatch) -> None:
     provider_started = asyncio.Event()
 

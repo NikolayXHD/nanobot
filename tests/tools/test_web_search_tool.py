@@ -64,7 +64,6 @@ def test_search_concurrency_without_api_key(
     assert tool.concurrency_safe is expected_safe
 
 
-@pytest.mark.asyncio
 async def test_brave_search(monkeypatch):
     async def mock_get(self, url, **kw):
         assert "brave" in url
@@ -81,7 +80,6 @@ async def test_brave_search(monkeypatch):
     assert "https://example.com" in result
 
 
-@pytest.mark.asyncio
 async def test_brave_search_retries_rate_limit_once(monkeypatch):
     calls = {"n": 0}
     sleeps: list[float] = []
@@ -108,7 +106,6 @@ async def test_brave_search_retries_rate_limit_once(monkeypatch):
     assert sleeps == [1.0]
 
 
-@pytest.mark.asyncio
 async def test_brave_search_returns_clear_rate_limit_after_retries(monkeypatch):
     calls = {"n": 0}
 
@@ -130,7 +127,6 @@ async def test_brave_search_returns_clear_rate_limit_after_retries(monkeypatch):
     assert "consecutive web_search" in result
 
 
-@pytest.mark.asyncio
 async def test_tavily_search(monkeypatch):
     async def mock_post(self, url, **kw):
         assert "tavily" in url
@@ -147,7 +143,6 @@ async def test_tavily_search(monkeypatch):
     assert "https://openclaw.io" in result
 
 
-@pytest.mark.asyncio
 async def test_keenable_search(monkeypatch):
     async def mock_post(self, url, **kw):
         assert "keenable" in url
@@ -166,7 +161,6 @@ async def test_keenable_search(monkeypatch):
     assert "longer excerpt" in result
 
 
-@pytest.mark.asyncio
 async def test_keenable_without_api_key_uses_public_endpoint(monkeypatch):
     async def mock_post(self, url, **kw):
         assert url == "https://api.keenable.ai/v1/search/public"
@@ -184,7 +178,6 @@ async def test_keenable_without_api_key_uses_public_endpoint(monkeypatch):
     assert "https://keenable.ai/pub" in result
 
 
-@pytest.mark.asyncio
 async def test_keenable_search_uses_env_api_key(monkeypatch):
     async def mock_post(self, url, **kw):
         assert kw["headers"]["X-API-Key"] == "env-keen-key"
@@ -199,7 +192,6 @@ async def test_keenable_search_uses_env_api_key(monkeypatch):
     assert "Env" in result
 
 
-@pytest.mark.asyncio
 async def test_keenable_search_http_error(monkeypatch):
     async def mock_post(self, url, **kw):
         return _response(status=401, json={"error": "invalid key"})
@@ -210,7 +202,6 @@ async def test_keenable_search_http_error(monkeypatch):
     assert "Error: Keenable search failed (401)" in result
 
 
-@pytest.mark.asyncio
 async def test_serper_search(monkeypatch):
     async def mock_post(self, url, **kw):
         assert url == "https://google.serper.dev/search"
@@ -231,7 +222,6 @@ async def test_serper_search(monkeypatch):
     assert "Google Search API" in result
 
 
-@pytest.mark.asyncio
 async def test_serper_search_uses_env_api_key(monkeypatch):
     async def mock_post(self, url, **kw):
         assert kw["headers"]["X-API-KEY"] == "env-serper-key"
@@ -246,7 +236,6 @@ async def test_serper_search_uses_env_api_key(monkeypatch):
     assert "Env" in result
 
 
-@pytest.mark.asyncio
 async def test_serper_fallback_to_duckduckgo_when_no_key(monkeypatch):
     class MockDDGS:
         def __init__(self, **kw):
@@ -263,7 +252,6 @@ async def test_serper_fallback_to_duckduckgo_when_no_key(monkeypatch):
     assert "DuckDuckGo fallback" in result
 
 
-@pytest.mark.asyncio
 async def test_serper_search_http_error(monkeypatch):
     async def mock_post(self, url, **kw):
         return _response(status=403, json={"message": "Unauthorized"})
@@ -275,7 +263,6 @@ async def test_serper_search_http_error(monkeypatch):
     assert is_tool_error_result(result)
 
 
-@pytest.mark.asyncio
 async def test_serper_search_rate_limited(monkeypatch):
     async def mock_post(self, url, **kw):
         return _response(status=429, json={"message": "rate limited"})
@@ -287,7 +274,6 @@ async def test_serper_search_rate_limited(monkeypatch):
     assert is_tool_error_result(result)
 
 
-@pytest.mark.asyncio
 async def test_anysearch_search(monkeypatch):
     async def mock_post(self, url, **kw):
         assert url == "https://api.anysearch.com/v1/search"
@@ -313,7 +299,6 @@ async def test_anysearch_search(monkeypatch):
     assert "Search API" in result
 
 
-@pytest.mark.asyncio
 async def test_anysearch_without_api_key_uses_anonymous_quota(monkeypatch):
     async def mock_post(self, url, **kw):
         assert url == "https://api.anysearch.com/v1/search"
@@ -334,7 +319,6 @@ async def test_anysearch_without_api_key_uses_anonymous_quota(monkeypatch):
     assert "anonymous tier" in result
 
 
-@pytest.mark.asyncio
 async def test_anysearch_search_uses_env_api_key(monkeypatch):
     async def mock_post(self, url, **kw):
         assert kw["headers"]["Authorization"] == "Bearer env-anysearch-key"
@@ -352,7 +336,6 @@ async def test_anysearch_search_uses_env_api_key(monkeypatch):
     assert "Env" in result
 
 
-@pytest.mark.asyncio
 async def test_anysearch_search_http_error(monkeypatch):
     async def mock_post(self, url, **kw):
         return _response(status=403, json={"code": -1, "message": "Forbidden"})
@@ -364,7 +347,6 @@ async def test_anysearch_search_http_error(monkeypatch):
     assert is_tool_error_result(result)
 
 
-@pytest.mark.asyncio
 async def test_anysearch_search_rate_limited(monkeypatch):
     async def mock_post(self, url, **kw):
         return _response(status=429, json={"code": -1, "message": "rate limited"})
@@ -376,7 +358,6 @@ async def test_anysearch_search_rate_limited(monkeypatch):
     assert is_tool_error_result(result)
 
 
-@pytest.mark.asyncio
 async def test_bocha_search(monkeypatch):
     async def mock_post(self, url, **kw):
         assert url == "https://api.bochaai.com/v1/web-search"
@@ -410,7 +391,6 @@ async def test_bocha_search(monkeypatch):
     assert "35B-active MoE" in result
 
 
-@pytest.mark.asyncio
 async def test_bocha_missing_key_falls_back_to_duckduckgo(monkeypatch):
     class MockDDGS:
         def __init__(self, **kw):
@@ -428,7 +408,6 @@ async def test_bocha_missing_key_falls_back_to_duckduckgo(monkeypatch):
     assert "DuckDuckGo fallback" in result
 
 
-@pytest.mark.asyncio
 async def test_bocha_rate_limited(monkeypatch):
     async def mock_post(self, url, **kw):
         return _response(status=429, json={"error": "rate limit"})
@@ -440,7 +419,6 @@ async def test_bocha_rate_limited(monkeypatch):
     assert "429" in result
 
 
-@pytest.mark.asyncio
 async def test_volcengine_search(monkeypatch):
     async def mock_post(self, url, **kw):
         assert url == "https://open.feedcoopapi.com/search_api/web_search"
@@ -478,7 +456,6 @@ async def test_volcengine_search(monkeypatch):
     assert "非常权威" in result
 
 
-@pytest.mark.asyncio
 async def test_volcengine_missing_key_falls_back_to_duckduckgo(monkeypatch):
     class MockDDGS:
         def __init__(self, **kw):
@@ -497,7 +474,6 @@ async def test_volcengine_missing_key_falls_back_to_duckduckgo(monkeypatch):
     assert "DuckDuckGo fallback" in result
 
 
-@pytest.mark.asyncio
 async def test_volcengine_invalid_time_range_returns_error():
     tool = _tool(provider="volcengine", api_key="volc-key")
     result = await tool.execute(query="test", timeRange="Yesterday")
@@ -505,7 +481,6 @@ async def test_volcengine_invalid_time_range_returns_error():
     assert "timeRange must be" in result
 
 
-@pytest.mark.asyncio
 async def test_searxng_search(monkeypatch):
     async def mock_get(self, url, **kw):
         assert "searx.example" in url
@@ -520,7 +495,6 @@ async def test_searxng_search(monkeypatch):
     assert "Result" in result
 
 
-@pytest.mark.asyncio
 async def test_duckduckgo_search(monkeypatch):
     class MockDDGS:
         def __init__(self, **kw):
@@ -540,7 +514,6 @@ async def test_duckduckgo_search(monkeypatch):
     assert "DDG Result" in result
 
 
-@pytest.mark.asyncio
 async def test_duckduckgo_search_passes_proxy(monkeypatch):
     """DDGS client must receive the configured proxy so search works behind a proxy."""
     captured: dict = {}
@@ -565,7 +538,6 @@ async def test_duckduckgo_search_passes_proxy(monkeypatch):
     assert "Result" in result
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "env_key, provider",
     [
@@ -590,7 +562,6 @@ async def test_provider_falls_back_to_duckduckgo_without_key(monkeypatch, env_ke
     assert "Fallback" in result
 
 
-@pytest.mark.asyncio
 async def test_jina_search(monkeypatch):
     async def mock_get(self, url, **kw):
         assert "s.jina.ai" in str(url)
@@ -607,7 +578,6 @@ async def test_jina_search(monkeypatch):
     assert "https://jina.ai" in result
 
 
-@pytest.mark.asyncio
 async def test_kagi_search(monkeypatch):
     async def mock_post(self, url, **kw):
         assert "kagi.com/api/v1/search" in url
@@ -633,7 +603,6 @@ async def test_kagi_search(monkeypatch):
     assert "ignored related search" not in result
 
 
-@pytest.mark.asyncio
 async def test_exa_search(monkeypatch):
     async def mock_post(self, url, **kw):
         assert url == "https://api.exa.ai/search"
@@ -663,7 +632,6 @@ async def test_exa_search(monkeypatch):
     assert "Relevant Exa highlight" in result
 
 
-@pytest.mark.asyncio
 async def test_exa_search_uses_env_api_key(monkeypatch):
     async def mock_post(self, url, **kw):
         assert kw["headers"]["x-api-key"] == "env-exa-key"
@@ -686,7 +654,6 @@ async def test_exa_search_uses_env_api_key(monkeypatch):
     assert "Summary fallback" in result
 
 
-@pytest.mark.asyncio
 async def test_exa_search_http_error(monkeypatch):
     async def mock_post(self, url, **kw):
         return _response(status=401, json={"error": "invalid key"})
@@ -698,7 +665,6 @@ async def test_exa_search_http_error(monkeypatch):
     assert "Error: Exa search failed (401)" in result
 
 
-@pytest.mark.asyncio
 async def test_unknown_provider():
     tool = _tool(provider="unknown")
     result = await tool.execute(query="test")
@@ -706,7 +672,6 @@ async def test_unknown_provider():
     assert "Error" in result
 
 
-@pytest.mark.asyncio
 async def test_default_provider_is_brave(monkeypatch):
     async def mock_get(self, url, **kw):
         assert "brave" in url
@@ -718,7 +683,6 @@ async def test_default_provider_is_brave(monkeypatch):
     assert "No results" in result
 
 
-@pytest.mark.asyncio
 async def test_searxng_no_base_url_falls_back(monkeypatch):
     class MockDDGS:
         def __init__(self, **kw):
@@ -735,14 +699,12 @@ async def test_searxng_no_base_url_falls_back(monkeypatch):
     assert "Fallback" in result
 
 
-@pytest.mark.asyncio
 async def test_searxng_invalid_url():
     tool = _tool(provider="searxng", base_url="not-a-url")
     result = await tool.execute(query="test")
     assert "Error" in result
 
 
-@pytest.mark.asyncio
 async def test_jina_422_falls_back_to_duckduckgo(monkeypatch):
     class MockDDGS:
         def __init__(self, **kw):
@@ -767,7 +729,6 @@ async def test_jina_422_falls_back_to_duckduckgo(monkeypatch):
     assert "DuckDuckGo fallback" in result
 
 
-@pytest.mark.asyncio
 async def test_jina_search_uses_path_encoded_query(monkeypatch):
     calls = {}
 
@@ -785,7 +746,6 @@ async def test_jina_search_uses_path_encoded_query(monkeypatch):
     assert calls["params"] in (None, {})
 
 
-@pytest.mark.asyncio
 async def test_duckduckgo_timeout_returns_error(monkeypatch):
     """asyncio.wait_for guard should fire when DDG search hangs."""
     import threading
@@ -807,7 +767,6 @@ async def test_duckduckgo_timeout_returns_error(monkeypatch):
     assert "Error" in result
 
 
-@pytest.mark.asyncio
 async def test_olostep_search_formats_answer_and_sources(monkeypatch):
     from types import SimpleNamespace
 
@@ -849,7 +808,6 @@ async def test_olostep_search_formats_answer_and_sources(monkeypatch):
     assert "https://example.com" in result
 
 
-@pytest.mark.asyncio
 async def test_olostep_missing_key_falls_back_to_duckduckgo(monkeypatch):
     import sys
     import types
@@ -875,7 +833,6 @@ async def test_olostep_missing_key_falls_back_to_duckduckgo(monkeypatch):
     assert "Fallback" in result
 
 
-@pytest.mark.asyncio
 async def test_olostep_package_missing_returns_install_hint(monkeypatch):
     import sys
     monkeypatch.delitem(sys.modules, "olostep", raising=False)

@@ -2,14 +2,11 @@
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from nanobot.channels.websocket.runtime import WebSocketChannel
 from nanobot.webui.outbound_projection import WebUIOutboundProjector
 from nanobot.webui.session_projection import WebUISessionProjection
 
 
-@pytest.mark.asyncio
 async def test_hydrate_after_subscribe_is_quiet_when_no_turn_active():
     """Subscribe hydration must not inject an idle event into normal message order."""
     channel = WebSocketChannel.__new__(WebSocketChannel)
@@ -37,7 +34,6 @@ async def test_hydrate_after_subscribe_is_quiet_when_no_turn_active():
     assert sent_events == []
 
 
-@pytest.mark.asyncio
 async def test_hydrate_after_subscribe_pushes_running_when_turn_active():
     """Reconnecting client should receive running status when turn is active."""
     channel = WebSocketChannel.__new__(WebSocketChannel)

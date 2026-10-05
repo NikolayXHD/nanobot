@@ -62,7 +62,6 @@ class _FakeDownloadHttp:
         return _FakeDownloadResp(self._status, self._body, self._content_type)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("url", [
     "http://169.254.169.254/latest/meta-data/",
     "http://127.0.0.1/attachment",
@@ -92,7 +91,6 @@ async def test_inbound_download_blocks_ssrf_target(url: str) -> None:
     assert fake_http.get_calls == []
 
 
-@pytest.mark.asyncio
 async def test_inbound_validation_does_not_run_dns_on_the_event_loop(monkeypatch):
     """The URL guard uses blocking getaddrinfo; keep it off the gateway loop."""
     loop_thread = threading.get_ident()
@@ -112,7 +110,6 @@ async def test_inbound_validation_does_not_run_dns_on_the_event_loop(monkeypatch
     assert fake_http.get_calls == []
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("status", [301, 302, 303, 307, 308])
 async def test_inbound_download_does_not_follow_redirects(
     monkeypatch: pytest.MonkeyPatch,
@@ -133,7 +130,6 @@ async def test_inbound_download_does_not_follow_redirects(
     assert fake_http.get_calls[0][1]["allow_redirects"] is False
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("url", [
     "https://example.com/attachment",
     "//example.com/attachment",
@@ -169,7 +165,6 @@ async def test_inbound_download_saves_successful_attachment(
     assert fake_http.get_calls[0][1]["allow_redirects"] is False
 
 
-@pytest.mark.asyncio
 async def test_inbound_download_blocks_hostname_with_mixed_dns_answers(monkeypatch):
     monkeypatch.setattr("nanobot.security.network.socket.getaddrinfo", lambda *_: [
         (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.216.34", 0)),
@@ -182,7 +177,6 @@ async def test_inbound_download_blocks_hostname_with_mixed_dns_answers(monkeypat
     assert fake_http.get_calls == []
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("failure", ["size", "stream", "cancel"])
 async def test_inbound_download_cleans_partial_files(tmp_path, monkeypatch, failure):
     monkeypatch.setattr("nanobot.channels.qq.runtime.validate_url_target", lambda _: (True, ""))

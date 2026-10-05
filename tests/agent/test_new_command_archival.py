@@ -6,8 +6,6 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 from nanobot.utils.prompt_templates import render_template
 
 _ARCHIVE_PROMPT = render_template("agent/consolidator_archive.md", strip=True)
@@ -40,7 +38,6 @@ class TestNewCommandArchival:
         loop.tools.get_definitions = MagicMock(return_value=[])
         return loop
 
-    @pytest.mark.asyncio
     async def test_new_clears_session_immediately_even_if_archive_fails(
         self,
         tmp_path: Path,
@@ -79,7 +76,6 @@ class TestNewCommandArchival:
         await loop.aclose()
         assert call_count == 1
 
-    @pytest.mark.asyncio
     async def test_new_reuses_replay_prefix_and_archives_only_unarchived_messages(
         self,
         tmp_path: Path,
@@ -117,7 +113,6 @@ class TestNewCommandArchival:
         assert sent[1:-1] == ordinary_history
         assert sent[-1]["content"] == _ARCHIVE_PROMPT
 
-    @pytest.mark.asyncio
     async def test_new_clears_session_and_responds(self, tmp_path: Path) -> None:
         from nanobot.bus.events import InboundMessage
 
@@ -144,7 +139,6 @@ class TestNewCommandArchival:
         assert "new session started" in response.content.lower()
         assert loop.sessions.get_or_create("cli:test").messages == []
 
-    @pytest.mark.asyncio
     async def test_aclose_drains_background_tasks(self, tmp_path: Path) -> None:
         """aclose waits for background tasks to complete."""
         from nanobot.bus.events import InboundMessage

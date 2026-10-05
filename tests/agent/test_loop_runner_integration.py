@@ -53,7 +53,6 @@ def _make_loop(tmp_path):
     return loop
 
 
-@pytest.mark.asyncio
 async def test_loop_uses_structured_retry_status_without_legacy_text(tmp_path):
     from nanobot.agent.loop import AgentLoop
 
@@ -99,7 +98,6 @@ async def test_loop_uses_structured_retry_status_without_legacy_text(tmp_path):
     assert outbound.chat_id == "chat-a"
 
 
-@pytest.mark.asyncio
 async def test_ephemeral_runner_enters_and_restores_turn_scopes(tmp_path):
     loop = _make_loop(tmp_path)
 
@@ -120,7 +118,6 @@ async def test_ephemeral_runner_enters_and_restores_turn_scopes(tmp_path):
     assert goal_mutation_allowed() is False
 
 
-@pytest.mark.asyncio
 async def test_goal_command_can_implement_plan_from_prior_discussion(tmp_path):
     from nanobot.agent.loop import AgentLoop
     from nanobot.bus.events import InboundMessage
@@ -182,7 +179,6 @@ async def test_goal_command_can_implement_plan_from_prior_discussion(tmp_path):
     assert _GOAL_RUNTIME_GUIDANCE_TAG in str(session.messages[3]["content"])
 
 
-@pytest.mark.asyncio
 async def test_runtime_context_is_persisted_as_next_turn_prompt_prefix(tmp_path):
     from nanobot.agent.loop import AgentLoop
     from nanobot.bus.events import InboundMessage
@@ -248,7 +244,6 @@ async def test_runtime_context_is_persisted_as_next_turn_prompt_prefix(tmp_path)
     assert public_history_message(persisted_first_user)["content"] == "first turn $review"
 
 
-@pytest.mark.asyncio
 async def test_webui_quote_reaches_model_without_leaking_into_public_history(tmp_path):
     from nanobot.agent.loop import AgentLoop
     from nanobot.bus.events import InboundMessage
@@ -280,7 +275,6 @@ async def test_webui_quote_reaches_model_without_leaking_into_public_history(tmp
     assert public_history_message(session.messages[0])["content"] == "What does this mean?"
 
 
-@pytest.mark.asyncio
 async def test_runtime_context_provider_runs_once_across_tool_iterations(tmp_path):
     from nanobot.agent.loop import AgentLoop
     from nanobot.bus.events import InboundMessage
@@ -325,7 +319,6 @@ async def test_runtime_context_provider_runs_once_across_tool_iterations(tmp_pat
         assert "frozen context" in str(call.kwargs["messages"])
 
 
-@pytest.mark.asyncio
 async def test_non_goal_direct_turn_cannot_reuse_prior_goal_command(tmp_path):
     from nanobot.agent.loop import AgentLoop
     from nanobot.bus.queue import MessageBus
@@ -365,7 +358,6 @@ async def test_non_goal_direct_turn_cannot_reuse_prior_goal_command(tmp_path):
     second_request = provider.chat_stream_with_retry.await_args_list[1].kwargs["messages"]
     assert "create_goal is unavailable for this turn" in str(second_request)
 
-@pytest.mark.asyncio
 async def test_loop_max_iterations_message_stays_stable(tmp_path):
     loop = _make_loop(tmp_path)
     loop.provider.chat_stream_with_retry = AsyncMock(return_value=LLMResponse(
@@ -387,7 +379,6 @@ async def test_loop_max_iterations_message_stays_stable(tmp_path):
     )
 
 
-@pytest.mark.asyncio
 async def test_loop_goal_turn_uses_standard_iteration_budget(tmp_path):
     loop = _make_loop(tmp_path)
     loop.provider.chat_stream_with_retry = AsyncMock(return_value=LLMResponse(
@@ -419,7 +410,6 @@ async def test_loop_goal_turn_uses_standard_iteration_budget(tmp_path):
     )
 
 
-@pytest.mark.asyncio
 async def test_loop_stream_filter_handles_think_only_prefix_without_crashing(tmp_path):
     loop = _make_loop(tmp_path)
     deltas: list[str] = []
@@ -450,7 +440,6 @@ async def test_loop_stream_filter_handles_think_only_prefix_without_crashing(tmp
     assert endings == [False]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "first_delta, second_delta",
     [
@@ -483,7 +472,6 @@ async def test_loop_stream_filter_hides_split_think_tags(tmp_path, first_delta, 
     assert deltas == ["Hello", " World"]
 
 
-@pytest.mark.asyncio
 async def test_loop_retries_think_only_final_response(tmp_path):
     loop = _make_loop(tmp_path)
     call_count = {"n": 0}
@@ -505,7 +493,6 @@ async def test_loop_retries_think_only_final_response(tmp_path):
     assert call_count["n"] == 2
 
 
-@pytest.mark.asyncio
 async def test_streamed_flag_not_set_on_llm_error(tmp_path):
     """When LLM errors during a streaming-capable channel interaction,
     _streamed must NOT be set so ChannelManager delivers the error."""
@@ -539,7 +526,6 @@ async def test_streamed_flag_not_set_on_llm_error(tmp_path):
     )
 
 
-@pytest.mark.asyncio
 async def test_ssrf_soft_block_can_finalize_after_streamed_tool_call(tmp_path):
     from nanobot.agent.loop import AgentLoop
     from nanobot.bus.events import InboundMessage
@@ -591,7 +577,6 @@ async def test_ssrf_soft_block_can_finalize_after_streamed_tool_call(tmp_path):
     assert isinstance(result.event, StreamedResponseEvent)
 
 
-@pytest.mark.asyncio
 async def test_next_turn_after_llm_error_keeps_turn_boundary(tmp_path):
     from nanobot.agent.loop import AgentLoop
     from nanobot.agent.runner import _PERSISTED_MODEL_ERROR_PLACEHOLDER
@@ -639,7 +624,6 @@ async def test_next_turn_after_llm_error_keeps_turn_boundary(tmp_path):
     assert "second question" in non_system[2]["content"]
 
 
-@pytest.mark.asyncio
 async def test_subagent_max_iterations_announces_partial_incomplete_result(tmp_path, monkeypatch):
     from nanobot.agent.subagent import SubagentManager
     from nanobot.bus.queue import MessageBus

@@ -105,7 +105,6 @@ def test_loop_from_config_uses_caller_owned_registry(tmp_path: Path) -> None:
     assert loop.tools.has("read_file")
 
 
-@pytest.mark.asyncio
 async def test_loop_binds_request_context_for_tool_execution(tmp_path: Path) -> None:
     provider = MagicMock()
     calls = {"n": 0}
@@ -173,7 +172,6 @@ def test_request_context_nested_bind_restores_outer_context() -> None:
     assert current_request_context() is None
 
 
-@pytest.mark.asyncio
 async def test_request_context_bindings_are_isolated_between_concurrent_tasks() -> None:
     entered = asyncio.Event()
     release = asyncio.Event()
@@ -204,7 +202,6 @@ async def test_request_context_bindings_are_isolated_between_concurrent_tasks() 
     assert current_request_context() is None
 
 
-@pytest.mark.asyncio
 async def test_agent_loop_restores_outer_request_context_after_runner_exception(
     tmp_path: Path,
 ) -> None:
@@ -252,7 +249,6 @@ async def test_agent_loop_restores_outer_request_context_after_runner_exception(
     assert current_request_context() is None
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("metadata", "expected"),
     [

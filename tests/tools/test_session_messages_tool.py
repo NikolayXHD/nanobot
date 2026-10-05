@@ -70,7 +70,6 @@ def test_config_and_tool_schema_keep_only_the_basic_reply_contract(
     assert (timeout["minimum"], timeout["maximum"]) == (5, 60)
 
 
-@pytest.mark.asyncio
 async def test_list_sessions_includes_all_persisted_channels_except_current(
     tmp_path: Path,
 ) -> None:
@@ -91,7 +90,6 @@ async def test_list_sessions_includes_all_persisted_channels_except_current(
     }
 
 
-@pytest.mark.asyncio
 async def test_send_publishes_user_input_to_the_existing_target(
     tmp_path: Path,
 ) -> None:
@@ -122,7 +120,6 @@ async def test_send_publishes_user_input_to_the_existing_target(
     assert inbound.metadata == {SESSION_MESSAGE_METADATA_KEY: envelope}
 
 
-@pytest.mark.asyncio
 async def test_send_fails_when_target_does_not_exist(tmp_path: Path) -> None:
     sessions = SessionManager(tmp_path)
     _persist(sessions, "websocket:source")
@@ -140,7 +137,6 @@ async def test_send_fails_when_target_does_not_exist(tmp_path: Path) -> None:
     assert bus.inbound.empty()
 
 
-@pytest.mark.asyncio
 async def test_rate_limit_is_per_source_session_and_uses_a_rolling_minute(
     tmp_path: Path,
 ) -> None:
@@ -184,7 +180,6 @@ async def test_rate_limit_is_per_source_session_and_uses_a_rolling_minute(
     )
 
 
-@pytest.mark.asyncio
 async def test_rate_limit_releases_expired_source_state_and_keeps_recent_sources(
     tmp_path: Path,
 ) -> None:
@@ -244,7 +239,6 @@ async def test_rate_limit_releases_expired_source_state_and_keeps_recent_sources
         )
 
 
-@pytest.mark.asyncio
 async def test_reply_timeout_injects_a_user_input_back_into_the_source(
     tmp_path: Path,
 ) -> None:
@@ -278,7 +272,6 @@ async def test_reply_timeout_injects_a_user_input_back_into_the_source(
     assert timeout.content == f"No reply from @{target.name} after 5 seconds."
 
 
-@pytest.mark.asyncio
 async def test_reply_timeout_observes_background_delivery_failure(
     tmp_path: Path,
 ) -> None:
@@ -317,7 +310,6 @@ async def test_reply_timeout_observes_background_delivery_failure(
     )
 
 
-@pytest.mark.asyncio
 async def test_reverse_message_cancels_the_pending_reply_timeout(
     tmp_path: Path,
 ) -> None:
@@ -350,7 +342,6 @@ async def test_reverse_message_cancels_the_pending_reply_timeout(
     assert scheduler.calls[0][1].cancelled
 
 
-@pytest.mark.asyncio
 async def test_reply_follows_a_recycled_handle(tmp_path: Path) -> None:
     sessions = SessionManager(tmp_path)
     _persist(sessions, "websocket:source", "websocket:target")

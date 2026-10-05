@@ -152,7 +152,6 @@ class TestStreamUpdateText:
 
 
 class TestSendDelta:
-    @pytest.mark.asyncio
     async def test_first_delta_creates_card_and_sends(self):
         ch = _make_channel()
         ch._client.cardkit.v1.card.create.return_value = _mock_create_card_response("card_new")
@@ -170,7 +169,6 @@ class TestSendDelta:
         ch._client.im.v1.message.create.assert_called_once()
         ch._client.cardkit.v1.card_element.content.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_first_delta_closes_blank_card_when_initial_update_fails(self):
         ch = _make_channel()
         ch._client.cardkit.v1.card.create.return_value = _mock_create_card_response("card_new")
@@ -188,7 +186,6 @@ class TestSendDelta:
         close_call = ch._client.cardkit.v1.card.settings.call_args_list[-1][0][0]
         assert '"streaming_mode": false' in close_call.body.settings
 
-    @pytest.mark.asyncio
     async def test_group_delta_uses_create_when_reply_disabled(self):
         ch = _make_channel(reply_to_message=False)
         ch._client.cardkit.v1.card.create.return_value = _mock_create_card_response("card_new")
@@ -204,7 +201,6 @@ class TestSendDelta:
         ch._client.im.v1.message.create.assert_called_once()
         ch._client.im.v1.message.reply.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_group_delta_keeps_existing_topic_when_reply_disabled(self):
         ch = _make_channel(reply_to_message=False)
         ch._client.cardkit.v1.card.create.return_value = _mock_create_card_response("card_new")
@@ -224,7 +220,6 @@ class TestSendDelta:
         request = ch._client.im.v1.message.reply.call_args[0][0]
         assert request.request_body.reply_in_thread is not True
 
-    @pytest.mark.asyncio
     async def test_group_delta_replies_in_thread_when_reply_enabled(self):
         ch = _make_channel(reply_to_message=True)
         ch._client.cardkit.v1.card.create.return_value = _mock_create_card_response("card_new")
@@ -244,7 +239,6 @@ class TestSendDelta:
         request = ch._client.im.v1.message.reply.call_args[0][0]
         assert request.request_body.reply_in_thread is True
 
-    @pytest.mark.asyncio
     async def test_second_delta_within_interval_skips_update(self):
         ch = _make_channel()
         buf = _FeishuStreamBuf(text="Hello ", card_id="card_1", sequence=1, last_edit=time.monotonic())
@@ -255,7 +249,6 @@ class TestSendDelta:
         assert buf.text == "Hello world"
         ch._client.cardkit.v1.card_element.content.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_delta_after_interval_updates_text(self):
         ch = _make_channel()
         buf = _FeishuStreamBuf(text="Hello ", card_id="card_1", sequence=1, last_edit=time.monotonic() - 1.0)
@@ -268,7 +261,6 @@ class TestSendDelta:
         assert buf.sequence == 2
         ch._client.cardkit.v1.card_element.content.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_stream_end_sends_final_update(self):
         ch = _make_channel()
         ch._stream_bufs["oc_chat1"] = _FeishuStreamBuf(
@@ -285,7 +277,6 @@ class TestSendDelta:
         settings_call = ch._client.cardkit.v1.card.settings.call_args[0][0]
         assert settings_call.body.sequence == 5  # after final content seq 4
 
-    @pytest.mark.asyncio
     async def test_stream_end_merge_next_preserves_buffer(self):
         ch = _make_channel()
         ch._stream_bufs["oc_chat1"] = _FeishuStreamBuf(
@@ -306,7 +297,6 @@ class TestSendDelta:
         ch._client.cardkit.v1.card_element.content.assert_not_called()
         ch._client.cardkit.v1.card.settings.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_stream_end_fallback_when_no_card_id(self):
         """If card creation failed, stream_end falls back to a plain card message."""
         ch = _make_channel()
@@ -321,7 +311,6 @@ class TestSendDelta:
         ch._client.cardkit.v1.card_element.content.assert_not_called()
         ch._client.im.v1.message.create.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_stream_end_fallback_group_uses_create_when_reply_disabled(self):
         ch = _make_channel(reply_to_message=False)
         ch._stream_bufs["om_001"] = _FeishuStreamBuf(
@@ -339,7 +328,6 @@ class TestSendDelta:
         ch._client.im.v1.message.create.assert_called_once()
         ch._client.im.v1.message.reply.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_stream_end_fallback_keeps_existing_topic_when_reply_disabled(self):
         ch = _make_channel(reply_to_message=False)
         ch._stream_bufs["om_001"] = _FeishuStreamBuf(
@@ -365,7 +353,6 @@ class TestSendDelta:
         request = ch._client.im.v1.message.reply.call_args[0][0]
         assert request.request_body.reply_in_thread is not True
 
-    @pytest.mark.asyncio
     async def test_stream_end_fallback_group_replies_when_reply_enabled(self):
         ch = _make_channel(reply_to_message=True)
         ch._stream_bufs["om_001"] = _FeishuStreamBuf(
@@ -387,7 +374,6 @@ class TestSendDelta:
         request = ch._client.im.v1.message.reply.call_args[0][0]
         assert request.request_body.reply_in_thread is True
 
-    @pytest.mark.asyncio
     async def test_stream_end_fallback_when_final_update_fails(self):
         """If streaming mode was closed (e.g. Feishu timeout), fall back to a regular card."""
         ch = _make_channel()
@@ -404,7 +390,6 @@ class TestSendDelta:
         # Should fall back to sending a regular interactive card
         ch._client.im.v1.message.create.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_stream_end_reopens_streaming_card_before_fallback(self):
         ch = _make_channel()
         ch._stream_bufs["oc_chat1"] = _FeishuStreamBuf(
@@ -423,13 +408,11 @@ class TestSendDelta:
         assert ch._client.cardkit.v1.card.settings.call_count == 2
         ch._client.im.v1.message.create.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_stream_end_without_buf_is_noop(self):
         ch = _make_channel()
         await ch.send_delta("oc_chat1", "", stream_end=True)
         ch._client.cardkit.v1.card_element.content.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_empty_delta_skips_send(self):
         ch = _make_channel()
         await ch.send_delta("oc_chat1", "   ")
@@ -437,14 +420,12 @@ class TestSendDelta:
         assert "oc_chat1" in ch._stream_bufs
         ch._client.cardkit.v1.card.create.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_no_client_returns_early(self):
         ch = _make_channel()
         ch._client = None
         await ch.send_delta("oc_chat1", "text")
         assert "oc_chat1" not in ch._stream_bufs
 
-    @pytest.mark.asyncio
     async def test_sequence_increments_correctly(self):
         ch = _make_channel()
         buf = _FeishuStreamBuf(text="a", card_id="card_1", sequence=5, last_edit=0.0)
@@ -462,7 +443,6 @@ class TestSendDelta:
 class TestToolHintInlineStreaming:
     """Tool hint messages should be inlined into active streaming cards."""
 
-    @pytest.mark.asyncio
     async def test_tool_hint_inlined_when_stream_active(self):
         """With an active streaming buffer, tool hint appends to the card."""
         ch = _make_channel()
@@ -484,7 +464,6 @@ class TestToolHintInlineStreaming:
         ch._client.cardkit.v1.card_element.content.assert_called_once()
         ch._client.im.v1.message.create.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_tool_hint_preserved_on_next_delta(self):
         """When new delta arrives, the tool hint is kept as permanent content and delta appends after it."""
         ch = _make_channel()
@@ -501,7 +480,6 @@ class TestToolHintInlineStreaming:
         assert "🔧 web_fetch" in buf.text
         assert buf.text.endswith(" continued")
 
-    @pytest.mark.asyncio
     async def test_tool_hint_fallback_when_no_stream(self):
         """Without an active buffer, tool hint falls back to a standalone card."""
         ch = _make_channel()
@@ -517,7 +495,6 @@ class TestToolHintInlineStreaming:
         assert "oc_chat1" not in ch._stream_bufs
         ch._client.im.v1.message.create.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_tool_hint_group_uses_create_when_reply_disabled(self):
         ch = _make_channel(reply_to_message=False)
         ch._client.im.v1.message.create.return_value = _mock_send_response("om_hint")
@@ -533,7 +510,6 @@ class TestToolHintInlineStreaming:
         ch._client.im.v1.message.create.assert_called_once()
         ch._client.im.v1.message.reply.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_tool_hint_keeps_existing_topic_when_reply_disabled(self):
         ch = _make_channel(reply_to_message=False)
         reply_resp = MagicMock()
@@ -557,7 +533,6 @@ class TestToolHintInlineStreaming:
         request = ch._client.im.v1.message.reply.call_args[0][0]
         assert request.request_body.reply_in_thread is not True
 
-    @pytest.mark.asyncio
     async def test_tool_hint_group_replies_when_reply_enabled(self):
         ch = _make_channel(reply_to_message=True)
         reply_resp = MagicMock()
@@ -577,7 +552,6 @@ class TestToolHintInlineStreaming:
         request = ch._client.im.v1.message.reply.call_args[0][0]
         assert request.request_body.reply_in_thread is True
 
-    @pytest.mark.asyncio
     async def test_consecutive_tool_hints_append(self):
         """When multiple tool hints arrive consecutively, each appends to the card."""
         ch = _make_channel()
@@ -607,7 +581,6 @@ class TestToolHintInlineStreaming:
         assert "🔧 $ cd /project" in buf.text
         assert "🔧 $ git status" in buf.text
 
-    @pytest.mark.asyncio
     async def test_tool_hint_preserved_on_final_stream_end(self):
         """When stream end closes the card, tool hint is kept in the final text."""
         ch = _make_channel()
@@ -624,7 +597,6 @@ class TestToolHintInlineStreaming:
         update_call = ch._client.cardkit.v1.card_element.content.call_args[0][0]
         assert "🔧" in update_call.body.content
 
-    @pytest.mark.asyncio
     async def test_empty_tool_hint_is_noop(self):
         """Empty or whitespace-only tool hint content is silently ignored."""
         ch = _make_channel()

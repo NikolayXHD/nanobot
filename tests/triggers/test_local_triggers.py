@@ -276,7 +276,6 @@ def test_recover_processing_deliveries_requeues_claimed_delivery(tmp_path: Path)
     assert reclaimed[0].last_error == "delivery was recovered from interrupted processing"
 
 
-@pytest.mark.asyncio
 async def test_local_trigger_queue_submits_bound_inbound_message(tmp_path: Path) -> None:
     store = LocalTriggerStore(tmp_path)
     trigger = store.create(
@@ -341,7 +340,6 @@ async def test_local_trigger_queue_submits_bound_inbound_message(tmp_path: Path)
     assert record["trigger_id"] == trigger.id
 
 
-@pytest.mark.asyncio
 async def test_local_trigger_queue_rejects_unavailable_target_channel(tmp_path: Path) -> None:
     store = LocalTriggerStore(tmp_path)
     trigger = store.create(
@@ -387,7 +385,6 @@ async def test_local_trigger_queue_rejects_unavailable_target_channel(tmp_path: 
     assert record["error"] == "target channel is not enabled: telegram"
 
 
-@pytest.mark.asyncio
 async def test_local_trigger_queue_waits_for_submitted_turn_before_ack(
     tmp_path: Path,
 ) -> None:
@@ -449,7 +446,6 @@ async def test_local_trigger_queue_waits_for_submitted_turn_before_ack(
             await task
 
 
-@pytest.mark.asyncio
 async def test_local_trigger_queue_requeues_when_submitted_turn_is_interrupted(
     tmp_path: Path,
 ) -> None:
@@ -495,7 +491,6 @@ async def test_local_trigger_queue_requeues_when_submitted_turn_is_interrupted(
             await task
 
 
-@pytest.mark.asyncio
 async def test_local_trigger_queue_does_not_retry_completed_agent_failure(
     tmp_path: Path,
 ) -> None:
@@ -545,7 +540,6 @@ async def test_local_trigger_queue_does_not_retry_completed_agent_failure(
             await task
 
 
-@pytest.mark.asyncio
 async def test_local_trigger_queue_recovers_processing_delivery_on_start(
     tmp_path: Path,
 ) -> None:

@@ -43,7 +43,6 @@ def _make_loop(tmp_path: Path) -> AgentLoop:
         return AgentLoop(bus=bus, provider=provider, workspace=tmp_path)
 
 
-@pytest.mark.asyncio
 async def test_dispatch_cancellation_restores_checkpoint():
     """Regression for #2966: /stop interrupting a session worker must materialize the
     in-flight runtime checkpoint into session.messages before the cancellation
@@ -116,7 +115,6 @@ async def test_dispatch_cancellation_restores_checkpoint():
         "Session should be persisted so the restored state survives process restart"
 
 
-@pytest.mark.asyncio
 async def test_dispatch_cancellation_keeps_checkpoint_for_gateway_shutdown(tmp_path: Path) -> None:
     """Gateway shutdown preserves the checkpoint; an explicit stop restores it."""
     loop = _make_loop(tmp_path)

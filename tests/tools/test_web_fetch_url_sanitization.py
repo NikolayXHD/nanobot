@@ -73,7 +73,6 @@ def test_clean_url_passes_validation():
 
 # --- WebFetchTool.execute integration tests ---
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "url",
     [
@@ -95,7 +94,6 @@ async def test_execute_accepts_cleanable_http_urls(url):
 
 # --- startswith guard tests ---
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "url",
     [

@@ -28,7 +28,6 @@ def test_request_concurrency_is_unlimited_by_default(
     assert loop._concurrency_gate is None
 
 
-@pytest.mark.asyncio
 async def test_positive_request_concurrency_keeps_explicit_cap(
     monkeypatch: pytest.MonkeyPatch,
     loop_factory,

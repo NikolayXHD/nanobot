@@ -147,7 +147,6 @@ def test_workspace_scope_metadata_falls_back_for_stale_session(tmp_path: Path) -
     assert scope.access_mode == "full"
 
 
-@pytest.mark.asyncio
 async def test_filesystem_tool_uses_current_restricted_workspace_scope(tmp_path: Path) -> None:
     project = tmp_path / "project"
     project.mkdir()
@@ -169,7 +168,6 @@ async def test_filesystem_tool_uses_current_restricted_workspace_scope(tmp_path:
         reset_workspace_scope(token)
 
 
-@pytest.mark.asyncio
 async def test_restricted_project_can_read_agent_skills_and_exact_history(tmp_path: Path) -> None:
     agent_workspace = tmp_path / "agent"
     project = tmp_path / "project"
@@ -227,7 +225,6 @@ async def test_restricted_project_can_read_agent_skills_and_exact_history(tmp_pa
     assert history_file.read_text(encoding="utf-8") == '{"content":"global history"}\n'
 
 
-@pytest.mark.asyncio
 async def test_restricted_project_reads_history_from_linked_agent_workspace(
     tmp_path: Path,
 ) -> None:
@@ -264,7 +261,6 @@ async def test_restricted_project_reads_history_from_linked_agent_workspace(
     assert "linked history" in result
 
 
-@pytest.mark.asyncio
 async def test_filesystem_write_tool_full_scope_allows_outside_project(tmp_path: Path) -> None:
     project = tmp_path / "project"
     outside = tmp_path / "outside"
@@ -286,7 +282,6 @@ async def test_filesystem_write_tool_full_scope_allows_outside_project(tmp_path:
     assert (outside / "outside.txt").read_text(encoding="utf-8") == "ok"
 
 
-@pytest.mark.asyncio
 async def test_exec_tool_uses_scope_project_as_default_cwd(
     tmp_path: Path,
     cmd_python: str,
@@ -314,7 +309,6 @@ async def test_exec_tool_uses_scope_project_as_default_cwd(
     assert (project / "scoped-marker.txt").read_text() == "ok"
 
 
-@pytest.mark.asyncio
 async def test_exec_tool_resolves_relative_working_dir_from_scope_project(
     tmp_path: Path,
     cmd_python: str,
@@ -345,7 +339,6 @@ async def test_exec_tool_resolves_relative_working_dir_from_scope_project(
     assert str(subdir.resolve()) in result
 
 
-@pytest.mark.asyncio
 async def test_exec_full_scope_allows_explicit_cwd_outside_project(
     tmp_path: Path,
     cmd_python: str,
@@ -446,7 +439,6 @@ def test_message_media_scope_restricted_blocks_outside_and_full_allows(tmp_path:
         reset_workspace_scope(token)
 
 
-@pytest.mark.asyncio
 async def test_cli_app_scope_controls_working_dir(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -531,7 +523,6 @@ async def test_cli_app_scope_controls_working_dir(
     assert seen["cwd"] == str(outside.resolve())
 
 
-@pytest.mark.asyncio
 async def test_subagent_tool_forwards_current_workspace_scope(tmp_path: Path) -> None:
     project = tmp_path / "project"
     project.mkdir()

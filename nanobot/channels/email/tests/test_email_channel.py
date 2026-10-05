@@ -422,7 +422,6 @@ def test_apply_post_actions_batch_delete_with_post_action_expunge_true_no_uidplu
     assert fake.expunge_calls == 2
 
 
-@pytest.mark.asyncio
 async def test_start_applies_post_action_only_after_delivery(monkeypatch) -> None:
     calls: list[str] = []
 
@@ -458,7 +457,6 @@ async def test_start_applies_post_action_only_after_delivery(monkeypatch) -> Non
     assert calls == ["delivered", "post_action"]
 
 
-@pytest.mark.asyncio
 async def test_start_skips_post_action_when_delivery_fails(monkeypatch) -> None:
     called = {"post_action": False}
 
@@ -492,7 +490,6 @@ async def test_start_skips_post_action_when_delivery_fails(monkeypatch) -> None:
     assert called["post_action"] is False
 
 
-@pytest.mark.asyncio
 async def test_start_keeps_post_actions_for_successful_emails_when_later_delivery_fails(monkeypatch) -> None:
     called_actions: list[str] = []
 
@@ -738,7 +735,6 @@ def test_extract_text_body_falls_back_to_html() -> None:
     assert "world" in text
 
 
-@pytest.mark.asyncio
 async def test_start_returns_immediately_without_consent(monkeypatch) -> None:
     cfg = _make_config()
     cfg.consent_granted = False
@@ -756,7 +752,6 @@ async def test_start_returns_immediately_without_consent(monkeypatch) -> None:
     assert called["fetch"] is False
 
 
-@pytest.mark.asyncio
 async def test_send_uses_smtp_and_reply_subject(monkeypatch) -> None:
     class FakeSMTP:
         def __init__(self, _host: str, _port: int, timeout: int = 30) -> None:
@@ -812,7 +807,6 @@ async def test_send_uses_smtp_and_reply_subject(monkeypatch) -> None:
     assert sent["In-Reply-To"] == "<m1@example.com>"
 
 
-@pytest.mark.asyncio
 async def test_send_skips_progress_messages_before_smtp(monkeypatch) -> None:
     called = {"smtp": False}
 
@@ -836,7 +830,6 @@ async def test_send_skips_progress_messages_before_smtp(monkeypatch) -> None:
     assert called["smtp"] is False
 
 
-@pytest.mark.asyncio
 async def test_send_skips_reply_when_auto_reply_disabled(monkeypatch) -> None:
     """When auto_reply_enabled=False, replies should be skipped but proactive sends allowed."""
     class FakeSMTP:
@@ -897,7 +890,6 @@ async def test_send_skips_reply_when_auto_reply_disabled(monkeypatch) -> None:
     assert len(fake_instances[0].sent_messages) == 1
 
 
-@pytest.mark.asyncio
 async def test_send_proactive_email_when_auto_reply_disabled(monkeypatch) -> None:
     """Proactive emails (not replies) should be sent even when auto_reply_enabled=False."""
     class FakeSMTP:
@@ -947,7 +939,6 @@ async def test_send_proactive_email_when_auto_reply_disabled(monkeypatch) -> Non
     assert sent["To"] == "bob@example.com"
 
 
-@pytest.mark.asyncio
 async def test_send_skips_when_consent_not_granted(monkeypatch) -> None:
     class FakeSMTP:
         def __init__(self, _host: str, _port: int, timeout: int = 30) -> None:
@@ -1593,7 +1584,6 @@ def test_extract_attachments_sanitizes_filename(tmp_path, monkeypatch) -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_send_with_single_file_attachment(tmp_path, monkeypatch) -> None:
     """Agent sends an email with a single file attached."""
     sent_messages: list[EmailMessage] = []
@@ -1650,7 +1640,6 @@ async def test_send_with_single_file_attachment(tmp_path, monkeypatch) -> None:
     assert att.get_payload(decode=True) == b"%PDF-1.4 fake pdf content"
 
 
-@pytest.mark.asyncio
 async def test_send_with_multiple_file_attachments(tmp_path, monkeypatch) -> None:
     """Agent sends an email with multiple files attached."""
     sent_messages: list[EmailMessage] = []
@@ -1707,7 +1696,6 @@ async def test_send_with_multiple_file_attachments(tmp_path, monkeypatch) -> Non
     assert filenames == {"doc.pdf", "image.png", "notes.txt"}
 
 
-@pytest.mark.asyncio
 async def test_send_skips_missing_attachment_file(tmp_path, monkeypatch) -> None:
     """Non-existent attachment file is skipped without breaking the send."""
     sent_messages: list[EmailMessage] = []
@@ -1765,7 +1753,6 @@ async def test_send_skips_missing_attachment_file(tmp_path, monkeypatch) -> None
     assert "[attachment: nonexistent.pdf - send failed]" in body.get_content()
 
 
-@pytest.mark.asyncio
 async def test_send_skips_oversized_attachment_file(tmp_path, monkeypatch) -> None:
     """Attachment exceeding max_attachment_size is skipped with a visible note."""
     sent_messages: list[EmailMessage] = []
@@ -1810,7 +1797,6 @@ async def test_send_skips_oversized_attachment_file(tmp_path, monkeypatch) -> No
     assert "[attachment: too-large.bin - too large]" in sent.get_content()
 
 
-@pytest.mark.asyncio
 async def test_send_limits_outbound_attachment_count(tmp_path, monkeypatch) -> None:
     """Only max_attachments_per_email outbound attachments are included."""
     sent_messages: list[EmailMessage] = []
@@ -1864,7 +1850,6 @@ async def test_send_limits_outbound_attachment_count(tmp_path, monkeypatch) -> N
     assert "[attachment: second.txt - too many attachments]" in body.get_content()
 
 
-@pytest.mark.asyncio
 async def test_send_with_unknown_mime_type_attachment(tmp_path, monkeypatch) -> None:
     """File with unknown extension gets application/octet-stream MIME type."""
     sent_messages: list[EmailMessage] = []
@@ -1917,7 +1902,6 @@ async def test_send_with_unknown_mime_type_attachment(tmp_path, monkeypatch) -> 
     assert att.get_filename() == "data.unknown_ext_xyz"
 
 
-@pytest.mark.asyncio
 async def test_send_with_media_and_reply_subject_and_in_reply_to(tmp_path, monkeypatch) -> None:
     """Attachments work together with reply subject and In-Reply-To headers."""
     sent_messages: list[EmailMessage] = []

@@ -5,12 +5,9 @@ from __future__ import annotations
 import asyncio
 from types import SimpleNamespace
 
-import pytest
-
 from nanobot.providers import github_copilot_provider as gc
 
 
-@pytest.mark.asyncio
 async def test_concurrent_token_refresh_fetches_once(monkeypatch):
     """Two concurrent _get_copilot_access_token calls should trigger only one
     HTTP fetch when the token is expired, not two."""
@@ -62,7 +59,6 @@ async def test_concurrent_token_refresh_fetches_once(monkeypatch):
     )
 
 
-@pytest.mark.asyncio
 async def test_second_call_returns_cached_token_while_first_in_flight(monkeypatch):
     """If task A is mid-fetch inside the lock, task B should wait, then find
     the cached token and skip the HTTP call entirely."""
@@ -112,7 +108,6 @@ async def test_second_call_returns_cached_token_while_first_in_flight(monkeypatc
     assert fetch_count == 1
 
 
-@pytest.mark.asyncio
 async def test_copilot_token_lock_exists():
     """Provider should have an asyncio.Lock for token refresh."""
     provider = gc.GitHubCopilotProvider()

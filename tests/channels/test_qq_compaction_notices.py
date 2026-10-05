@@ -31,7 +31,6 @@ def _make_channel(tmp_path, **config_kwargs) -> QQChannel:
     return channel
 
 
-@pytest.mark.asyncio
 async def test_compaction_notices_dropped_by_default(monkeypatch, tmp_path) -> None:
     channel = _make_channel(tmp_path)
     send_text = AsyncMock()
@@ -46,7 +45,6 @@ async def test_compaction_notices_dropped_by_default(monkeypatch, tmp_path) -> N
     send_text.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("notify", [False, True])
 @pytest.mark.parametrize("phase", ["started", "succeeded", "failed", "cancelled"])
 async def test_compaction_notices_sent_when_enabled(monkeypatch, tmp_path, notify, phase) -> None:
@@ -63,7 +61,6 @@ async def test_compaction_notices_sent_when_enabled(monkeypatch, tmp_path, notif
     assert send_text.await_args.kwargs["content"]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("phase", ["started", "succeeded", "failed", "cancelled"])
 async def test_manual_compaction_has_feedback_with_default_config(monkeypatch, tmp_path, phase) -> None:
     channel = _make_channel(tmp_path)
@@ -78,7 +75,6 @@ async def test_manual_compaction_has_feedback_with_default_config(monkeypatch, t
     send_text.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_ordinary_messages_unaffected(monkeypatch, tmp_path) -> None:
     channel = _make_channel(tmp_path)
     send_text = AsyncMock()

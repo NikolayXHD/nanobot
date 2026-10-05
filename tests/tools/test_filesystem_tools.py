@@ -11,7 +11,6 @@ from nanobot.agent.tools.filesystem import (
 )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("newline", ["\n", "\r\n", "\r"])
 @pytest.mark.parametrize("operation", ["write", "edit_new", "edit_empty"])
 async def test_file_creation_preserves_provided_newlines(tmp_path, newline, operation):
@@ -48,13 +47,11 @@ class TestReadFileTool:
         f.write_text("\n".join(f"line {i}" for i in range(1, 21)), encoding="utf-8")
         return f
 
-    @pytest.mark.asyncio
     async def test_basic_read_has_line_numbers(self, tool, sample_file):
         result = await tool.execute(path=str(sample_file))
         assert "1| line 1" in result
         assert "20| line 20" in result
 
-    @pytest.mark.asyncio
     async def test_offset_and_limit(self, tool, sample_file):
         result = await tool.execute(path=str(sample_file), offset=5, limit=3)
         assert "5| line 5" in result
@@ -62,25 +59,21 @@ class TestReadFileTool:
         assert "8| line 8" not in result
         assert "Use offset=8 to continue" in result
 
-    @pytest.mark.asyncio
     async def test_offset_beyond_end(self, tool, sample_file):
         result = await tool.execute(path=str(sample_file), offset=999)
         assert "Error" in result
         assert "beyond end" in result
 
-    @pytest.mark.asyncio
     async def test_end_of_file_marker(self, tool, sample_file):
         result = await tool.execute(path=str(sample_file), offset=1, limit=9999)
         assert "End of file" in result
 
-    @pytest.mark.asyncio
     async def test_empty_file(self, tool, tmp_path):
         f = tmp_path / "empty.txt"
         f.write_text("", encoding="utf-8")
         result = await tool.execute(path=str(f))
         assert "Empty file" in result
 
-    @pytest.mark.asyncio
     async def test_image_file_returns_multimodal_blocks(self, tool, tmp_path):
         f = tmp_path / "pixel.png"
         f.write_bytes(b"\x89PNG\r\n\x1a\nfake-png-data")
@@ -93,25 +86,21 @@ class TestReadFileTool:
         assert result[0]["_meta"]["path"] == str(f)
         assert result[1] == {"type": "text", "text": f"(Image file: {f})"}
 
-    @pytest.mark.asyncio
     async def test_file_not_found(self, tool, tmp_path):
         result = await tool.execute(path=str(tmp_path / "nope.txt"))
         assert "Error" in result
         assert "not found" in result
 
-    @pytest.mark.asyncio
     async def test_workspace_relative_builtin_skill_read_falls_back_to_packaged_skill(self, tool):
         result = await tool.execute(path="skills/cron/SKILL.md", limit=5)
 
         assert "Error" not in result
         assert "cron" in result.lower()
 
-    @pytest.mark.asyncio
     async def test_missing_path_returns_clear_error(self, tool):
         result = await tool.execute()
         assert result == "Error reading file: Unknown path"
 
-    @pytest.mark.asyncio
     async def test_char_budget_trims(self, tool, tmp_path):
         """When the selected slice exceeds _MAX_CHARS the output is trimmed."""
         f = tmp_path / "big.txt"
@@ -121,7 +110,6 @@ class TestReadFileTool:
         assert len(result) <= ReadFileTool._MAX_CHARS + 500  # small margin for footer
         assert "Use offset=" in result
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("following", ["", "\nsecond line"])
     async def test_oversized_first_line_is_explicitly_truncated(self, tool, tmp_path, following):
         f = tmp_path / "minified.txt"
@@ -153,7 +141,6 @@ class TestReadFileTool:
             assert "End of file" in first
             assert "Use offset=" not in first
 
-    @pytest.mark.asyncio
     async def test_long_middle_line_advances_to_following_content(self, tool, tmp_path):
         f = tmp_path / "bundle.txt"
         f.write_text("first\n" + "z" * (ReadFileTool._MAX_CHARS * 2) + "\nlast\n")
@@ -172,7 +159,6 @@ class TestReadFileTool:
         assert "3| last" in third
         assert "End of file" in third
 
-    @pytest.mark.asyncio
     async def test_line_exactly_fitting_budget_is_not_truncated(self, tool, tmp_path):
         f = tmp_path / "exact.txt"
         line = "x" * (ReadFileTool._MAX_CHARS - len("1| "))
@@ -183,7 +169,6 @@ class TestReadFileTool:
         assert "truncated" not in first
         assert "Use offset=2 to continue" in first
 
-    @pytest.mark.asyncio
     async def test_oversized_file_is_rejected_before_read(self, tool, tmp_path, monkeypatch):
         f = tmp_path / "huge.txt"
         with f.open("wb") as stream:
@@ -210,7 +195,6 @@ class TestEditFileTool:
     def tool(self, tmp_path):
         return EditFileTool(workspace=tmp_path)
 
-    @pytest.mark.asyncio
     async def test_exact_match(self, tool, tmp_path):
         f = tmp_path / "a.py"
         f.write_text("hello world", encoding="utf-8")
@@ -218,7 +202,6 @@ class TestEditFileTool:
         assert "Patch applied:" in result
         assert f.read_text() == "hello earth"
 
-    @pytest.mark.asyncio
     async def test_identical_replacement_returns_clear_error(self, tool, tmp_path):
         f = tmp_path / "a.py"
         f.write_text("hello world", encoding="utf-8")
@@ -228,7 +211,6 @@ class TestEditFileTool:
         assert result == "Error: new_text must be different from old_text."
         assert f.read_text(encoding="utf-8") == "hello world"
 
-    @pytest.mark.asyncio
     async def test_crlf_normalisation(self, tool, tmp_path):
         f = tmp_path / "crlf.py"
         f.write_bytes(b"line1\r\nline2\r\nline3")
@@ -241,7 +223,6 @@ class TestEditFileTool:
         # CRLF line endings should be preserved throughout the file
         assert b"\r\n" in raw
 
-    @pytest.mark.asyncio
     async def test_trim_fallback(self, tool, tmp_path):
         f = tmp_path / "indent.py"
         f.write_text("    def foo():\n        pass\n", encoding="utf-8")
@@ -251,14 +232,12 @@ class TestEditFileTool:
         assert "Patch applied:" in result
         assert "bar" in f.read_text()
 
-    @pytest.mark.asyncio
     async def test_ambiguous_match(self, tool, tmp_path):
         f = tmp_path / "dup.py"
         f.write_text("aaa\nbbb\naaa\nbbb\n", encoding="utf-8")
         result = await tool.execute(path=str(f), old_text="aaa\nbbb", new_text="xxx")
         assert "appears" in result.lower() or "Warning" in result
 
-    @pytest.mark.asyncio
     async def test_replace_all(self, tool, tmp_path):
         f = tmp_path / "multi.py"
         f.write_text("foo bar foo bar foo", encoding="utf-8")
@@ -268,7 +247,6 @@ class TestEditFileTool:
         assert "Patch applied:" in result
         assert f.read_text() == "baz bar baz bar baz"
 
-    @pytest.mark.asyncio
     async def test_not_found(self, tool, tmp_path):
         f = tmp_path / "nf.py"
         f.write_text("hello", encoding="utf-8")
@@ -276,7 +254,6 @@ class TestEditFileTool:
         assert "Error" in result
         assert "not found" in result
 
-    @pytest.mark.asyncio
     async def test_missing_new_text_returns_clear_error(self, tool, tmp_path):
         f = tmp_path / "a.py"
         f.write_text("hello", encoding="utf-8")
@@ -306,7 +283,6 @@ class TestListDirTool:
         (tmp_path / "node_modules" / "pkg").mkdir()
         return tmp_path
 
-    @pytest.mark.asyncio
     async def test_basic_list(self, tool, populated_dir):
         result = await tool.execute(path=str(populated_dir))
         assert "README.md" in result
@@ -315,7 +291,6 @@ class TestListDirTool:
         assert ".git" not in result
         assert "node_modules" not in result
 
-    @pytest.mark.asyncio
     async def test_recursive(self, tool, populated_dir):
         result = await tool.execute(path=str(populated_dir), recursive=True)
         # Normalize path separators for cross-platform compatibility
@@ -327,7 +302,6 @@ class TestListDirTool:
         assert ".git" not in result
         assert "node_modules" not in result
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("relative_root", ["build", "build/project"])
     async def test_recursive_ignores_only_descendants(self, tool, tmp_path, relative_root):
         root = tmp_path / relative_root
@@ -345,7 +319,6 @@ class TestListDirTool:
             "README.md", "src/", "src/main.py",
         }
 
-    @pytest.mark.asyncio
     async def test_max_entries_truncation(self, tool, tmp_path):
         for i in range(10):
             (tmp_path / f"file_{i}.txt").write_text("x")
@@ -353,20 +326,17 @@ class TestListDirTool:
         assert "truncated" in result
         assert "3 of 10" in result
 
-    @pytest.mark.asyncio
     async def test_empty_dir(self, tool, tmp_path):
         d = tmp_path / "empty"
         d.mkdir()
         result = await tool.execute(path=str(d))
         assert "empty" in result.lower()
 
-    @pytest.mark.asyncio
     async def test_not_found(self, tool, tmp_path):
         result = await tool.execute(path=str(tmp_path / "nope"))
         assert "Error" in result
         assert "not found" in result
 
-    @pytest.mark.asyncio
     async def test_missing_path_returns_clear_error(self, tool):
         result = await tool.execute()
         assert result == "Error listing directory: Unknown path"
@@ -378,7 +348,6 @@ class TestListDirTool:
 
 class TestWorkspaceRestriction:
 
-    @pytest.mark.asyncio
     async def test_read_blocked_outside_workspace(self, tmp_path):
         workspace = tmp_path / "ws"
         workspace.mkdir()
@@ -392,7 +361,6 @@ class TestWorkspaceRestriction:
         assert "Error" in result
         assert "outside" in result.lower()
 
-    @pytest.mark.asyncio
     async def test_read_allowed_with_extra_dir(self, tmp_path):
         workspace = tmp_path / "ws"
         workspace.mkdir()
@@ -410,7 +378,6 @@ class TestWorkspaceRestriction:
         assert "Test Skill" in result
         assert "Error" not in result
 
-    @pytest.mark.asyncio
     async def test_read_allowed_in_media_dir(self, tmp_path, monkeypatch):
         workspace = tmp_path / "ws"
         workspace.mkdir()
@@ -426,7 +393,6 @@ class TestWorkspaceRestriction:
         assert "shared media" in result
         assert "Error" not in result
 
-    @pytest.mark.asyncio
     async def test_write_blocked_in_media_dir_by_default(self, tmp_path, monkeypatch):
         workspace = tmp_path / "ws"
         workspace.mkdir()
@@ -441,7 +407,6 @@ class TestWorkspaceRestriction:
         assert "outside" in result.lower()
         assert not (media_dir / "hack.txt").exists()
 
-    @pytest.mark.asyncio
     async def test_legacy_extra_allowed_dirs_does_not_widen_write(self, tmp_path):
         workspace = tmp_path / "ws"
         workspace.mkdir()
@@ -458,7 +423,6 @@ class TestWorkspaceRestriction:
         assert "outside" in result.lower()
         assert not (skills_dir / "hack.txt").exists()
 
-    @pytest.mark.asyncio
     async def test_write_allowed_with_extra_write_dir(self, tmp_path):
         workspace = tmp_path / "ws"
         workspace.mkdir()
@@ -474,7 +438,6 @@ class TestWorkspaceRestriction:
         assert "Successfully wrote" in result
         assert (writable / "ok.txt").read_text(encoding="utf-8") == "allowed"
 
-    @pytest.mark.asyncio
     async def test_extra_write_allowed_files_allow_only_exact_file(self, tmp_path):
         workspace = tmp_path / "ws"
         workspace.mkdir()
@@ -498,7 +461,6 @@ class TestWorkspaceRestriction:
         assert "outside" in child.lower()
         assert not child_path.exists()
 
-    @pytest.mark.asyncio
     async def test_read_still_blocked_for_unrelated_dir(self, tmp_path):
         workspace = tmp_path / "ws"
         workspace.mkdir()
@@ -517,7 +479,6 @@ class TestWorkspaceRestriction:
         assert "Error" in result
         assert "outside" in result.lower()
 
-    @pytest.mark.asyncio
     async def test_workspace_file_still_readable_with_extra_dirs(self, tmp_path):
         """Adding extra_allowed_dirs must not break normal workspace reads."""
         workspace = tmp_path / "ws"
@@ -535,7 +496,6 @@ class TestWorkspaceRestriction:
         assert "hello from workspace" in result
         assert "Error" not in result
 
-    @pytest.mark.asyncio
     async def test_edit_blocked_in_extra_dir(self, tmp_path):
         """edit_file must not be able to modify files in extra_allowed_dirs."""
         workspace = tmp_path / "ws"
@@ -560,7 +520,6 @@ class TestWorkspaceRestriction:
         assert "outside" in result.lower()
         assert skill_file.read_text() == "# Weather\nOriginal content."
 
-    @pytest.mark.asyncio
     async def test_edit_allowed_with_extra_write_dir(self, tmp_path):
         workspace = tmp_path / "ws"
         workspace.mkdir()

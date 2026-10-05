@@ -62,7 +62,6 @@ def test_stepfun_custom_model() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_missing_api_key_short_circuits(audio_file: Path) -> None:
     with patch.dict("os.environ", {}, clear=True):
         provider = StepFunTranscriptionProvider(api_key=None)
@@ -72,7 +71,6 @@ async def test_missing_api_key_short_circuits(audio_file: Path) -> None:
         stream_mock.assert_not_called()
 
 
-@pytest.mark.asyncio
 async def test_missing_file_short_circuits(audio_file: Path) -> None:
     provider = StepFunTranscriptionProvider(api_key="sk-test")
     stream_mock = MagicMock()
@@ -86,7 +84,6 @@ async def test_missing_file_short_circuits(audio_file: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_sse_delta_then_done(audio_file: Path) -> None:
     """Simulates the real SSE event sequence: delta(s) -> text.done."""
     events = [
@@ -105,7 +102,6 @@ async def test_sse_delta_then_done(audio_file: Path) -> None:
     assert result == "你好世界"
 
 
-@pytest.mark.asyncio
 async def test_sse_only_done_event(audio_file: Path) -> None:
     """Single transcript.text.done event without deltas."""
     events = [
@@ -122,7 +118,6 @@ async def test_sse_only_done_event(audio_file: Path) -> None:
     assert result == "hello world"
 
 
-@pytest.mark.asyncio
 async def test_sse_error_event(audio_file: Path) -> None:
     """Error event in SSE stream returns "" immediately."""
     events = [
@@ -139,7 +134,6 @@ async def test_sse_error_event(audio_file: Path) -> None:
     assert result == ""
 
 
-@pytest.mark.asyncio
 async def test_sse_ignores_non_data_lines(audio_file: Path) -> None:
     """Empty lines and lines without 'data:' prefix are ignored."""
     events = [
@@ -160,7 +154,6 @@ async def test_sse_ignores_non_data_lines(audio_file: Path) -> None:
     assert result == "result"
 
 
-@pytest.mark.asyncio
 async def test_sse_malformed_json_skipped(audio_file: Path) -> None:
     """Malformed JSON in data lines are skipped gracefully."""
     events = [
@@ -185,7 +178,6 @@ async def test_sse_malformed_json_skipped(audio_file: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_retries_on_503_then_succeeds(audio_file: Path) -> None:
     """Transient 503 is retried, then a successful SSE stream yields text."""
     success_lines = [
@@ -203,7 +195,6 @@ async def test_retries_on_503_then_succeeds(audio_file: Path) -> None:
     assert result == "ok"
 
 
-@pytest.mark.asyncio
 async def test_gives_up_after_max_retries(audio_file: Path) -> None:
     """Persistent 503 returns "" after all retries exhausted."""
     attempts: list[list[str] | int] = [503, 503, 503, 503]  # 4 failing HTTP responses
@@ -218,7 +209,6 @@ async def test_gives_up_after_max_retries(audio_file: Path) -> None:
     assert result == ""
 
 
-@pytest.mark.asyncio
 async def test_sse_empty_text_done_returns_empty(audio_file: Path) -> None:
     """Empty text in transcript.text.done should return "" immediately, not retry."""
     events = [
@@ -237,7 +227,6 @@ async def test_sse_empty_text_done_returns_empty(audio_file: Path) -> None:
     assert result == ""
 
 
-@pytest.mark.asyncio
 async def test_401_returns_empty_without_retry(audio_file: Path) -> None:
     """401 is not retryable; bad credentials should fail immediately."""
     stream_cm = _make_stream_cm(401, [])
@@ -252,7 +241,6 @@ async def test_401_returns_empty_without_retry(audio_file: Path) -> None:
     sleep.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_retries_on_connect_error(audio_file: Path) -> None:
     """Network-level transient errors are retried."""
     success_lines = [

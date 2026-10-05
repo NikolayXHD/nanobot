@@ -59,7 +59,6 @@ def _attach_webui_runtime_events(loop: AgentLoop, bus: MessageBus) -> None:
 class TestToolEventProgress:
     """_run_agent_loop emits structured tool_events via on_progress."""
 
-    @pytest.mark.asyncio
     async def test_start_and_finish_events_emitted(self, tmp_path: Path) -> None:
         loop = _make_loop(tmp_path)
         tool_call = ToolCallRequest(id="call1", name="custom_tool", arguments={"path": "foo.txt"})
@@ -123,7 +122,6 @@ class TestToolEventProgress:
             ),
         ]
 
-    @pytest.mark.asyncio
     async def test_write_file_emits_file_edit_progress(self, tmp_path: Path) -> None:
         loop = _make_loop(tmp_path)
         target = tmp_path / "foo.txt"
@@ -180,7 +178,6 @@ class TestToolEventProgress:
         assert (file_events[1]["added"], file_events[1]["deleted"]) == (2, 1)
         assert file_events[1]["diff"]["format"] == "unified"
 
-    @pytest.mark.asyncio
     async def test_file_edit_snapshot_skipped_when_progress_callback_cannot_emit_file_edits(
         self,
         tmp_path: Path,
@@ -237,7 +234,6 @@ class TestToolEventProgress:
         assert target.read_text(encoding="utf-8") == "new\n"
         prepare_file_edit_trackers.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_exec_does_not_emit_file_edit_progress(self, tmp_path: Path) -> None:
         loop = _make_loop(tmp_path)
         tool_call = ToolCallRequest(
@@ -275,7 +271,6 @@ class TestToolEventProgress:
 
         assert file_events == []
 
-    @pytest.mark.asyncio
     async def test_bus_progress_forwards_tool_events_to_outbound_metadata(self, tmp_path: Path) -> None:
         """When run() handles a bus message, _tool_events lands in OutboundMessage metadata."""
         bus = MessageBus()
@@ -343,7 +338,6 @@ class TestToolEventProgress:
         assert finish["phase"] == "end"
         assert finish["result"] == "file.txt"
 
-    @pytest.mark.asyncio
     async def test_bus_progress_forwards_file_edit_events_without_channel_branch(self, tmp_path: Path) -> None:
         bus = MessageBus()
         provider = MagicMock()
@@ -373,7 +367,6 @@ class TestToolEventProgress:
         assert isinstance(outbound.event, ProgressEvent)
         assert outbound.event.file_edit_events == edit_events
 
-    @pytest.mark.asyncio
     async def test_goal_turn_keeps_file_edit_progress_for_webui(self, tmp_path: Path) -> None:
         """The /goal command rewrites the prompt but must not bypass WebUI file-edit progress."""
         bus = MessageBus()
@@ -455,7 +448,6 @@ class TestToolEventProgress:
         )
         provider.chat_with_retry.assert_not_awaited()
 
-    @pytest.mark.asyncio
     async def test_non_streaming_channel_does_not_publish_codex_progress_deltas(
         self,
         tmp_path: Path,
@@ -486,7 +478,6 @@ class TestToolEventProgress:
         provider.chat_with_retry.assert_not_awaited()
         provider.chat_stream_with_retry.assert_awaited_once()
 
-    @pytest.mark.asyncio
     async def test_streaming_channel_streams_provider_deltas_for_codex_style_provider(
         self,
         tmp_path: Path,
@@ -536,7 +527,6 @@ class TestToolEventProgress:
         assert turn_end_msgs[0].content == ""
         provider.chat_with_retry.assert_not_awaited()
 
-    @pytest.mark.asyncio
     async def test_length_recovery_keeps_one_user_visible_stream(
         self,
         tmp_path: Path,
@@ -580,7 +570,6 @@ class TestToolEventProgress:
         assert [event.merge_next for event in endings] == [True, False]
         assert {event.stream_id for event in [*deltas, *endings]} == {deltas[0].stream_id}
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("max_iterations", [1, 2])
     async def test_followup_after_truncation_starts_a_new_stream(
         self, tmp_path: Path, max_iterations: int,
@@ -645,7 +634,6 @@ class TestToolEventProgress:
         finally:
             await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_length_recovery_streams_non_delta_terminal_segment(
         self,
         tmp_path: Path,
@@ -690,7 +678,6 @@ class TestToolEventProgress:
         assert len(final) == 1
         assert isinstance(final[0].event, StreamedResponseEvent)
 
-    @pytest.mark.asyncio
     async def test_length_recovery_at_max_iterations_streams_only_missing_tail(
         self,
         tmp_path: Path,
@@ -732,7 +719,6 @@ class TestToolEventProgress:
         assert {event.stream_id for event in [*deltas, *endings]} == {deltas[0].stream_id}
         assert [message.content for message in final] == ["partial\n\nsummary"]
 
-    @pytest.mark.asyncio
     async def test_cancelled_length_recovery_closes_merged_stream(
         self,
         tmp_path: Path,
@@ -775,7 +761,6 @@ class TestToolEventProgress:
         ]
         assert endings[0].stream_id == endings[1].stream_id
 
-    @pytest.mark.asyncio
     async def test_non_streamed_finalization_is_delivered_as_regular_message(
         self,
         tmp_path: Path,
@@ -819,7 +804,6 @@ class TestToolEventProgress:
         assert final[0].event is None
         assert provider.chat_stream_with_retry.await_count == 3
 
-    @pytest.mark.asyncio
     async def test_independent_late_subagent_result_gets_complete_webui_turn(
         self,
         tmp_path: Path,
@@ -975,7 +959,6 @@ class TestToolEventProgress:
         )
         provider.chat_with_retry.assert_not_awaited()
 
-    @pytest.mark.asyncio
     async def test_stream_timeout_recovery_continues_in_new_segment(
         self,
         tmp_path: Path,
@@ -1033,7 +1016,6 @@ class TestToolEventProgress:
         assert isinstance(final[-1].event, StreamedResponseEvent)
         provider.chat_with_retry.assert_not_awaited()
 
-    @pytest.mark.asyncio
     async def test_streamed_content_is_not_repeated_before_tool_execution(
         self,
         tmp_path: Path,
@@ -1085,7 +1067,6 @@ class TestToolEventProgress:
         assert progress[0][0] == 'custom_tool("foo.txt")'
         assert all(item[0] != "I will inspect it." for item in progress)
 
-    @pytest.mark.asyncio
     async def test_websocket_dispatch_publishes_final_turn_end_marker(self, tmp_path: Path) -> None:
         bus = MessageBus()
         provider = MagicMock()
@@ -1116,7 +1097,6 @@ class TestToolEventProgress:
         assert turn_end_msgs[0].chat_id == "chat1"
         assert outbound.index(done_msgs[0]) < outbound.index(turn_end_msgs[0])
 
-    @pytest.mark.asyncio
     async def test_websocket_dispatch_publishes_turn_end_after_error(
         self,
         tmp_path: Path,
@@ -1155,7 +1135,6 @@ class TestToolEventProgress:
         assert outbound.index(error_msgs[0]) < outbound.index(turn_end_msgs[0])
         assert outbound.index(turn_end_msgs[0]) < outbound.index(statuses[-1])
 
-    @pytest.mark.asyncio
     async def test_webui_title_generation_runs_after_turn_end(self, tmp_path: Path) -> None:
         bus = MessageBus()
         provider = MagicMock()
@@ -1213,7 +1192,6 @@ class TestToolEventProgress:
         assert session_updated.event.scope == "metadata"
         assert provider.chat_stream_with_retry.await_count == 2
 
-    @pytest.mark.asyncio
     async def test_webui_title_generation_uses_turn_model_snapshot(
         self,
         tmp_path: Path,
@@ -1271,7 +1249,6 @@ class TestToolEventProgress:
         assert captured["provider"] is provider
         assert captured["model"] == "test-model"
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("metadata", [{}, {"webui": False}])
     async def test_webui_title_requires_inbound_opt_in(
         self,
@@ -1304,7 +1281,6 @@ class TestToolEventProgress:
         provider.chat_stream_with_retry.assert_not_awaited()
         assert "title" not in session.metadata
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("metadata", [{}, {"webui": False}])
     async def test_webui_turn_without_opt_in_does_not_schedule_title(
         self,
@@ -1342,7 +1318,6 @@ class TestToolEventProgress:
         provider.chat_stream_with_retry.assert_awaited_once()
         assert "title" not in session.metadata
 
-    @pytest.mark.asyncio
     async def test_webui_command_turn_does_not_schedule_title_generation(
         self,
         tmp_path: Path,
@@ -1375,7 +1350,6 @@ class TestToolEventProgress:
 
         assert scheduled == []
 
-    @pytest.mark.asyncio
     async def test_non_websocket_dispatch_does_not_publish_turn_end_marker(self, tmp_path: Path) -> None:
         bus = MessageBus()
         provider = MagicMock()

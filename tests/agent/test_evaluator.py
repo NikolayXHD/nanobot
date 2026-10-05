@@ -75,7 +75,6 @@ def test_resolve_evaluator_prompt_caps_workspace_override(tmp_path) -> None:
     assert prompt.endswith("... (truncated)")
 
 
-@pytest.mark.asyncio
 async def test_should_notify_true() -> None:
     provider = DummyProvider([_eval_tool_call(True, "user asked to be reminded")])
     result = await evaluate_response(
@@ -85,7 +84,6 @@ async def test_should_notify_true() -> None:
     assert result is True
 
 
-@pytest.mark.asyncio
 async def test_should_notify_false() -> None:
     provider = DummyProvider([_eval_tool_call(False, "routine check, nothing new")])
     result = await evaluate_response(
@@ -95,7 +93,6 @@ async def test_should_notify_false() -> None:
     assert result is False
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("decision", ["false", "true", 0, 1, None, [], {"notify": True}])
 @pytest.mark.parametrize("default_notify", [False, True])
 async def test_invalid_notification_decision_uses_default(decision, default_notify) -> None:
@@ -114,7 +111,6 @@ async def test_invalid_notification_decision_uses_default(decision, default_noti
     assert result is default_notify
 
 
-@pytest.mark.asyncio
 async def test_fallback_on_error() -> None:
     class FailingProvider(DummyProvider):
         async def chat(self, *args, **kwargs) -> LLMResponse:
@@ -128,7 +124,6 @@ async def test_fallback_on_error() -> None:
     assert result is True
 
 
-@pytest.mark.asyncio
 async def test_no_tool_call_fallback() -> None:
     provider = DummyProvider([LLMResponse(content="I think you should notify", tool_calls=[])])
     result = await evaluate_response(
@@ -138,7 +133,6 @@ async def test_no_tool_call_fallback() -> None:
     assert result is True
 
 
-@pytest.mark.asyncio
 async def test_fail_closed_on_error() -> None:
     class FailingProvider(DummyProvider):
         async def chat(self, *args, **kwargs) -> LLMResponse:
@@ -152,7 +146,6 @@ async def test_fail_closed_on_error() -> None:
     assert result is False
 
 
-@pytest.mark.asyncio
 async def test_fail_closed_on_no_tool_call() -> None:
     provider = DummyProvider([LLMResponse(content="text only", tool_calls=[])])
     result = await evaluate_response(

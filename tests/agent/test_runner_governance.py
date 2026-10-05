@@ -584,7 +584,6 @@ async def test_runner_refuses_checkpoint_that_cannot_fit_with_delta(monkeypatch)
     provider.chat_stream_with_retry.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_runner_governs_messages_added_by_before_iteration_hook(monkeypatch):
     from nanobot.agent.hook import AgentHook, AgentHookContext
     from nanobot.agent.runner import AgentRunner
@@ -753,7 +752,6 @@ def test_resumed_provider_context_avoids_full_transcript_estimate(monkeypatch):
     assert pressure is None
 
 
-@pytest.mark.asyncio
 async def test_runner_refuses_oversized_resumed_state_without_compactor(monkeypatch):
     from nanobot.agent.runner import AgentRunner
 
@@ -810,7 +808,6 @@ async def test_runner_refuses_oversized_resumed_state_without_compactor(monkeypa
     assert captured_contexts == []
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("context_window_tokens", "expected_budget"),
     [(1_624, 500), (1_000, 0)],
@@ -908,7 +905,6 @@ def test_drop_orphan_tool_results_removes_unmatched_tool_messages():
     ]
 
 
-@pytest.mark.asyncio
 async def test_backfill_noop_when_complete():
     """Complete message chains should not be modified."""
     messages = [
@@ -927,7 +923,6 @@ async def test_backfill_noop_when_complete():
     assert result is messages  # same object — no copy
 
 
-@pytest.mark.asyncio
 async def test_runner_drops_orphan_tool_results_before_model_request():
     from nanobot.agent.runner import AgentRunner
 
@@ -966,7 +961,6 @@ async def test_runner_drops_orphan_tool_results_before_model_request():
     assert result.final_content == "done"
 
 
-@pytest.mark.asyncio
 async def test_backfill_repairs_model_context_without_shifting_save_turn_boundary(tmp_path):
     """Historical backfill should not duplicate old tail messages on persist."""
     from nanobot.agent.loop import AgentLoop
@@ -1048,7 +1042,6 @@ async def test_backfill_repairs_model_context_without_shifting_save_turn_boundar
     ]
 
 
-@pytest.mark.asyncio
 async def test_runner_backfill_only_mutates_model_context_not_returned_messages():
     """Runner should repair orphaned tool calls for the model without rewriting result.messages."""
     from nanobot.agent.runner import AgentRunner

@@ -211,7 +211,6 @@ class TestDreamTools:
             "write_file",
         }
 
-    @pytest.mark.asyncio
     async def test_dream_can_edit_canonical_memory_files(self, store):
         tools = store.build_dream_tools()
 
@@ -251,7 +250,6 @@ class TestDreamTools:
         assert "Precise" in store.soul_file.read_text(encoding="utf-8")
         assert "**Name**: Ada" in store.user_file.read_text(encoding="utf-8")
 
-    @pytest.mark.asyncio
     async def test_dream_can_write_workspace_skills(self, store):
         tools = store.build_dream_tools()
         target = store.workspace / "skills" / "demo" / "SKILL.md"
@@ -267,7 +265,6 @@ class TestDreamTools:
         assert "Successfully wrote" in result
         assert target.read_text(encoding="utf-8").startswith("---\nname: demo")
 
-    @pytest.mark.asyncio
     async def test_dream_tools_keep_internal_write_scope_under_full_access(self, store):
         tools = store.build_dream_tools()
         scope = default_workspace_scope(store.workspace, restrict_to_workspace=False)
@@ -302,7 +299,6 @@ class TestDreamTools:
         assert "Patch applied" in skill_result
         assert skill_target.read_text(encoding="utf-8").startswith("---\nname: scoped")
 
-    @pytest.mark.asyncio
     async def test_dream_cannot_modify_memory_internal_files(self, store):
         tools = store.build_dream_tools()
         store.history_file.write_text("before\n", encoding="utf-8")
@@ -343,7 +339,6 @@ class TestDreamTools:
         assert store.history_file.read_text(encoding="utf-8") == "before\n"
         assert store._dream_cursor_file.read_text(encoding="utf-8") == "1"
 
-    @pytest.mark.asyncio
     async def test_dream_cannot_create_children_under_canonical_files(self, store):
         tools = store.build_dream_tools()
 

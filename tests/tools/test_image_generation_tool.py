@@ -36,7 +36,6 @@ class FakeImageClient:
         return GeneratedImageResponse(images=[PNG_DATA_URL], content="", raw={})
 
 
-@pytest.mark.asyncio
 async def test_generate_image_tool_stores_artifact_and_source_images(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -77,7 +76,6 @@ async def test_generate_image_tool_stores_artifact_and_source_images(
     assert fake.calls[0]["image_size"] == "2K"
 
 
-@pytest.mark.asyncio
 async def test_generate_image_tool_reports_missing_key(tmp_path: Path) -> None:
     tool = ImageGenerationTool(
         workspace=tmp_path,
@@ -90,7 +88,6 @@ async def test_generate_image_tool_reports_missing_key(tmp_path: Path) -> None:
     assert result.startswith("Error: OpenRouter API key is not configured")
 
 
-@pytest.mark.asyncio
 async def test_generate_image_tool_selects_aihubmix_provider(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -151,7 +148,6 @@ def test_image_generation_tool_passes_provider_proxy_to_client(
     assert FakeImageClient.instances[0].kwargs["proxy"] == proxy
 
 
-@pytest.mark.asyncio
 async def test_generate_image_tool_reports_missing_aihubmix_key(tmp_path: Path) -> None:
     tool = ImageGenerationTool(
         workspace=tmp_path,
@@ -164,7 +160,6 @@ async def test_generate_image_tool_reports_missing_aihubmix_key(tmp_path: Path) 
     assert result.startswith("Error: AIHubMix API key is not configured")
 
 
-@pytest.mark.asyncio
 async def test_generate_image_tool_allows_ollama_without_api_key(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -197,7 +192,6 @@ async def test_generate_image_tool_allows_ollama_without_api_key(
     assert fake.calls[0]["image_size"] == "1K"
 
 
-@pytest.mark.asyncio
 async def test_generate_image_tool_reports_missing_zhipu_key(tmp_path: Path) -> None:
     tool = ImageGenerationTool(
         workspace=tmp_path,
@@ -214,7 +208,6 @@ async def test_generate_image_tool_reports_missing_zhipu_key(tmp_path: Path) -> 
     assert result.startswith("Error: Zhipu API key is not configured")
 
 
-@pytest.mark.asyncio
 async def test_generate_image_tool_rejects_reference_outside_workspace(tmp_path: Path) -> None:
     set_config_path(tmp_path / "config.json")
     outside = tmp_path.parent / "outside.png"

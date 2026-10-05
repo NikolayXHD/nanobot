@@ -356,7 +356,6 @@ def test_inline_fallback_reasoning_effort_does_not_inherit_primary() -> None:
 
 
 class TestNoFallbackWhenPrimarySucceeds:
-    @pytest.mark.asyncio
     async def test(self) -> None:
         primary = _FakeProvider("primary", _make_response("primary ok"))
         factory = MagicMock()
@@ -404,7 +403,6 @@ class TestFallbackWhenPrimaryRaises:
         [TimeoutError(), httpx.ReadTimeout(""), httpx.ConnectError(""), httpx.ReadError("")],
         ids=["asyncio-timeout", "httpx-timeout", "connection", "httpx-network-error"],
     )
-    @pytest.mark.asyncio
     async def test_transient_exception_triggers_fallback(self, exc: Exception) -> None:
         """Transient exceptions remain eligible even when their messages are empty."""
         primary = _RaisingProvider("primary", exc)
@@ -423,7 +421,6 @@ class TestFallbackWhenPrimaryRaises:
         assert result.finish_reason == "stop"
         factory.assert_called_once_with(_fallback("fallback-a"))
 
-    @pytest.mark.asyncio
     async def test_primary_exception_triggers_fallback(self) -> None:
         """A primary whose chat() raises must not abort failover.
 
@@ -446,7 +443,6 @@ class TestFallbackWhenPrimaryRaises:
         assert result.finish_reason == "stop"
         factory.assert_called_once_with(_fallback("fallback-a"))
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("stream", [False, True], ids=["chat", "stream"])
     async def test_retry_entry_point_preserves_transient_exception_metadata(
         self,
@@ -470,7 +466,6 @@ class TestFallbackWhenPrimaryRaises:
         assert result.finish_reason == "stop"
         factory.assert_called_once_with(_fallback("fallback-a"))
 
-    @pytest.mark.asyncio
     async def test_authentication_exception_message_is_classified(self) -> None:
         primary = _RaisingProvider("primary")
 
@@ -483,7 +478,6 @@ class TestFallbackWhenPrimaryRaises:
         assert exception is primary._exc
         assert response.error_kind == "authentication"
 
-    @pytest.mark.asyncio
     async def test_non_string_exception_metadata_is_normalized_before_fallback(self) -> None:
         """Provider exception metadata must be string-like before fallback consumes it."""
 
@@ -513,7 +507,6 @@ class TestFallbackWhenPrimaryRaises:
         ],
         ids=["value-error", "local-permission-error"],
     )
-    @pytest.mark.asyncio
     async def test_non_fallbackable_primary_exception_does_not_trigger_fallback(
         self, exc: Exception,
     ) -> None:
@@ -538,7 +531,6 @@ class TestFallbackWhenPrimaryRaises:
         assert str(exc) in result.content
         factory.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_fallback_exception_advances_to_next_fallback(self) -> None:
         """A fallback whose chat() raises must advance to the next fallback."""
         primary = _FakeProvider("primary", _error_response())
@@ -556,7 +548,6 @@ class TestFallbackWhenPrimaryRaises:
         assert result.content == "second fallback ok"
         assert result.finish_reason == "stop"
 
-    @pytest.mark.asyncio
     async def test_primary_exception_stream_triggers_fallback(self) -> None:
         """Streaming path: a raising primary still fails over when nothing streamed."""
         primary = _RaisingProvider("primary")
@@ -573,7 +564,6 @@ class TestFallbackWhenPrimaryRaises:
         assert result.content == "fallback ok"
         assert result.finish_reason == "stop"
 
-    @pytest.mark.asyncio
     async def test_primary_exception_after_streaming_does_not_duplicate_output(self) -> None:
         """Once content was emitted, an exception must not start a replacement stream."""
         primary = _StreamingThenRaisingProvider("primary")
@@ -599,7 +589,6 @@ class TestFallbackWhenPrimaryRaises:
         assert result.finish_reason == "error"
         factory.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_primary_cancellation_is_not_converted_to_failover(self) -> None:
         """Task cancellation must retain asyncio cancellation semantics."""
         primary = _RaisingProvider("primary", asyncio.CancelledError())
@@ -616,7 +605,6 @@ class TestFallbackWhenPrimaryRaises:
         factory.assert_not_called()
 
 class TestFallbackOnPrimaryError:
-    @pytest.mark.asyncio
     async def test_first_fallback_succeeds(self) -> None:
         primary = _FakeProvider("primary", _error_response())
         fallback = _FakeProvider("fallback", _make_response("fallback ok"))
@@ -635,7 +623,6 @@ class TestFallbackOnPrimaryError:
         assert primary.chat_calls[0]["model"] == "primary-model"
         assert fallback.chat_calls[0]["model"] == "fallback-a"
 
-    @pytest.mark.asyncio
     async def test_primary_compaction_uses_primary_context_window(self) -> None:
         primary = _FakeProvider("primary", _make_response("primary ok"))
         primary.compact = True
@@ -667,7 +654,6 @@ class TestFallbackOnPrimaryError:
             10_000,
         ) == 180_000
 
-    @pytest.mark.asyncio
     async def test_native_fallback_compaction_uses_its_own_context_window(self) -> None:
         primary = _FakeProvider("primary", _error_response())
         primary.compact = True
@@ -696,7 +682,6 @@ class TestFallbackOnPrimaryError:
             ProviderCallContext(context_window_tokens=120_000)
         ]
 
-    @pytest.mark.asyncio
     async def test_native_fallback_gets_context_when_primary_does_not_use_it(self) -> None:
         primary = _FakeProvider("primary", _error_response())
         fallback = _FakeProvider("fallback", _make_response("fallback ok"))
@@ -736,7 +721,6 @@ class TestFallbackOnPrimaryError:
             ProviderCallContext(context_window_tokens=120_000)
         ]
 
-    @pytest.mark.asyncio
     async def test_responses_chat_fallback_responses_rebuilds_state(self) -> None:
         primary = _FakeProvider("primary", _error_response())
         primary.resumable = True
@@ -815,7 +799,6 @@ class TestFallbackOnPrimaryError:
         assert primary.context_calls[-1] == next_context
         assert primary.chat_calls[-1]["messages"] == messages
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize(
         ("primary_error_kind", "primary_status", "primary_should_retry"),
         [
@@ -890,7 +873,6 @@ class TestFallbackOnPrimaryError:
         assert restored is not None
         assert restored.payload == state.payload
 
-    @pytest.mark.asyncio
     async def test_reports_only_the_successful_fallback_model(self) -> None:
         primary = _FakeProvider("primary", _error_response())
         failed_fallback = _FakeProvider("failed", _error_response("backup overloaded"))
@@ -919,7 +901,6 @@ class TestFallbackOnPrimaryError:
         assert result.content == "fallback ok"
         assert fallback_models == ["fallback-b"]
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize(("provider_name", "status", "code", "kind", "expected"), [
         ("openai_codex", 401, "token_revoked", "http", "openai_codex"),
         ("xai_grok", 401, None, "http", "xai_grok"),
@@ -951,7 +932,6 @@ class TestFallbackOnPrimaryError:
         observer.assert_awaited_once_with(FallbackModelSelection("backup", expected))
         assert "synthetic-secret" not in repr(observer.await_args)
 
-    @pytest.mark.asyncio
     async def test_does_not_reuse_auth_diagnosis_when_circuit_skips_primary(self) -> None:
         observer = AsyncMock()
         provider = FallbackProvider(
@@ -966,7 +946,6 @@ class TestFallbackOnPrimaryError:
             "openai_codex", "openai_codex", "openai_codex", None,
         ]
 
-    @pytest.mark.asyncio
     async def test_no_reauth_notice_when_all_fallbacks_fail(self) -> None:
         observer = AsyncMock()
         provider = FallbackProvider(
@@ -979,7 +958,6 @@ class TestFallbackOnPrimaryError:
         assert result.finish_reason == "error"
         observer.assert_not_awaited()
 
-    @pytest.mark.asyncio
     async def test_logs_primary_error_before_fallback(self) -> None:
         primary = _FakeProvider("primary", _error_response("primary overloaded"))
         fallback = _FakeProvider("fallback", _make_response("fallback ok"))
@@ -1005,7 +983,6 @@ class TestFallbackOnPrimaryError:
 
 
 class TestNoFallbackWhenContentStreamed:
-    @pytest.mark.asyncio
     async def test_non_timeout_error_skips_failover(self) -> None:
         primary = _FakeProvider("primary", _error_response())
         factory = MagicMock()
@@ -1027,7 +1004,6 @@ class TestNoFallbackWhenContentStreamed:
 
 
 class TestFallbackOnStreamStalledAfterContent:
-    @pytest.mark.asyncio
     async def test_timeout_with_streamed_content_falls_back(self) -> None:
         primary = _FakeProvider(
             "primary",
@@ -1065,7 +1041,6 @@ class TestFallbackOnStreamStalledAfterContent:
 class TestFailoverOnEmptyChoices:
     """Fallback should trigger when API returns empty choices (no error metadata)."""
 
-    @pytest.mark.asyncio
     async def test_empty_choices_text_fallback(self) -> None:
         """_should_fallback should return True for 'API returned empty choices'."""
         from nanobot.providers.fallback_provider import FallbackProvider
@@ -1078,7 +1053,6 @@ class TestFailoverOnEmptyChoices:
         # error_kind="empty" matches _FALLBACK_ERROR_KINDS via kind check
         assert FallbackProvider._should_fallback(response)
 
-    @pytest.mark.asyncio
     async def test_empty_choices_no_error_kind_text_fallback(self) -> None:
         """_should_fallback should also match via text token when error_kind is None."""
         from nanobot.providers.fallback_provider import FallbackProvider
@@ -1091,7 +1065,6 @@ class TestFailoverOnEmptyChoices:
         # "empty" token in _FALLBACK_ERROR_TOKENS matches via text fallback
         assert FallbackProvider._should_fallback(response)
 
-    @pytest.mark.asyncio
     async def test_empty_choices_triggers_failover(self) -> None:
         """End-to-end: empty choices on primary triggers fallback."""
         primary = _FakeProvider(
@@ -1113,7 +1086,6 @@ class TestFailoverOnEmptyChoices:
 
 
 class TestFailoverOnTransientError:
-    @pytest.mark.asyncio
     async def test_rate_limit(self) -> None:
         primary = _FakeProvider("primary", _error_response("rate limit exceeded"))
         fallback = _FakeProvider("fallback", _make_response("fallback ok"))
@@ -1179,7 +1151,6 @@ class TestRetryBeforeFailover:
         assert sum(event.state == "exhausted" for event in statuses) == 1
         assert statuses[-1].state == "exhausted"
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("retry_mode", ["standard", "persistent"])
     async def test_primary_recovers_before_fallback(self, retry_mode: str) -> None:
         primary = _FakeProvider(
@@ -1199,7 +1170,6 @@ class TestRetryBeforeFailover:
         assert len(primary.chat_calls) == 2
         factory.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_primary_exhausts_before_fallback_without_terminal_event(self) -> None:
         primary = _FakeProvider(
             "primary",
@@ -1238,7 +1208,6 @@ class TestRetryBeforeFailover:
         )
         factory.assert_called_once_with(_fallback("fallback-a"))
 
-    @pytest.mark.asyncio
     async def test_all_candidates_exhaust_emit_one_terminal_event(self) -> None:
         primary = _FakeProvider("primary", _retryable_error("primary unavailable"))
         fallback = _FakeProvider("fallback", _retryable_error("fallback unavailable"))
@@ -1271,7 +1240,6 @@ class TestRetryBeforeFailover:
         assert "cleared" in [status.state for status in retry_statuses]
         assert retry_statuses[-1].state == "exhausted"
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("factory_fails", [False, True])
     async def test_persistent_mode_repeats_the_whole_chain(
         self,
@@ -1303,7 +1271,6 @@ class TestRetryBeforeFailover:
             "Persistent retry stopped after 2 identical errors."
         )
 
-    @pytest.mark.asyncio
     async def test_open_primary_circuit_remains_retryable_when_factory_fails(self) -> None:
         primary = _FakeProvider("primary")
         factory = MagicMock(side_effect=ValueError("missing fallback credentials"))
@@ -1330,7 +1297,6 @@ class TestRetryBeforeFailover:
             "Persistent retry stopped after 2 identical errors."
         )
 
-    @pytest.mark.asyncio
     async def test_fallback_retries_before_trying_next_model(self) -> None:
         primary = _FakeProvider(
             "primary",
@@ -1360,7 +1326,6 @@ class TestRetryBeforeFailover:
         assert len(fallback_a.chat_calls) == 2
         factory.assert_called_once_with(fallback_a_preset)
 
-    @pytest.mark.asyncio
     async def test_stream_recovery_keeps_fallback_eligible(self) -> None:
         primary = _FakeProvider(
             "primary",
@@ -1388,7 +1353,6 @@ class TestRetryBeforeFailover:
         recovered.assert_awaited_once_with()
         factory.assert_called_once_with(_fallback("fallback-a"))
 
-    @pytest.mark.asyncio
     async def test_stream_without_delta_callback_retries_before_fallback(self) -> None:
         primary = _FakeProvider(
             "primary",
@@ -1407,7 +1371,6 @@ class TestRetryBeforeFailover:
         assert len(primary.chat_stream_calls) == 4
         factory.assert_called_once_with(_fallback("fallback-a"))
 
-    @pytest.mark.asyncio
     async def test_unrecovered_stream_keeps_non_timeout_fallback_blocked(self) -> None:
         primary = _FakeProvider(
             "primary",
@@ -1434,7 +1397,6 @@ class TestRetryBeforeFailover:
 
 
 class TestFailoverOnArrearageError:
-    @pytest.mark.asyncio
     async def test_non_retryable_quota_tries_configured_fallback(self) -> None:
         arrearage = _make_response(
             "insufficient quota",
@@ -1458,7 +1420,6 @@ class TestFailoverOnArrearageError:
         assert result.content == "fallback ok"
         factory.assert_called_once_with(fallback_preset)
 
-    @pytest.mark.asyncio
     async def test_insufficient_credits_on_400_tries_configured_fallback(self) -> None:
         """Some OpenAI-compatible gateways report exhausted credits as HTTP 400."""
         arrearage = _make_response(
@@ -1484,7 +1445,6 @@ class TestFailoverOnArrearageError:
         assert result.content == "fallback ok"
         factory.assert_called_once_with(fallback_preset)
 
-    @pytest.mark.asyncio
     async def test_plain_bad_request_still_does_not_fall_back(self) -> None:
         """A 400 with no billing semantics stays non-fallbackable."""
         bad_request = _make_response(
@@ -1508,7 +1468,6 @@ class TestFailoverOnArrearageError:
         assert result is bad_request
         factory.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_without_fallback_presets_returns_original_error(self) -> None:
         arrearage = _make_response(
             "payment required",
@@ -1586,7 +1545,6 @@ class TestFailoverOnAuthenticationError:
             ),
         ],
     )
-    @pytest.mark.asyncio
     async def test_tries_configured_fallback(
         self,
         authentication_error: LLMResponse,
@@ -1608,7 +1566,6 @@ class TestFailoverOnAuthenticationError:
 
 
 class TestNoFallbackOnNonRetryableError:
-    @pytest.mark.asyncio
     async def test_bad_request(self) -> None:
         primary = _FakeProvider(
             "primary",
@@ -1631,7 +1588,6 @@ class TestNoFallbackOnNonRetryableError:
         assert result.finish_reason == "error"
         factory.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_content_filter_takes_precedence_over_403(self) -> None:
         primary = _FakeProvider(
             "primary",
@@ -1655,7 +1611,6 @@ class TestNoFallbackOnNonRetryableError:
         assert result.finish_reason == "error"
         factory.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_timeout(self) -> None:
         primary = _FakeProvider(
             "primary",
@@ -1676,7 +1631,6 @@ class TestNoFallbackOnNonRetryableError:
 
 
 class TestFallbackTriesModelsInOrder:
-    @pytest.mark.asyncio
     async def test(self) -> None:
         primary = _FakeProvider("primary", _error_response("primary fail"))
         fallback_a = _FakeProvider("a", _error_response("a fail"))
@@ -1697,7 +1651,6 @@ class TestFallbackTriesModelsInOrder:
 
 
 class TestAllFallbacksFail:
-    @pytest.mark.asyncio
     async def test(self) -> None:
         primary = _FakeProvider("primary", _error_response("primary fail"))
         fallback = _FakeProvider("fallback", _error_response("all fail"))
@@ -1715,7 +1668,6 @@ class TestAllFallbacksFail:
 
 
 class TestFactoryExceptionSkipsModel:
-    @pytest.mark.asyncio
     async def test(self) -> None:
         primary = _FakeProvider("primary", _error_response())
         fallback_b = _FakeProvider("b", _make_response("b ok"))
@@ -1733,7 +1685,6 @@ class TestFactoryExceptionSkipsModel:
 
 
 class TestFallbackModelParameter:
-    @pytest.mark.asyncio
     async def test(self) -> None:
         """Fallback calls should use the fallback model name."""
         primary = _FakeProvider("primary", _error_response())
@@ -1749,7 +1700,6 @@ class TestFallbackModelParameter:
         await fb.chat(messages=[{"role": "user", "content": "hi"}], model="primary-model")
         assert fallback.chat_calls[0]["model"] == "fallback-model"
 
-    @pytest.mark.asyncio
     async def test_uses_fallback_generation_fields(self) -> None:
         primary = _FakeProvider("primary", _error_response())
         fallback = _FakeProvider("fallback", _make_response("ok"))
@@ -1781,7 +1731,6 @@ class TestFallbackModelParameter:
 
 
 class TestNoFallbackWhenEmptyList:
-    @pytest.mark.asyncio
     async def test(self) -> None:
         primary = _FakeProvider("primary", _error_response())
         factory = MagicMock()
@@ -1796,7 +1745,6 @@ class TestNoFallbackWhenEmptyList:
         assert result.finish_reason == "error"
         factory.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_retry_entrypoints_delegate_to_primary(self) -> None:
         primary = _FakeProvider("primary")
         provider = FallbackProvider(primary, [], MagicMock())
@@ -1821,7 +1769,6 @@ class TestNoFallbackWhenEmptyList:
 
 
 class TestChatStreamFailover:
-    @pytest.mark.asyncio
     async def test_fallback_succeeds(self) -> None:
         # Use empty content so on_content_delta is not triggered on the error
         primary = _FakeProvider("primary", _error_response(""))
@@ -1851,7 +1798,6 @@ class TestGetDefaultModel:
 
 
 class TestCircuitBreaker:
-    @pytest.mark.asyncio
     async def test_skips_primary_after_three_failures(self) -> None:
         primary = _FakeProvider("primary", _error_response())
         fallback = _FakeProvider("fallback", _make_response("fallback ok"))
@@ -1875,7 +1821,6 @@ class TestCircuitBreaker:
         assert result.content == "fallback ok"
         assert len(primary.chat_calls) == 0
 
-    @pytest.mark.asyncio
     async def test_resets_on_success(self) -> None:
         primary = _FakeProvider("primary", _error_response())
         fallback = _FakeProvider("fallback", _make_response("fallback ok"))

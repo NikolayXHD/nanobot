@@ -89,7 +89,6 @@ def _make_provider(
     return provider, registry
 
 
-@pytest.mark.asyncio
 async def test_mcp_read_filter_drops_progress_notifications_without_progress_token():
     send, receive = anyio.create_memory_object_stream(4)
     malformed_progress = _mcp_notification(
@@ -116,7 +115,6 @@ async def test_mcp_read_filter_drops_progress_notifications_without_progress_tok
     assert forwarded == [tool_change, valid_progress]
 
 
-@pytest.mark.asyncio
 async def test_owned_mcp_connection_closes_from_its_owner_task():
     close_requested = asyncio.Event()
     ready = asyncio.Event()
@@ -139,7 +137,6 @@ async def test_owned_mcp_connection_closes_from_its_owner_task():
     assert tasks["close"] is not asyncio.current_task()
 
 
-@pytest.mark.asyncio
 async def test_connect_mcp_retries_when_no_servers_connect(tmp_path, monkeypatch: pytest.MonkeyPatch):
     provider, _registry = _make_provider()
     attempts = 0
@@ -159,7 +156,6 @@ async def test_connect_mcp_retries_when_no_servers_connect(tmp_path, monkeypatch
     assert provider.runtime_status() == {"test": "failed"}
 
 
-@pytest.mark.asyncio
 async def test_connect_mcp_does_not_report_failure_before_oauth_authorization(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -183,7 +179,6 @@ async def test_connect_mcp_does_not_report_failure_before_oauth_authorization(
     assert provider.runtime_status() == {}
 
 
-@pytest.mark.asyncio
 async def test_mcp_provider_closes_connections_independently_from_agent_loop(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -219,7 +214,6 @@ async def test_mcp_provider_closes_connections_independently_from_agent_loop(
     assert registry.get("mcp_playwright_search") is None
 
 
-@pytest.mark.asyncio
 async def test_close_server_ignores_server_cancelled_error(tmp_path):
     provider, _registry = _make_provider()
 
@@ -234,7 +228,6 @@ async def test_close_server_ignores_server_cancelled_error(tmp_path):
     assert provider.connected_server_names == set()
 
 
-@pytest.mark.asyncio
 async def test_provider_close_continues_after_server_cancelled_error(tmp_path):
     provider, _registry = _make_provider()
     closed: list[str] = []
@@ -258,7 +251,6 @@ async def test_provider_close_continues_after_server_cancelled_error(tmp_path):
     assert provider.connected_server_names == set()
 
 
-@pytest.mark.asyncio
 async def test_provider_close_finishes_other_connections_before_propagating_cancellation(
     tmp_path,
 ):
@@ -290,7 +282,6 @@ async def test_provider_close_finishes_other_connections_before_propagating_canc
     assert provider.connected_server_names == set()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("close_all", [False, True], ids=["single", "all"])
 async def test_mcp_cleanup_re_raises_external_cancellation(tmp_path, close_all: bool):
     provider, _registry = _make_provider()
@@ -314,7 +305,6 @@ async def test_mcp_cleanup_re_raises_external_cancellation(tmp_path, close_all: 
         await task
 
 
-@pytest.mark.asyncio
 async def test_reload_mcp_servers_adds_and_removes_tools_without_restart(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -366,7 +356,6 @@ async def test_reload_mcp_servers_adds_and_removes_tools_without_restart(
     assert closed == ["browserbase"]
 
 
-@pytest.mark.asyncio
 async def test_reload_is_a_direct_provider_operation_without_an_agent_loop(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -414,7 +403,6 @@ async def test_reload_is_a_direct_provider_operation_without_an_agent_loop(
     assert closed == ["browserbase"]
 
 
-@pytest.mark.asyncio
 async def test_reload_timeout_marks_attempted_server_failed_and_allows_retry(
     monkeypatch: pytest.MonkeyPatch,
 ):
@@ -455,7 +443,6 @@ async def test_reload_timeout_marks_attempted_server_failed_and_allows_retry(
     await provider.aclose()
 
 
-@pytest.mark.asyncio
 async def test_reload_mcp_servers_retries_configured_server_without_live_stack(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -493,7 +480,6 @@ async def test_reload_mcp_servers_retries_configured_server_without_live_stack(
     await provider.aclose()
 
 
-@pytest.mark.asyncio
 async def test_reload_mcp_servers_skips_oauth_server_waiting_for_authorization(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -539,7 +525,6 @@ async def test_reload_mcp_servers_skips_oauth_server_waiting_for_authorization(
     await provider.aclose()
 
 
-@pytest.mark.asyncio
 async def test_mcp_tool_reconnects_after_session_terminated(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -604,7 +589,6 @@ async def test_mcp_tool_reconnects_after_session_terminated(
     assert registry.get("mcp_remote_quote") is not old_tool
 
 
-@pytest.mark.asyncio
 async def test_mcp_reconnect_handler_uses_sanitized_server_prefix(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -655,7 +639,6 @@ async def test_mcp_reconnect_handler_uses_sanitized_server_prefix(
     assert registry.get("mcp_remote_quote") is not old_tool
 
 
-@pytest.mark.asyncio
 async def test_concurrent_mcp_reconnect_reuses_fresh_session(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,

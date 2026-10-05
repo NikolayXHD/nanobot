@@ -5,8 +5,6 @@ from __future__ import annotations
 import asyncio
 from types import SimpleNamespace
 
-import pytest
-
 from nanobot.bus.events import InboundMessage
 from nanobot.session.goal_state import (
     GOAL_STATE_KEY,
@@ -28,7 +26,6 @@ from nanobot.session.turn_continuation import (
 )
 
 
-@pytest.mark.asyncio
 async def test_maybe_continue_turn_queues_internal_message():
     meta = {
         GOAL_STATE_KEY: {
@@ -96,7 +93,6 @@ def test_generic_internal_continuation_is_not_a_sustained_goal_continuation() ->
     assert sustained_goal_continuation_inbound({INTERNAL_CONTINUATION_META: True}) is False
 
 
-@pytest.mark.asyncio
 async def test_internal_continuation_respects_round_limit():
     meta = {
         GOAL_STATE_KEY: {"status": "active", "objective": "x"},

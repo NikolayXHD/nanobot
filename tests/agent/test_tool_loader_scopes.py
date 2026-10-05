@@ -1,4 +1,3 @@
-import pytest
 
 from nanobot.agent.tools.base import Tool
 from nanobot.agent.tools.context import ToolContext
@@ -62,7 +61,6 @@ class _UniversalTool(Tool):
         return "ok"
 
 
-@pytest.mark.asyncio
 async def test_loader_filters_by_scope():
     from nanobot.agent.tools.registry import ToolRegistry
 

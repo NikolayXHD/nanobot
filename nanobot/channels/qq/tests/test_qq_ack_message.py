@@ -43,7 +43,6 @@ class _FakeClient:
         self.api = _FakeApi()
 
 
-@pytest.mark.asyncio
 async def test_ack_sent_on_c2c_message() -> None:
     """Ack is sent immediately for C2C messages, then normal processing continues."""
     channel = QQChannel(
@@ -77,7 +76,6 @@ async def test_ack_sent_on_c2c_message() -> None:
     assert msg.sender_id == "user1"
 
 
-@pytest.mark.asyncio
 async def test_ack_sent_on_group_message() -> None:
     """Ack is sent immediately for group messages, then normal processing continues."""
     channel = QQChannel(
@@ -112,7 +110,6 @@ async def test_ack_sent_on_group_message() -> None:
     assert msg.chat_id == "group123"
 
 
-@pytest.mark.asyncio
 async def test_no_ack_when_ack_message_empty() -> None:
     """Setting ack_message to empty string disables the ack entirely."""
     channel = QQChannel(
@@ -141,7 +138,6 @@ async def test_no_ack_when_ack_message_empty() -> None:
     assert msg.content == "hello"
 
 
-@pytest.mark.asyncio
 async def test_custom_ack_message_text() -> None:
     """Custom Chinese ack_message text is delivered correctly."""
     custom = "正在处理中，请稍候..."

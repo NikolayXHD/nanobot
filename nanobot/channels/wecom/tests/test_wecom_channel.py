@@ -100,7 +100,6 @@ def test_sanitize_filename_empty_or_dots_fallback() -> None:
 # ── _download_and_save_media() ──────────────────────────────────────
 
 
-@pytest.mark.asyncio
 async def test_download_and_save_success() -> None:
     """Successful download writes file and returns sanitized path."""
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["*"]), MessageBus())
@@ -120,7 +119,6 @@ async def test_download_and_save_success() -> None:
     os.unlink(path)
 
 
-@pytest.mark.asyncio
 async def test_download_and_save_sanitizes_sdk_fallback(tmp_path: Path) -> None:
     """An unsafe SDK filename cannot escape the channel media directory."""
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["*"]), MessageBus())
@@ -141,7 +139,6 @@ async def test_download_and_save_sanitizes_sdk_fallback(tmp_path: Path) -> None:
     assert Path(path).read_bytes() == b"payload"
 
 
-@pytest.mark.asyncio
 async def test_download_and_save_oversized_rejected() -> None:
     """Data exceeding 200MB is rejected → returns None."""
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["*"]), MessageBus())
@@ -157,7 +154,6 @@ async def test_download_and_save_oversized_rejected() -> None:
     assert result is None
 
 
-@pytest.mark.asyncio
 async def test_download_and_save_failure() -> None:
     """SDK returns None data → returns None."""
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["*"]), MessageBus())
@@ -175,7 +171,6 @@ async def test_download_and_save_failure() -> None:
 # ── send() ──────────────────────────────────────────────────────────
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("has_frame", [False, True])
 @pytest.mark.parametrize("notify", [False, True])
 @pytest.mark.parametrize("show_notices", [False, True])
@@ -200,7 +195,6 @@ async def test_compaction_notice_policy(has_frame, notify, show_notices, phase) 
     assert ("chat1" in channel._chat_frames) is has_frame
 
 
-@pytest.mark.asyncio
 async def test_send_text_with_frame() -> None:
     """When frame is stored, send uses reply_stream for final text."""
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["*"]), MessageBus())
@@ -218,7 +212,6 @@ async def test_send_text_with_frame() -> None:
     assert call_args[0][2] == "hello"  # content arg
 
 
-@pytest.mark.asyncio
 async def test_send_progress_with_frame() -> None:
     """Progress events use reply_stream with finish=False."""
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["*"]), MessageBus())
@@ -242,7 +235,6 @@ async def test_send_progress_with_frame() -> None:
     assert call_args[1]["finish"] is False
 
 
-@pytest.mark.asyncio
 async def test_send_proactive_without_frame() -> None:
     """Without stored frame, send uses send_message with markdown."""
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["*"]), MessageBus())
@@ -259,7 +251,6 @@ async def test_send_proactive_without_frame() -> None:
     assert call_args[0][1]["msgtype"] == "markdown"
 
 
-@pytest.mark.asyncio
 async def test_send_media_then_text() -> None:
     """Media files are uploaded and sent before text content."""
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
@@ -290,7 +281,6 @@ async def test_send_media_then_text() -> None:
         os.unlink(tmp)
 
 
-@pytest.mark.asyncio
 async def test_send_proactive_media_uses_uploaded_media_id() -> None:
     """Proactive media uses the SDK upload result before sending text."""
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
@@ -320,7 +310,6 @@ async def test_send_proactive_media_uses_uploaded_media_id() -> None:
         os.unlink(tmp)
 
 
-@pytest.mark.asyncio
 async def test_send_media_upload_failure_falls_back_to_text() -> None:
     """Upload failures become a visible text marker without losing the reply."""
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
@@ -344,7 +333,6 @@ async def test_send_media_upload_failure_falls_back_to_text() -> None:
         os.unlink(tmp)
 
 
-@pytest.mark.asyncio
 async def test_send_media_delivery_failure_propagates_for_manager_retry() -> None:
     """A failed media reply still propagates after a successful upload."""
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
@@ -365,7 +353,6 @@ async def test_send_media_delivery_failure_propagates_for_manager_retry() -> Non
         os.unlink(tmp)
 
 
-@pytest.mark.asyncio
 async def test_send_media_file_not_found() -> None:
     """Non-existent media path is skipped with a warning."""
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["*"]), MessageBus())
@@ -385,7 +372,6 @@ async def test_send_media_file_not_found() -> None:
     assert len(media_calls) == 0
 
 
-@pytest.mark.asyncio
 async def test_send_exception_propagates_for_manager_retry() -> None:
     """Delivery failures must propagate to the channel manager."""
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["*"]), MessageBus())
@@ -407,7 +393,6 @@ async def test_send_exception_propagates_for_manager_retry() -> None:
 # ── _process_message() ──────────────────────────────────────────────
 
 
-@pytest.mark.asyncio
 async def test_process_text_message() -> None:
     """Text message is routed to bus with correct fields."""
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["user1"]), MessageBus())
@@ -431,7 +416,6 @@ async def test_process_text_message() -> None:
     assert msg.metadata["msg_type"] == "text"
 
 
-@pytest.mark.asyncio
 async def test_enter_chat_ignores_unauthorized_user_before_welcome() -> None:
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["allowed"]), MessageBus())
     client = _FakeWeComClient()
@@ -443,7 +427,6 @@ async def test_enter_chat_ignores_unauthorized_user_before_welcome() -> None:
     client.reply_welcome.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_process_message_ignores_unauthorized_sender_before_download() -> None:
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["allowed"]), MessageBus())
     client = _FakeWeComClient()
@@ -464,7 +447,6 @@ async def test_process_message_ignores_unauthorized_sender_before_download() -> 
     assert channel.bus.inbound_size == 0
 
 
-@pytest.mark.asyncio
 async def test_process_image_message() -> None:
     """Image message: download success → media_paths non-empty."""
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["user1"]), MessageBus())
@@ -500,7 +482,6 @@ async def test_process_image_message() -> None:
             os.unlink(p)
 
 
-@pytest.mark.asyncio
 async def test_process_file_message() -> None:
     """File message: download success → media_paths non-empty (critical fix verification)."""
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["user1"]), MessageBus())
@@ -533,7 +514,6 @@ async def test_process_file_message() -> None:
             os.unlink(p)
 
 
-@pytest.mark.asyncio
 async def test_process_file_message_uses_sdk_filename_when_name_missing(tmp_path: Path) -> None:
     """Without `file.name`, fall back to SDK fname instead of saving as 'unknown' (#3737)."""
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["user1"]), MessageBus())
@@ -553,7 +533,6 @@ async def test_process_file_message_uses_sdk_filename_when_name_missing(tmp_path
     assert "[file: real_name.pdf]" in msg.content
 
 
-@pytest.mark.asyncio
 async def test_process_voice_message() -> None:
     """Voice message: transcribed text is included in content."""
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["user1"]), MessageBus())
@@ -574,7 +553,6 @@ async def test_process_voice_message() -> None:
     assert "[voice]" in msg.content
 
 
-@pytest.mark.asyncio
 async def test_process_mixed_message() -> None:
     """Mixed message: contains picture and text message types."""
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["user1"]), MessageBus())
@@ -618,7 +596,6 @@ async def test_process_mixed_message() -> None:
             os.unlink(p)
 
 
-@pytest.mark.asyncio
 async def test_process_message_deduplication() -> None:
     """Same msg_id is not processed twice."""
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["user1"]), MessageBus())
@@ -642,7 +619,6 @@ async def test_process_message_deduplication() -> None:
     assert channel.bus.inbound.empty()
 
 
-@pytest.mark.asyncio
 async def test_process_message_empty_content_skipped() -> None:
     """Message with empty content produces no bus message."""
     channel = WecomChannel(WecomConfig(bot_id="b", secret="s", allow_from=["user1"]), MessageBus())

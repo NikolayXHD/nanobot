@@ -1034,7 +1034,6 @@ def test_manager_respects_explicitly_disabled_websocket_config():
     assert "websocket" not in mgr.channels
 
 
-@pytest.mark.asyncio
 async def test_base_channel_reads_current_transcription_config_each_call(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -1115,7 +1114,6 @@ async def test_base_channel_reads_current_transcription_config_each_call(
     ]
 
 
-@pytest.mark.asyncio
 async def test_base_channel_respects_disabled_transcription_config(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -1182,7 +1180,6 @@ def _stub_async_client(captured: dict[str, object]):
     [(_GroqProvider, "ko"), (_OpenAIProvider, "en")],
     ids=["groq", "openai"],
 )
-@pytest.mark.asyncio
 async def test_transcription_provider_includes_language(tmp_path, provider_cls, language):
     """Provider must include the 'language' field in multipart body when set."""
     audio = tmp_path / "sample.wav"
@@ -1202,7 +1199,6 @@ async def test_transcription_provider_includes_language(tmp_path, provider_cls, 
     [_GroqProvider, _OpenAIProvider],
     ids=["groq", "openai"],
 )
-@pytest.mark.asyncio
 async def test_transcription_provider_omits_language_when_none(tmp_path, provider_cls):
     """When language is not set, the 'language' key must be absent from the multipart body."""
     audio = tmp_path / "sample.wav"
@@ -2862,7 +2858,6 @@ def test_requirement_installed_validates_requested_extras(monkeypatch):
     assert optional_features.requirement_installed("qrcode[pil]>=8.0") is True
 
 
-@pytest.mark.asyncio
 async def test_manager_skips_disabled_channel_package(monkeypatch):
     fake_config = SimpleNamespace(
         channels=ChannelsConfig.model_validate({
@@ -2957,7 +2952,6 @@ def test_channels_config_transcription_language_pattern():
 # _send_with_retry
 # ---------------------------------------------------------------------------
 
-@pytest.mark.asyncio
 async def test_send_with_retry_succeeds_first_try():
     """_send_with_retry should succeed on first try and not retry."""
     call_count = 0
@@ -2994,7 +2988,6 @@ async def test_send_with_retry_succeeds_first_try():
     assert call_count == 1
 
 
-@pytest.mark.asyncio
 async def test_send_with_retry_retries_on_failure():
     """_send_with_retry should retry on failure up to max_retries times."""
     call_count = 0
@@ -3035,7 +3028,6 @@ async def test_send_with_retry_retries_on_failure():
     assert mock_sleep.call_count == 2  # 2 sleeps between retries
 
 
-@pytest.mark.asyncio
 async def test_send_with_retry_no_retry_when_max_is_zero():
     """_send_with_retry should not retry when send_max_retries is 0."""
     call_count = 0
@@ -3074,7 +3066,6 @@ async def test_send_with_retry_no_retry_when_max_is_zero():
     assert call_count == 1  # Called once but no retry (max(0, 1) = 1)
 
 
-@pytest.mark.asyncio
 async def test_send_with_retry_calls_send_delta():
     """_send_with_retry should call send_delta for stream delta events."""
     calls: list[tuple[str, str, str | None, bool, bool, bool]] = []
@@ -3140,7 +3131,6 @@ async def test_send_with_retry_calls_send_delta():
     ]
 
 
-@pytest.mark.asyncio
 async def test_send_with_retry_skips_send_when_streamed():
     """_send_with_retry should not call send for streamed response events."""
     send_called = False
@@ -3273,7 +3263,6 @@ def test_outbound_duplicate_suppression_cache_is_bounded() -> None:
     assert ("feishu", "chat123", "msg-1") not in mgr._origin_reply_fingerprints
 
 
-@pytest.mark.asyncio
 async def test_send_with_retry_propagates_cancelled_error():
     """_send_with_retry should re-raise CancelledError for graceful shutdown."""
     class _CancellingChannel(BaseChannel):
@@ -3306,7 +3295,6 @@ async def test_send_with_retry_propagates_cancelled_error():
         await mgr._send_with_retry(mgr.channels["cancelling"], msg)
 
 
-@pytest.mark.asyncio
 async def test_send_with_retry_propagates_cancelled_error_during_sleep():
     """_send_with_retry should re-raise CancelledError during sleep."""
     call_count = 0
@@ -3397,7 +3385,6 @@ class _StartableChannel(BaseChannel):
         pass
 
 
-@pytest.mark.asyncio
 async def test_validate_allow_from_allows_empty_list():
     """Empty allow_from is valid now — pairing store handles unapproved senders."""
     fake_config = SimpleNamespace(
@@ -3416,7 +3403,6 @@ async def test_validate_allow_from_allows_empty_list():
     assert mgr.channels["test"].config.allow_from == []
 
 
-@pytest.mark.asyncio
 async def test_validate_allow_from_passes_with_asterisk():
     """_validate_allow_from should not raise when allow_from contains '*'."""
     fake_config = SimpleNamespace(
@@ -3435,7 +3421,6 @@ async def test_validate_allow_from_passes_with_asterisk():
     assert mgr.channels["test"].config.allow_from == ["*"]
 
 
-@pytest.mark.asyncio
 async def test_validate_allow_from_allows_empty_dict_allow_from():
     """Empty dict-backed allow_from is valid — pairing store handles approval."""
     fake_config = SimpleNamespace(
@@ -3453,7 +3438,6 @@ async def test_validate_allow_from_allows_empty_dict_allow_from():
     assert mgr.channels["test"].config["allow_from"] == []
 
 
-@pytest.mark.asyncio
 async def test_validate_allow_from_allows_missing_allow_from():
     """Omitted allowFrom is valid — channel operates in pairing-only mode."""
     fake_config = SimpleNamespace(
@@ -3485,7 +3469,6 @@ async def test_validate_allow_from_allows_missing_allow_from():
     assert "allow_from" not in mgr.channels["test"].config
 
 
-@pytest.mark.asyncio
 async def test_get_channel_returns_channel_if_exists():
     """get_channel should return the channel if it exists."""
     fake_config = SimpleNamespace(
@@ -3503,7 +3486,6 @@ async def test_get_channel_returns_channel_if_exists():
     assert mgr.get_channel("nonexistent") is None
 
 
-@pytest.mark.asyncio
 async def test_get_status_returns_running_state():
     """get_status should return enabled and running state for each channel."""
     fake_config = SimpleNamespace(
@@ -3524,7 +3506,6 @@ async def test_get_status_returns_running_state():
     assert status["startable"]["running"] is False  # Not started yet
 
 
-@pytest.mark.asyncio
 async def test_enabled_channels_returns_channel_names():
     """enabled_channels should return list of enabled channel names."""
     fake_config = SimpleNamespace(
@@ -3548,7 +3529,6 @@ async def test_enabled_channels_returns_channel_names():
     assert len(enabled) == 2
 
 
-@pytest.mark.asyncio
 async def test_stop_all_cancels_dispatcher_and_stops_channels():
     """stop_all should cancel the dispatch task and stop all channels."""
     fake_config = SimpleNamespace(
@@ -3582,7 +3562,6 @@ async def test_stop_all_cancels_dispatcher_and_stops_channels():
     assert ch.stopped is True
 
 
-@pytest.mark.asyncio
 async def test_start_channel_logs_error_on_failure():
     """_start_channel should log error when channel start fails."""
     class _FailingChannel(BaseChannel):
@@ -3617,7 +3596,6 @@ async def test_start_channel_logs_error_on_failure():
     assert mgr._dispatch_task is None
 
 
-@pytest.mark.asyncio
 async def test_stop_all_handles_channel_exception():
     """stop_all should handle exceptions when stopping channels gracefully."""
     class _StopFailingChannel(BaseChannel):
@@ -3653,7 +3631,6 @@ async def test_stop_all_handles_channel_exception():
     assert mgr._dispatch_task is None
 
 
-@pytest.mark.asyncio
 async def test_stop_all_handles_channel_stop_cancelled_task():
     """stop_all should treat a channel's already-cancelled internals as stopped."""
 
@@ -3693,7 +3670,6 @@ async def test_stop_all_handles_channel_stop_cancelled_task():
     assert next_channel.stopped is True
 
 
-@pytest.mark.asyncio
 async def test_start_all_no_channels_logs_warning():
     """start_all should log warning when no channels are enabled."""
     fake_config = SimpleNamespace(
@@ -3713,7 +3689,6 @@ async def test_start_all_no_channels_logs_warning():
     assert mgr._dispatch_task is None
 
 
-@pytest.mark.asyncio
 async def test_start_all_creates_dispatch_task():
     """start_all should create the dispatch task when channels exist."""
     fake_config = SimpleNamespace(
@@ -3753,7 +3728,6 @@ async def test_start_all_creates_dispatch_task():
     assert mgr._dispatch_task is not None
 
 
-@pytest.mark.asyncio
 async def test_notify_restart_done_waits_until_channel_starts():
     """Restart notice should not be sent before the target channel starts."""
     fake_config = SimpleNamespace(
@@ -3788,7 +3762,6 @@ async def test_notify_restart_done_waits_until_channel_starts():
     assert sent_msg.content.startswith("Restart completed")
 
 
-@pytest.mark.asyncio
 async def test_websocket_restart_notice_does_not_overwrite_recovery_state():
     """WebSocket attach/recovery events already own reconnect state."""
     fake_config = SimpleNamespace(
@@ -3809,7 +3782,6 @@ async def test_websocket_restart_notice_does_not_overwrite_recovery_state():
     mgr._send_with_retry.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_restart_notice_retries_until_running_channel_accepts_delivery():
     """A running flag must not make an early transport failure final."""
 

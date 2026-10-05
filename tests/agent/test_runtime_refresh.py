@@ -193,7 +193,6 @@ def test_named_default_refresh_is_used_by_sessions_without_override(tmp_path: Pa
     assert model_preset_from_metadata(session.metadata) is None
 
 
-@pytest.mark.asyncio
 async def test_config_invalidation_defers_canonical_notification_until_default_refresh(
     tmp_path: Path,
 ) -> None:
@@ -246,7 +245,6 @@ async def test_config_invalidation_defers_canonical_notification_until_default_r
     ]
 
 
-@pytest.mark.asyncio
 async def test_config_refresh_publishes_renamed_canonical_preset(tmp_path: Path) -> None:
     provider = _provider("model-a")
     catalog = {"fast": ModelPresetConfig(model="model-a")}

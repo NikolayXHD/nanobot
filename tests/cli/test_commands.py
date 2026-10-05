@@ -1316,7 +1316,6 @@ def test_github_copilot_provider_strips_prefixed_model_name():
     assert kwargs["model"] == "gpt-5.1"
 
 
-@pytest.mark.asyncio
 async def test_github_copilot_provider_refreshes_client_api_key_before_chat():
     from nanobot.providers.github_copilot_provider import GitHubCopilotProvider
 

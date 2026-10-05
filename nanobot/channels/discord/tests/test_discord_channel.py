@@ -219,7 +219,6 @@ def _make_message(
     )
 
 
-@pytest.mark.asyncio
 async def test_start_returns_when_token_missing() -> None:
     # If no token is configured, startup should no-op and leave channel stopped.
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
@@ -230,7 +229,6 @@ async def test_start_returns_when_token_missing() -> None:
     assert channel._client is None
 
 
-@pytest.mark.asyncio
 async def test_start_returns_when_discord_dependency_missing(monkeypatch) -> None:
     channel = DiscordChannel(
         DiscordConfig(enabled=True, token="token", allow_from=["*"]),
@@ -244,7 +242,6 @@ async def test_start_returns_when_discord_dependency_missing(monkeypatch) -> Non
     assert channel._client is None
 
 
-@pytest.mark.asyncio
 async def test_start_handles_client_construction_failure(monkeypatch) -> None:
     # Construction errors from the Discord client should be swallowed and keep state clean.
     channel = DiscordChannel(
@@ -263,7 +260,6 @@ async def test_start_handles_client_construction_failure(monkeypatch) -> None:
     assert channel._client is None
 
 
-@pytest.mark.asyncio
 async def test_start_handles_client_start_failure(monkeypatch) -> None:
     # If client.start fails, the partially created client should be closed and detached.
     channel = DiscordChannel(
@@ -285,7 +281,6 @@ async def test_start_handles_client_start_failure(monkeypatch) -> None:
     _FakeDiscordClient.start_error = None
 
 
-@pytest.mark.asyncio
 async def test_stop_is_safe_after_partial_start(monkeypatch) -> None:
     # stop() should close/discard the client even when startup was only partially completed.
     channel = DiscordChannel(
@@ -303,7 +298,6 @@ async def test_stop_is_safe_after_partial_start(monkeypatch) -> None:
     assert channel._client is None
 
 
-@pytest.mark.asyncio
 async def test_stop_cancels_pending_reaction_work() -> None:
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
     started = asyncio.Event()
@@ -324,7 +318,6 @@ async def test_stop_cancels_pending_reaction_work() -> None:
     assert channel._pending_reactions == {}
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("second_channel", [456, 789])
 async def test_stop_drains_reactions_for_every_inbound_message(second_channel: int) -> None:
     channel = DiscordChannel(
@@ -351,7 +344,6 @@ async def test_stop_drains_reactions_for_every_inbound_message(second_channel: i
         message.add_reaction.assert_awaited_once_with(channel.config.read_receipt_emoji)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("blocked_stage", ["download", "receipt"])
 async def test_stop_drains_inflight_message_before_reaction_cleanup(blocked_stage: str) -> None:
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
@@ -390,7 +382,6 @@ async def test_stop_drains_inflight_message_before_reaction_cleanup(blocked_stag
     await channel.stop()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("send_fails", [False, True])
 async def test_reply_drains_all_same_channel_reactions(monkeypatch, send_fails: bool) -> None:
     channel = DiscordChannel(
@@ -434,7 +425,6 @@ async def test_reply_drains_all_same_channel_reactions(monkeypatch, send_fails: 
         await channel.stop()
 
 
-@pytest.mark.asyncio
 async def test_completed_reaction_tasks_release_registry_entries() -> None:
     channel = DiscordChannel(
         DiscordConfig(enabled=True, allow_from=["*"], working_emoji_delay=0), MessageBus()
@@ -451,7 +441,6 @@ async def test_completed_reaction_tasks_release_registry_entries() -> None:
     await channel.stop()
 
 
-@pytest.mark.asyncio
 async def test_reaction_cleanup_preserves_newer_message_while_draining() -> None:
     channel = DiscordChannel(
         DiscordConfig(enabled=True, allow_from=["*"], working_emoji_delay=0), MessageBus()
@@ -500,7 +489,6 @@ async def test_reaction_cleanup_preserves_newer_message_while_draining() -> None
         await channel.stop()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("cleanup_kind", ["reply", "stop"])
 async def test_stop_waits_for_reaction_already_draining(monkeypatch, cleanup_kind: str) -> None:
     channel = DiscordChannel(
@@ -549,7 +537,6 @@ async def test_stop_waits_for_reaction_already_draining(monkeypatch, cleanup_kin
         await channel.stop()
 
 
-@pytest.mark.asyncio
 async def test_on_message_ignores_self_messages() -> None:
     # Self-loop guard: messages from this bot's own account must be dropped (#3217).
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
@@ -562,7 +549,6 @@ async def test_on_message_ignores_self_messages() -> None:
     assert handled == []
 
 
-@pytest.mark.asyncio
 async def test_on_message_accepts_messages_from_other_bots() -> None:
     # Multi-agent setups: messages from OTHER bots must be processed, not dropped (#3217).
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
@@ -580,7 +566,6 @@ async def test_on_message_accepts_messages_from_other_bots() -> None:
     assert handled[0]["sender_id"] == "123"
 
 
-@pytest.mark.asyncio
 async def test_on_message_stops_typing_on_handle_exception() -> None:
     # If inbound handling raises, typing should be stopped for that channel.
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
@@ -596,7 +581,6 @@ async def test_on_message_stops_typing_on_handle_exception() -> None:
     assert channel._typing_tasks == {}
 
 
-@pytest.mark.asyncio
 async def test_on_message_accepts_allowlisted_dm() -> None:
     # Allowed direct messages should be forwarded with normalized metadata.
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["123"]), MessageBus())
@@ -614,7 +598,6 @@ async def test_on_message_accepts_allowlisted_dm() -> None:
     assert handled[0]["metadata"] == {"message_id": "789", "guild_id": None, "reply_to": None}
 
 
-@pytest.mark.asyncio
 async def test_on_message_unauthorized_dm_sends_pairing_code(monkeypatch) -> None:
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=[]), MessageBus())
     client = _FakeDiscordClient(channel, intents=None)
@@ -634,7 +617,6 @@ async def test_on_message_unauthorized_dm_sends_pairing_code(monkeypatch) -> Non
     assert channel._typing_tasks == {}
 
 
-@pytest.mark.asyncio
 async def test_on_message_accepts_when_channel_in_allow_channels() -> None:
     # When allow_channels is set, messages from listed channels should be forwarded.
     channel = DiscordChannel(
@@ -654,7 +636,6 @@ async def test_on_message_accepts_when_channel_in_allow_channels() -> None:
     assert handled[0]["chat_id"] == "456"
 
 
-@pytest.mark.asyncio
 async def test_on_message_accepts_thread_when_parent_channel_in_allow_channels() -> None:
     # Discord threads have independent channel IDs, but inherit allowlist access
     # from their parent channel.
@@ -691,7 +672,6 @@ async def test_on_message_accepts_thread_when_parent_channel_in_allow_channels()
     assert handled[0]["session_key"] == "discord:456:thread:777"
 
 
-@pytest.mark.asyncio
 async def test_on_message_accepts_thread_reply_to_bot_under_allowed_parent() -> None:
     channel = DiscordChannel(
         DiscordConfig(
@@ -728,7 +708,6 @@ async def test_on_message_accepts_thread_reply_to_bot_under_allowed_parent() -> 
     assert handled[0]["session_key"] == "discord:456:thread:777"
 
 
-@pytest.mark.asyncio
 async def test_on_message_ignores_thread_lifecycle_messages() -> None:
     channel = DiscordChannel(
         DiscordConfig(
@@ -777,7 +756,6 @@ async def test_on_message_ignores_thread_lifecycle_messages() -> None:
     assert handled == []
 
 
-@pytest.mark.asyncio
 async def test_on_message_drops_thread_when_neither_thread_nor_parent_allowed() -> None:
     channel = DiscordChannel(
         DiscordConfig(enabled=True, allow_from=["*"], allow_channels=["999"]),
@@ -795,7 +773,6 @@ async def test_on_message_drops_thread_when_neither_thread_nor_parent_allowed() 
     assert handled == []
 
 
-@pytest.mark.asyncio
 async def test_on_message_drops_when_channel_not_in_allow_channels() -> None:
     # When allow_channels is set and incoming channel is not listed, drop silently.
     channel = DiscordChannel(
@@ -814,7 +791,6 @@ async def test_on_message_drops_when_channel_not_in_allow_channels() -> None:
     assert handled == []
 
 
-@pytest.mark.asyncio
 async def test_on_message_ignores_unmentioned_guild_message() -> None:
     # With mention-only group policy, guild messages without a bot mention are dropped.
     channel = DiscordChannel(
@@ -834,7 +810,6 @@ async def test_on_message_ignores_unmentioned_guild_message() -> None:
     assert handled == []
 
 
-@pytest.mark.asyncio
 async def test_on_message_accepts_mentioned_guild_message() -> None:
     # Mentioned guild messages should be accepted and preserve reply threading metadata.
     channel = DiscordChannel(
@@ -862,7 +837,6 @@ async def test_on_message_accepts_mentioned_guild_message() -> None:
     assert handled[0]["metadata"]["reply_to"] == "321"
 
 
-@pytest.mark.asyncio
 async def test_on_message_downloads_attachments(tmp_path, monkeypatch) -> None:
     # Attachment downloads should be saved and referenced in forwarded content/media.
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
@@ -886,7 +860,6 @@ async def test_on_message_downloads_attachments(tmp_path, monkeypatch) -> None:
     assert "[attachment:" in handled[0]["content"]
 
 
-@pytest.mark.asyncio
 async def test_on_message_marks_failed_attachment_download(tmp_path, monkeypatch) -> None:
     # Failed attachment downloads should emit a readable placeholder and no media path.
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
@@ -910,7 +883,6 @@ async def test_on_message_marks_failed_attachment_download(tmp_path, monkeypatch
     assert handled[0]["content"] == "[attachment: photo.png - download failed]"
 
 
-@pytest.mark.asyncio
 async def test_send_raises_when_client_not_ready() -> None:
     # The manager must be able to retry while Discord is still connecting.
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
@@ -921,7 +893,6 @@ async def test_send_raises_when_client_not_ready() -> None:
     assert channel._typing_tasks == {}
 
 
-@pytest.mark.asyncio
 async def test_send_raises_when_channel_cannot_be_resolved() -> None:
     # The manager must be able to retry transient channel-resolution failures.
     owner = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
@@ -943,7 +914,6 @@ async def test_send_raises_when_channel_cannot_be_resolved() -> None:
     assert fetch_calls == [123]
 
 
-@pytest.mark.asyncio
 async def test_send_fetches_channel_when_not_cached() -> None:
     owner = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
     client = DiscordBotClient(owner, intents=discord.Intents.none())
@@ -959,7 +929,6 @@ async def test_send_fetches_channel_when_not_cached() -> None:
     assert target.sent_payloads == [{"content": "hello"}]
 
 
-@pytest.mark.asyncio
 async def test_send_uses_seen_thread_channel_when_client_cannot_resolve_it() -> None:
     owner = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
     client = DiscordBotClient(owner, intents=discord.Intents.none())
@@ -990,7 +959,6 @@ def test_reply_to_message_is_disabled_by_default() -> None:
     assert config.model_dump(by_alias=True)["replyToMessage"] is False
 
 
-@pytest.mark.asyncio
 async def test_send_delta_streams_by_editing_message(monkeypatch) -> None:
     owner = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
     client = _FakeDiscordClient(owner, intents=None)
@@ -1011,7 +979,6 @@ async def test_send_delta_streams_by_editing_message(monkeypatch) -> None:
     assert owner._stream_bufs == {}
 
 
-@pytest.mark.asyncio
 async def test_send_delta_replies_to_triggering_message_when_enabled() -> None:
     owner = DiscordChannel(
         DiscordConfig(enabled=True, allow_from=["*"], reply_to_message=True),
@@ -1031,7 +998,6 @@ async def test_send_delta_replies_to_triggering_message_when_enabled() -> None:
     assert target.sent_payloads[0]["allowed_mentions"].replied_user is False
 
 
-@pytest.mark.asyncio
 async def test_send_delta_merge_next_keeps_one_message(monkeypatch) -> None:
     owner = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
     client = _FakeDiscordClient(owner, intents=None)
@@ -1061,7 +1027,6 @@ async def test_send_delta_merge_next_keeps_one_message(monkeypatch) -> None:
     assert owner._stream_bufs == {}
 
 
-@pytest.mark.asyncio
 async def test_send_delta_stream_end_splits_oversized_reply(monkeypatch) -> None:
     owner = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
     client = _FakeDiscordClient(owner, intents=None)
@@ -1088,7 +1053,6 @@ async def test_send_delta_stream_end_splits_oversized_reply(monkeypatch) -> None
     assert owner._stream_bufs == {}
 
 
-@pytest.mark.asyncio
 async def test_slash_new_forwards_when_user_is_allowlisted() -> None:
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["123"]), MessageBus())
     handled: list[dict] = []
@@ -1113,7 +1077,6 @@ async def test_slash_new_forwards_when_user_is_allowlisted() -> None:
     assert handled[0]["metadata"]["is_slash_command"] is True
 
 
-@pytest.mark.asyncio
 async def test_slash_new_accepts_thread_when_parent_channel_in_allow_channels() -> None:
     channel = DiscordChannel(
         DiscordConfig(enabled=True, allow_from=["*"], allow_channels=["456"]),
@@ -1148,7 +1111,6 @@ async def test_slash_new_accepts_thread_when_parent_channel_in_allow_channels() 
     assert channel._known_channels["777"] is thread
 
 
-@pytest.mark.asyncio
 async def test_slash_new_blocks_channel_not_in_allow_channels() -> None:
     channel = DiscordChannel(
         DiscordConfig(enabled=True, allow_from=["*"], allow_channels=["999"]),
@@ -1178,7 +1140,6 @@ async def test_slash_new_blocks_channel_not_in_allow_channels() -> None:
     assert handled == []
 
 
-@pytest.mark.asyncio
 async def test_slash_new_is_blocked_for_disallowed_user() -> None:
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["999"]), MessageBus())
     handled: list[dict] = []
@@ -1201,7 +1162,6 @@ async def test_slash_new_is_blocked_for_disallowed_user() -> None:
 
 
 @pytest.mark.parametrize("slash_name", ["stop", "restart", "status", "history", "model"])
-@pytest.mark.asyncio
 async def test_slash_commands_forward_via_handle_message(slash_name: str) -> None:
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
     handled: list[dict] = []
@@ -1226,7 +1186,6 @@ async def test_slash_commands_forward_via_handle_message(slash_name: str) -> Non
     assert handled[0]["metadata"]["is_slash_command"] is True
 
 
-@pytest.mark.asyncio
 async def test_slash_model_forwards_optional_preset() -> None:
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
     handled: list[dict] = []
@@ -1251,7 +1210,6 @@ async def test_slash_model_forwards_optional_preset() -> None:
     assert handled[0]["metadata"]["is_slash_command"] is True
 
 
-@pytest.mark.asyncio
 async def test_slash_trigger_forwards_required_name() -> None:
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
     handled: list[dict] = []
@@ -1276,7 +1234,6 @@ async def test_slash_trigger_forwards_required_name() -> None:
     assert handled[0]["metadata"]["is_slash_command"] is True
 
 
-@pytest.mark.asyncio
 async def test_slash_help_returns_ephemeral_help_text() -> None:
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
     handled: list[dict] = []
@@ -1297,7 +1254,6 @@ async def test_slash_help_returns_ephemeral_help_text() -> None:
     assert handled == []
 
 
-@pytest.mark.asyncio
 async def test_slash_help_respects_allow_channels() -> None:
     channel = DiscordChannel(
         DiscordConfig(enabled=True, allow_from=["*"], allow_channels=["999"]),
@@ -1320,7 +1276,6 @@ async def test_slash_help_respects_allow_channels() -> None:
     ]
 
 
-@pytest.mark.asyncio
 async def test_thread_delete_and_archive_remove_known_channel() -> None:
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
     client = DiscordBotClient(channel, intents=discord.Intents.none())
@@ -1336,7 +1291,6 @@ async def test_thread_delete_and_archive_remove_known_channel() -> None:
     assert "777" not in channel._known_channels
 
 
-@pytest.mark.asyncio
 async def test_client_send_outbound_chunks_text_replies_and_uploads_files(tmp_path) -> None:
     # Outbound payloads should upload files, attach reply references, and chunk long text.
     owner = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
@@ -1364,7 +1318,6 @@ async def test_client_send_outbound_chunks_text_replies_and_uploads_files(tmp_pa
     assert target.sent_payloads[2]["content"] == "a" * 100
 
 
-@pytest.mark.asyncio
 async def test_client_send_outbound_replies_to_triggering_message_when_enabled() -> None:
     owner = DiscordChannel(
         DiscordConfig(enabled=True, allow_from=["*"], reply_to_message=True),
@@ -1389,7 +1342,6 @@ async def test_client_send_outbound_replies_to_triggering_message_when_enabled()
     assert target.sent_payloads[0]["allowed_mentions"].replied_user is False
 
 
-@pytest.mark.asyncio
 async def test_client_send_outbound_explicit_reply_takes_precedence() -> None:
     owner = DiscordChannel(
         DiscordConfig(enabled=True, allow_from=["*"], reply_to_message=True),
@@ -1414,7 +1366,6 @@ async def test_client_send_outbound_explicit_reply_takes_precedence() -> None:
     assert reference.to_dict()["fail_if_not_exists"] is True
 
 
-@pytest.mark.asyncio
 async def test_client_send_outbound_replies_on_first_successful_attachment(tmp_path) -> None:
     owner = DiscordChannel(
         DiscordConfig(enabled=True, allow_from=["*"], reply_to_message=True),
@@ -1441,7 +1392,6 @@ async def test_client_send_outbound_replies_on_first_successful_attachment(tmp_p
     assert target.sent_payloads[0]["reference"].message_id == 789
 
 
-@pytest.mark.asyncio
 async def test_client_send_outbound_reports_failed_attachments_when_no_text(tmp_path) -> None:
     # If all attachment sends fail and no text exists, emit a failure placeholder message.
     owner = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
@@ -1463,7 +1413,6 @@ async def test_client_send_outbound_reports_failed_attachments_when_no_text(tmp_
     assert target.sent_payloads == [{"content": "[attachment: missing.txt - send failed]"}]
 
 
-@pytest.mark.asyncio
 async def test_send_stops_typing_after_send() -> None:
     # Active typing indicators should be cancelled/cleared after a successful send.
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
@@ -1522,7 +1471,6 @@ async def test_send_stops_typing_after_send() -> None:
     assert channel._typing_tasks == {}
 
 
-@pytest.mark.asyncio
 async def test_start_typing_uses_typing_context_when_trigger_typing_missing() -> None:
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
     channel._running = True
@@ -1587,7 +1535,6 @@ def test_config_proxy_defaults_to_none() -> None:
     assert config.proxy_password is None
 
 
-@pytest.mark.asyncio
 async def test_start_passes_proxy_to_client(monkeypatch) -> None:
     _FakeDiscordClient.instances.clear()
     channel = DiscordChannel(
@@ -1609,7 +1556,6 @@ async def test_start_passes_proxy_to_client(monkeypatch) -> None:
     assert _FakeDiscordClient.instances[0].proxy_auth is None
 
 
-@pytest.mark.asyncio
 async def test_start_passes_proxy_auth_when_credentials_provided(monkeypatch) -> None:
     aiohttp = pytest.importorskip("aiohttp")
     _FakeDiscordClient.instances.clear()
@@ -1637,7 +1583,6 @@ async def test_start_passes_proxy_auth_when_credentials_provided(monkeypatch) ->
     assert _FakeDiscordClient.instances[0].proxy_auth.password == "pass"
 
 
-@pytest.mark.asyncio
 async def test_start_no_proxy_auth_when_only_username(monkeypatch) -> None:
     _FakeDiscordClient.instances.clear()
     channel = DiscordChannel(
@@ -1658,7 +1603,6 @@ async def test_start_no_proxy_auth_when_only_username(monkeypatch) -> None:
     assert _FakeDiscordClient.instances[0].proxy_auth is None
 
 
-@pytest.mark.asyncio
 async def test_start_no_proxy_auth_when_only_password(monkeypatch) -> None:
     _FakeDiscordClient.instances.clear()
     channel = DiscordChannel(
@@ -1684,7 +1628,6 @@ async def test_start_no_proxy_auth_when_only_password(monkeypatch) -> None:
 # Tests for the send() exception propagation fix
 # ---------------------------------------------------------------------------
 
-@pytest.mark.asyncio
 async def test_send_re_raises_network_error() -> None:
     """Network errors during send must propagate so ChannelManager can retry."""
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
@@ -1701,7 +1644,6 @@ async def test_send_re_raises_network_error() -> None:
         await channel.send(OutboundMessage(channel="discord", chat_id="123", content="hello"))
 
 
-@pytest.mark.asyncio
 async def test_send_re_raises_generic_exception() -> None:
     """Any exception from send_outbound must propagate, not be swallowed."""
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
@@ -1718,7 +1660,6 @@ async def test_send_re_raises_generic_exception() -> None:
         await channel.send(OutboundMessage(channel="discord", chat_id="123", content="hello"))
 
 
-@pytest.mark.asyncio
 async def test_send_still_stops_typing_on_error() -> None:
     """Typing cleanup must still run in the finally block even when send raises."""
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
@@ -1754,7 +1695,6 @@ async def test_send_still_stops_typing_on_error() -> None:
     assert channel._typing_tasks == {}
 
 
-@pytest.mark.asyncio
 async def test_send_succeeds_normally() -> None:
     """Successful sends should work without raising."""
     channel = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
@@ -1804,7 +1744,6 @@ def _client_with_channel(target: _FakeChannel) -> tuple[DiscordChannel, "Discord
     return owner, client
 
 
-@pytest.mark.asyncio
 async def test_compaction_outcome_edits_the_start_notice_in_place() -> None:
     # One message per compaction: the outcome replaces the "Compressing…" text
     # instead of arriving as a second notice (#5719).
@@ -1824,7 +1763,6 @@ async def test_compaction_outcome_edits_the_start_notice_in_place() -> None:
     assert owner._compaction_notices == {}
 
 
-@pytest.mark.asyncio
 async def test_automatic_compaction_is_received_but_not_sent() -> None:
     target = _FakeChannel(channel_id=123)
     _owner, client = _client_with_channel(target)
@@ -1837,7 +1775,6 @@ async def test_automatic_compaction_is_received_but_not_sent() -> None:
     assert target.sent_payloads == []
 
 
-@pytest.mark.asyncio
 async def test_compaction_outcome_without_a_start_notice_is_sent() -> None:
     # After a restart (or when the edit is refused) the outcome still arrives.
     target = _FakeChannel(channel_id=123)
@@ -1848,7 +1785,6 @@ async def test_compaction_outcome_without_a_start_notice_is_sent() -> None:
     assert [payload["content"] for payload in target.sent_payloads] == ["Unable to compact context."]
 
 
-@pytest.mark.asyncio
 async def test_compaction_outcome_falls_back_to_send_when_edit_fails() -> None:
     target = _FakeChannel(channel_id=123)
     owner, client = _client_with_channel(target)
@@ -1867,7 +1803,6 @@ async def test_compaction_outcome_falls_back_to_send_when_edit_fails() -> None:
     assert owner._compaction_notices == {}
 
 
-@pytest.mark.asyncio
 async def test_all_in_flight_compaction_notices_are_retained_until_outcomes() -> None:
     owner = DiscordChannel(DiscordConfig(enabled=True, allow_from=["*"]), MessageBus())
     client = DiscordBotClient(owner, intents=discord.Intents.none())
@@ -1891,7 +1826,6 @@ async def test_all_in_flight_compaction_notices_are_retained_until_outcomes() ->
     assert owner._compaction_notices == {}
 
 
-@pytest.mark.asyncio
 async def test_reset_discards_in_flight_compaction_notices() -> None:
     target = _FakeChannel(channel_id=123)
     owner, client = _client_with_channel(target)

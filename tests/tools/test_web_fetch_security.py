@@ -91,7 +91,6 @@ def _patch_web_fetch_fake_client(monkeypatch: pytest.MonkeyPatch) -> list[dict]:
     return client_kwargs
 
 
-@pytest.mark.asyncio
 async def test_web_fetch_blocks_private_ip():
     tool = WebFetchTool()
     with patch("nanobot.security.network.socket.getaddrinfo", _fake_resolve_private):
@@ -102,7 +101,6 @@ async def test_web_fetch_blocks_private_ip():
     assert "private" in data["error"].lower() or "blocked" in data["error"].lower()
 
 
-@pytest.mark.asyncio
 async def test_web_fetch_blocks_localhost():
     tool = WebFetchTool()
     def _resolve_localhost(hostname, port, family=0, type_=0):
@@ -114,7 +112,6 @@ async def test_web_fetch_blocks_localhost():
     assert "error" in data
 
 
-@pytest.mark.asyncio
 async def test_web_fetch_blocks_localhost_even_in_full_workspace_scope(tmp_path):
     tool = WebFetchTool()
     scope = build_workspace_scope(tmp_path, "full")
@@ -133,7 +130,6 @@ async def test_web_fetch_blocks_localhost_even_in_full_workspace_scope(tmp_path)
     assert "error" in data
 
 
-@pytest.mark.asyncio
 async def test_web_fetch_result_contains_untrusted_flag(monkeypatch: pytest.MonkeyPatch):
     """When fetch succeeds, result JSON must include untrusted=True and the banner."""
     tool = WebFetchTool()
@@ -148,7 +144,6 @@ async def test_web_fetch_result_contains_untrusted_flag(monkeypatch: pytest.Monk
     assert "[External content" in data.get("text", "")
 
 
-@pytest.mark.asyncio
 async def test_safe_redirect_requests_use_independent_pinned_dns_concurrently(monkeypatch):
     public_ips = {
         "a.example": "93.184.216.34",
@@ -196,7 +191,6 @@ async def test_safe_redirect_requests_use_independent_pinned_dns_concurrently(mo
     assert calls == {"a.example": 2, "b.example": 2}
 
 
-@pytest.mark.asyncio
 async def test_web_fetch_proxy_remains_supported(monkeypatch):
     tool = WebFetchTool(proxy="http://config-proxy.example:7890")
     client_kwargs = _patch_web_fetch_fake_client(monkeypatch)
@@ -214,7 +208,6 @@ async def test_web_fetch_proxy_remains_supported(monkeypatch):
     assert all("transport" not in kwargs for kwargs in client_kwargs)
 
 
-@pytest.mark.asyncio
 async def test_web_fetch_env_proxy_adds_proxy_mounts_and_keeps_pinned_transport(monkeypatch):
     tool = WebFetchTool()
     client_kwargs = _patch_web_fetch_fake_client(monkeypatch)
@@ -248,7 +241,6 @@ def test_web_fetch_no_proxy_env_keeps_pinned_direct_route(monkeypatch):
     assert any(transport is None for transport in kwargs["mounts"].values())
 
 
-@pytest.mark.asyncio
 async def test_web_fetch_does_not_fallback_after_pinned_dns_rebind_rejection(monkeypatch):
     calls = {"evil.example": 0}
 
@@ -289,7 +281,6 @@ async def test_web_fetch_does_not_fallback_after_pinned_dns_rebind_rejection(mon
     assert calls["evil.example"] == 3
 
 
-@pytest.mark.asyncio
 async def test_web_fetch_can_skip_jina_and_use_custom_user_agent(monkeypatch):
     tool = WebFetchTool(
         config=WebFetchConfig(use_jina_reader=False),
@@ -358,7 +349,6 @@ async def test_web_fetch_can_skip_jina_and_use_custom_user_agent(monkeypatch):
     ]
 
 
-@pytest.mark.asyncio
 async def test_web_fetch_falls_back_when_readability_dependency_is_missing(monkeypatch):
     tool = WebFetchTool(config=WebFetchConfig(use_jina_reader=False))
 
@@ -400,7 +390,6 @@ async def test_web_fetch_falls_back_when_readability_dependency_is_missing(monke
     assert "Hello world" in data["text"]
 
 
-@pytest.mark.asyncio
 async def test_web_fetch_blocks_private_redirect_before_readability_request(monkeypatch):
     tool = WebFetchTool(config=WebFetchConfig(use_jina_reader=False))
     requested: list[str] = []
@@ -464,7 +453,6 @@ async def test_web_fetch_blocks_private_redirect_before_readability_request(monk
     assert requested == ["https://attacker.example/start"]
 
 
-@pytest.mark.asyncio
 async def test_web_fetch_blocks_private_redirect_before_returning_image(monkeypatch):
     tool = WebFetchTool(config=WebFetchConfig(use_jina_reader=False))
 
@@ -510,7 +498,6 @@ async def test_web_fetch_blocks_private_redirect_before_returning_image(monkeypa
     assert "redirect blocked" in data["error"].lower()
 
 
-@pytest.mark.asyncio
 async def test_web_fetch_does_not_request_private_redirect_target(monkeypatch):
     tool = WebFetchTool(config=WebFetchConfig(use_jina_reader=False))
     requested: list[str] = []

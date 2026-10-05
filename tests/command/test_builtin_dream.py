@@ -3,8 +3,6 @@ from __future__ import annotations
 import asyncio
 from types import SimpleNamespace
 
-import pytest
-
 from nanobot.agent.memory import MemoryStore
 from nanobot.bus.events import InboundMessage, OutboundMessage
 from nanobot.command.builtin import (
@@ -141,7 +139,6 @@ def _make_dream_prompt_ctx(tmp_path, raw: str = "/dream-prompt", args: str = "")
     return CommandContext(msg=msg, session=None, key=msg.session_key, raw=raw, args=args, loop=loop)
 
 
-@pytest.mark.asyncio
 async def test_dream_no_history_explains_how_to_create_input(tmp_path) -> None:
     ctx, bus = _make_dream_ctx(tmp_path)
 
@@ -159,7 +156,6 @@ async def test_dream_no_history_explains_how_to_create_input(tmp_path) -> None:
     assert "/dream-prompt" in content
 
 
-@pytest.mark.asyncio
 async def test_dream_internal_run_silences_progress(tmp_path) -> None:
     msg = InboundMessage(channel="feishu", sender_id="u1", chat_id="chat1", content="/dream")
     store = _FakeStore(_FakeGit(initialized=False), dream_prompt_result=("dream prompt", 123))
@@ -239,7 +235,6 @@ def _build_runnable_dream(
     return ctx, store
 
 
-@pytest.mark.asyncio
 async def test_dream_advances_cursor_when_diff_nonempty(tmp_path) -> None:
     """A completed run with a real file delta advances the cursor."""
     ctx, store = _build_runnable_dream(tmp_path, initialized=True, content_diff="SOUL.md: +1 -0")
@@ -248,7 +243,6 @@ async def test_dream_advances_cursor_when_diff_nonempty(tmp_path) -> None:
     assert store._last_dream_cursor == 42
 
 
-@pytest.mark.asyncio
 async def test_dream_advances_cursor_on_completed_noop(tmp_path) -> None:
     """A completed no-op has processed the batch and must not repeat it."""
     ctx, store = _build_runnable_dream(tmp_path, initialized=True, content_diff="")
@@ -258,7 +252,6 @@ async def test_dream_advances_cursor_on_completed_noop(tmp_path) -> None:
     assert "no memory changes" in ctx.loop.bus.outbound[0].content
 
 
-@pytest.mark.asyncio
 async def test_dream_keeps_cursor_when_incomplete_with_diff(tmp_path) -> None:
     """An incomplete run remains retryable even if it left a partial edit."""
     ctx, store = _build_runnable_dream(
@@ -273,7 +266,6 @@ async def test_dream_keeps_cursor_when_incomplete_with_diff(tmp_path) -> None:
     assert "did not complete" in ctx.loop.bus.outbound[0].content
 
 
-@pytest.mark.asyncio
 async def test_dream_advances_cursor_when_completed_after_tool_error(tmp_path) -> None:
     """A handled tool failure does not invalidate a normally completed run."""
     ctx, store = _build_runnable_dream(
@@ -288,7 +280,6 @@ async def test_dream_advances_cursor_when_completed_after_tool_error(tmp_path) -
     assert "no memory changes" in ctx.loop.bus.outbound[0].content
 
 
-@pytest.mark.asyncio
 async def test_dream_noop_batch_unlocks_following_history(tmp_path) -> None:
     """A no-op first batch must not starve later history entries."""
     workspace = tmp_path / "workspace"
@@ -337,7 +328,6 @@ async def test_dream_noop_batch_unlocks_following_history(tmp_path) -> None:
     assert "entry-01" not in next_prompt
 
 
-@pytest.mark.asyncio
 async def test_dream_non_git_falls_back_to_completion_gate(tmp_path) -> None:
     """Non-git workspaces use the same normal-completion gate."""
     ctx, store = _build_runnable_dream(
@@ -348,7 +338,6 @@ async def test_dream_non_git_falls_back_to_completion_gate(tmp_path) -> None:
     assert store._last_dream_cursor == 42  # advanced via completion fallback
 
 
-@pytest.mark.asyncio
 async def test_dream_log_latest_is_more_user_friendly() -> None:
     commit = CommitInfo(sha="abcd1234", message="dream: 2026-04-04, 2 change(s)", timestamp="2026-04-04 12:00")
     diff = (
@@ -371,7 +360,6 @@ async def test_dream_log_latest_is_more_user_friendly() -> None:
     assert "```diff" in out.content
 
 
-@pytest.mark.asyncio
 async def test_dream_log_latest_skips_non_dream_commit() -> None:
     backup = CommitInfo(
         sha="bbbb2222", message="backup: workspace snapshot", timestamp="2026-04-04 13:00",
@@ -391,7 +379,6 @@ async def test_dream_log_latest_skips_non_dream_commit() -> None:
     assert "`bbbb2222`" not in out.content
 
 
-@pytest.mark.asyncio
 async def test_dream_log_missing_commit_guides_user() -> None:
     git = _FakeGit(diff_map={})
 
@@ -401,7 +388,6 @@ async def test_dream_log_missing_commit_guides_user() -> None:
     assert "Use `/dream-restore` to list recent versions" in out.content
 
 
-@pytest.mark.asyncio
 async def test_dream_log_before_first_run_is_clear() -> None:
     git = _FakeGit(initialized=False)
 
@@ -412,7 +398,6 @@ async def test_dream_log_before_first_run_is_clear() -> None:
     assert "/dream-prompt" in out.content
 
 
-@pytest.mark.asyncio
 async def test_dream_log_without_saved_versions_mentions_prompt_command() -> None:
     git = _FakeGit(initialized=True, commits=[])
 
@@ -422,7 +407,6 @@ async def test_dream_log_without_saved_versions_mentions_prompt_command() -> Non
     assert "/dream-prompt" in out.content
 
 
-@pytest.mark.asyncio
 async def test_dream_prompt_reports_default_prompt(tmp_path) -> None:
     out = await cmd_dream_prompt(_make_dream_prompt_ctx(tmp_path))
 
@@ -432,7 +416,6 @@ async def test_dream_prompt_reports_default_prompt(tmp_path) -> None:
     assert "/dream-prompt init" in out.content
 
 
-@pytest.mark.asyncio
 async def test_dream_prompt_init_copies_default_prompt(tmp_path) -> None:
     ctx = _make_dream_prompt_ctx(tmp_path, "/dream-prompt init", "init")
 
@@ -446,7 +429,6 @@ async def test_dream_prompt_init_copies_default_prompt(tmp_path) -> None:
     assert prompt_file.read_text(encoding="utf-8") == MemoryStore.default_dream_prompt() + "\n"
 
 
-@pytest.mark.asyncio
 async def test_dream_prompt_init_does_not_overwrite_existing_prompt(tmp_path) -> None:
     prompt_file = tmp_path / "prompts" / "dream.md"
     prompt_file.parent.mkdir()
@@ -461,7 +443,6 @@ async def test_dream_prompt_init_does_not_overwrite_existing_prompt(tmp_path) ->
     assert prompt_file.read_text(encoding="utf-8") == "custom"
 
 
-@pytest.mark.asyncio
 async def test_dream_prompt_init_recreates_empty_prompt(tmp_path) -> None:
     prompt_file = tmp_path / "prompts" / "dream.md"
     prompt_file.parent.mkdir()
@@ -484,7 +465,6 @@ def test_dream_prompt_command_in_help_and_palette() -> None:
     assert "/dream-prompt [init]" in build_help_text()
 
 
-@pytest.mark.asyncio
 async def test_dream_restore_lists_versions_with_next_steps() -> None:
     commits = [
         CommitInfo(sha="abcd1234", message="dream: latest", timestamp="2026-04-04 12:00"),
@@ -504,7 +484,6 @@ async def test_dream_restore_lists_versions_with_next_steps() -> None:
     assert "Restore a version with `/dream-restore <sha>`." in out.content
 
 
-@pytest.mark.asyncio
 async def test_dream_restore_success_mentions_files_and_followup() -> None:
     commit = CommitInfo(sha="abcd1234", message="dream: latest", timestamp="2026-04-04 12:00")
     diff = (
@@ -535,7 +514,6 @@ async def test_dream_restore_success_mentions_files_and_followup() -> None:
     assert git.revert_calls == [("abcd1234", "dream:")]
 
 
-@pytest.mark.asyncio
 async def test_dream_restore_rejects_non_dream_commit_clearly() -> None:
     commit = CommitInfo(
         sha="cccc3333", message="backup: workspace", timestamp="2026-04-04 10:00",

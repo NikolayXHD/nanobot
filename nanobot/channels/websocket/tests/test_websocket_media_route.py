@@ -232,7 +232,6 @@ def test_local_markdown_image_rejects_workspace_escape(
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_media_route_serves_signed_file(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -264,7 +263,6 @@ async def test_media_route_serves_signed_file(
     assert resp.headers.get("x-content-type-options") == "nosniff"
 
 
-@pytest.mark.asyncio
 async def test_media_route_serves_video_byte_ranges(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -296,7 +294,6 @@ async def test_media_route_serves_video_byte_ranges(
     assert resp.headers.get("content-length") == "4"
 
 
-@pytest.mark.asyncio
 async def test_media_route_serves_suffix_video_byte_ranges(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -324,7 +321,6 @@ async def test_media_route_serves_suffix_video_byte_ranges(
     assert resp.headers.get("content-range") == "bytes 7-9/10"
 
 
-@pytest.mark.asyncio
 async def test_media_route_rejects_unsatisfiable_byte_range(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -352,7 +348,6 @@ async def test_media_route_rejects_unsatisfiable_byte_range(
     assert resp.headers.get("content-range") == "bytes */10"
 
 
-@pytest.mark.asyncio
 async def test_media_route_rejects_bad_signature(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -385,7 +380,6 @@ async def test_media_route_rejects_bad_signature(
     assert resp.status_code == 401
 
 
-@pytest.mark.asyncio
 async def test_media_route_rejects_path_traversal_payload(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -419,7 +413,6 @@ async def test_media_route_rejects_path_traversal_payload(
     assert b"classified" not in resp.content
 
 
-@pytest.mark.asyncio
 async def test_media_route_404s_missing_file(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -444,7 +437,6 @@ async def test_media_route_404s_missing_file(
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_media_route_degrades_non_image_to_octet_stream(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -477,7 +469,6 @@ async def test_media_route_degrades_non_image_to_octet_stream(
     assert resp.headers.get("x-content-type-options") == "nosniff"
 
 
-@pytest.mark.asyncio
 async def test_media_route_serves_svg_with_strict_csp(
     bus: MagicMock, tmp_path: Path
 ) -> None:

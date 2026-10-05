@@ -53,7 +53,6 @@ def _channel() -> WebSocketChannel:
     )
 
 
-@pytest.mark.asyncio
 async def test_websocket_does_not_report_running_before_bind_succeeds(monkeypatch) -> None:
     channel = _channel()
     channel.logger = MagicMock()
@@ -75,7 +74,6 @@ async def test_websocket_does_not_report_running_before_bind_succeeds(monkeypatc
     )
 
 
-@pytest.mark.asyncio
 async def test_websocket_restarts_only_its_listener_after_serving_socket_is_lost(
     monkeypatch,
 ) -> None:

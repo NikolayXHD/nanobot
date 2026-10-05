@@ -67,7 +67,6 @@ def _sent_contents(manager: ChannelManager) -> list[str]:
     return [call.args[0].content for call in manager.channels["mock"]._send_mock.await_args_list]
 
 
-@pytest.mark.asyncio
 async def test_channel_receives_automatic_compaction_but_does_not_render_it(
     manager: ChannelManager,
 ) -> None:

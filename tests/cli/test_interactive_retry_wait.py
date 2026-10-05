@@ -7,7 +7,6 @@ from nanobot.bus.outbound_events import ProgressEvent, RetryWaitEvent
 from nanobot.cli import terminal
 
 
-@pytest.mark.asyncio
 async def test_interactive_retry_wait_is_rendered_as_progress_even_when_progress_disabled():
     """Provider retry waits should not fall through as assistant responses."""
     calls: list[tuple[str, object | None]] = []
@@ -33,7 +32,6 @@ async def test_interactive_retry_wait_is_rendered_as_progress_even_when_progress
     assert calls == [("Model request failed, retry in 2s (attempt 1).", thinking)]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "send_progress",
     [
@@ -59,7 +57,6 @@ async def test_reasoning_display_is_independent_of_send_progress(send_progress):
     assert calls == ["Let me think about this..."]
 
 
-@pytest.mark.asyncio
 async def test_reasoning_delta_displayed_when_show_reasoning_enabled():
     """Streamed reasoning delta frames should use the reasoning renderer."""
     calls: list[str] = []
@@ -79,7 +76,6 @@ async def test_reasoning_delta_displayed_when_show_reasoning_enabled():
     assert calls == ["I should search first."]
 
 
-@pytest.mark.asyncio
 async def test_reasoning_delta_buffers_until_sentence_boundary():
     calls: list[str] = []
     channels_config = SimpleNamespace(
@@ -114,7 +110,6 @@ async def test_reasoning_delta_buffers_until_sentence_boundary():
     assert calls == ["The user asked."]
 
 
-@pytest.mark.asyncio
 async def test_reasoning_end_flushes_buffered_delta():
     calls: list[str] = []
     channels_config = SimpleNamespace(
@@ -149,7 +144,6 @@ async def test_reasoning_end_flushes_buffered_delta():
     assert calls == ["The user asked"]
 
 
-@pytest.mark.asyncio
 async def test_reasoning_hidden_when_show_reasoning_disabled():
     """Reasoning content should be suppressed when show_reasoning is False."""
     channels_config = SimpleNamespace(
@@ -168,7 +162,6 @@ async def test_reasoning_hidden_when_show_reasoning_disabled():
     mock_reasoning.assert_not_called()
 
 
-@pytest.mark.asyncio
 async def test_non_reasoning_progress_not_affected_by_show_reasoning():
     """Regular progress lines should display regardless of show_reasoning."""
     calls: list[str] = []

@@ -8,14 +8,12 @@ from nanobot.bus.events import OutboundMessage
 from nanobot.config.paths import get_workspace_path
 
 
-@pytest.mark.asyncio
 async def test_message_tool_returns_error_when_no_target_context() -> None:
     tool = MessageTool()
     result = await tool.execute(content="test")
     assert result == "Error: No target channel/chat specified"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "bad",
     [
@@ -39,7 +37,6 @@ async def test_message_tool_rejects_malformed_buttons(bad) -> None:
     assert result == "Error: buttons must be a list of list of strings"
 
 
-@pytest.mark.asyncio
 async def test_message_tool_suppresses_delivery_when_active() -> None:
     sent: list[OutboundMessage] = []
 
@@ -61,7 +58,6 @@ async def test_message_tool_suppresses_delivery_when_active() -> None:
     assert sent[0].content == "real"
 
 
-@pytest.mark.asyncio
 async def test_message_tool_records_media_deliveries() -> None:
     sent: list[OutboundMessage] = []
 
@@ -80,7 +76,6 @@ async def test_message_tool_records_media_deliveries() -> None:
     assert sent[0].metadata == {"_record_channel_delivery": True}
 
 
-@pytest.mark.asyncio
 async def test_message_tool_inherits_metadata_for_same_target() -> None:
     sent: list[OutboundMessage] = []
 
@@ -96,7 +91,6 @@ async def test_message_tool_inherits_metadata_for_same_target() -> None:
     assert sent[0].metadata == slack_meta
 
 
-@pytest.mark.asyncio
 async def test_message_tool_clears_metadata_when_context_has_none() -> None:
     sent: list[OutboundMessage] = []
 
@@ -125,7 +119,6 @@ async def test_message_tool_clears_metadata_when_context_has_none() -> None:
     assert sent[0].metadata == {}
 
 
-@pytest.mark.asyncio
 async def test_message_tool_does_not_inherit_metadata_for_cross_target() -> None:
     sent: list[OutboundMessage] = []
 
@@ -145,7 +138,6 @@ async def test_message_tool_does_not_inherit_metadata_for_cross_target() -> None
     assert sent[0].metadata == {}
 
 
-@pytest.mark.asyncio
 async def test_message_tool_resolves_relative_media_paths() -> None:
     sent: list[OutboundMessage] = []
 
@@ -165,7 +157,6 @@ async def test_message_tool_resolves_relative_media_paths() -> None:
     assert sent[0].media == [expected]
 
 
-@pytest.mark.asyncio
 async def test_message_tool_resolves_relative_media_paths_from_active_workspace(tmp_path) -> None:
     sent: list[OutboundMessage] = []
 
@@ -185,7 +176,6 @@ async def test_message_tool_resolves_relative_media_paths_from_active_workspace(
     assert sent[0].media == [str(workspace / "output/image.png")]
 
 
-@pytest.mark.asyncio
 async def test_message_tool_rejects_outside_workspace_absolute_media_when_restricted(
     tmp_path,
 ) -> None:
@@ -212,7 +202,6 @@ async def test_message_tool_rejects_outside_workspace_absolute_media_when_restri
     assert sent == []
 
 
-@pytest.mark.asyncio
 async def test_message_tool_allows_workspace_absolute_media_when_restricted(tmp_path) -> None:
     sent: list[OutboundMessage] = []
 
@@ -236,7 +225,6 @@ async def test_message_tool_allows_workspace_absolute_media_when_restricted(tmp_
     assert sent[0].media == [str(image.resolve())]
 
 
-@pytest.mark.asyncio
 async def test_message_tool_passes_through_absolute_media_paths() -> None:
     sent: list[OutboundMessage] = []
 
@@ -257,7 +245,6 @@ async def test_message_tool_passes_through_absolute_media_paths() -> None:
     assert sent[0].media == [abs_path]
 
 
-@pytest.mark.asyncio
 async def test_message_tool_passes_through_url_media_paths() -> None:
     sent: list[OutboundMessage] = []
 
@@ -278,7 +265,6 @@ async def test_message_tool_passes_through_url_media_paths() -> None:
     assert sent[0].media == [url]
 
 
-@pytest.mark.asyncio
 async def test_message_tool_resolves_mixed_media_paths() -> None:
     sent: list[OutboundMessage] = []
 
@@ -310,7 +296,6 @@ async def test_message_tool_resolves_mixed_media_paths() -> None:
     ]
 
 
-@pytest.mark.asyncio
 async def test_message_tool_rejects_wrong_explicit_ws_chat_id(tmp_path) -> None:
     sent: list[OutboundMessage] = []
 
@@ -332,7 +317,6 @@ async def test_message_tool_rejects_wrong_explicit_ws_chat_id(tmp_path) -> None:
     assert sent == []
 
 
-@pytest.mark.asyncio
 async def test_message_tool_allows_ws_explicit_when_matches_context(tmp_path) -> None:
     sent: list[OutboundMessage] = []
 
@@ -354,7 +338,6 @@ async def test_message_tool_allows_ws_explicit_when_matches_context(tmp_path) ->
     assert sent[0].chat_id == conv
 
 
-@pytest.mark.asyncio
 async def test_message_tool_cli_context_may_target_other_ws_chat(tmp_path) -> None:
     """Cron / CLI handlers keep non-websocket defaults; explicit websocket + uuid remains valid."""
     sent: list[OutboundMessage] = []

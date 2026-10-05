@@ -4,8 +4,6 @@ import asyncio
 import json
 from unittest.mock import MagicMock
 
-import pytest
-
 from nanobot.agent.tools.context import RequestContext, request_context
 from nanobot.agent.tools.cron import CronTool
 from nanobot.agent.tools.message import MessageTool
@@ -23,7 +21,6 @@ def _runtime(model: str = "test-model") -> LLMRuntime:
     return LLMRuntime.capture(provider, model, context_window_tokens=128_000)
 
 
-@pytest.mark.asyncio
 async def test_message_tool_keeps_task_local_context() -> None:
     seen: list[tuple[str, str, str]] = []
     entered = asyncio.Event()
@@ -55,7 +52,6 @@ async def test_message_tool_keeps_task_local_context() -> None:
     assert ("email", "chat-b", "two") in seen
 
 
-@pytest.mark.asyncio
 async def test_subagent_tool_keeps_task_local_context() -> None:
     seen: list[tuple[str, str, str, str | None, str | None]] = []
     entered = asyncio.Event()
@@ -119,7 +115,6 @@ async def test_subagent_tool_keeps_task_local_context() -> None:
     assert ("telegram", "chat-b", "telegram:chat-b", "msg-b", "turn-b") in seen
 
 
-@pytest.mark.asyncio
 async def test_cron_tool_keeps_task_local_context(tmp_path) -> None:
     tool = CronTool(CronService(tmp_path / "jobs.json"))
     entered = asyncio.Event()
@@ -157,7 +152,6 @@ async def test_cron_tool_keeps_task_local_context(tmp_path) -> None:
 # --- Basic single-task regression tests ---
 
 
-@pytest.mark.asyncio
 async def test_message_tool_basic_request_context_and_execute() -> None:
     """A bound request context should route a single execution correctly."""
     seen: list[tuple[str, str, str]] = []
@@ -174,7 +168,6 @@ async def test_message_tool_basic_request_context_and_execute() -> None:
     assert seen == [("telegram", "chat-123", "hello")]
 
 
-@pytest.mark.asyncio
 async def test_message_tool_default_values_without_request_context() -> None:
     """Without a request context, constructor defaults should be used."""
     seen: list[tuple[str, str, str]] = []
@@ -193,7 +186,6 @@ async def test_message_tool_default_values_without_request_context() -> None:
     assert seen == [("discord", "general", "hi")]
 
 
-@pytest.mark.asyncio
 async def test_subagent_tool_basic_request_context_and_execute() -> None:
     """A bound request context should provide the correct origin."""
     seen: list[tuple[str, str, str, str | None, str | None]] = []
@@ -235,7 +227,6 @@ async def test_subagent_tool_basic_request_context_and_execute() -> None:
     assert seen == [("feishu", "chat-abc", "feishu:chat-abc", "msg-123", "turn-123")]
 
 
-@pytest.mark.asyncio
 async def test_subagent_tool_rejects_missing_request_runtime() -> None:
     """Spawning cannot reconstruct a model runtime outside turn admission."""
     seen: list[tuple[str, str, str]] = []
@@ -271,7 +262,6 @@ async def test_subagent_tool_rejects_missing_request_runtime() -> None:
     assert seen == []
 
 
-@pytest.mark.asyncio
 async def test_cron_tool_basic_request_context_and_execute(tmp_path) -> None:
     """A bound request context should provide the correct cron owner."""
     tool = CronTool(CronService(tmp_path / "jobs.json"))
@@ -288,7 +278,6 @@ async def test_cron_tool_basic_request_context_and_execute(tmp_path) -> None:
     assert jobs[0].payload.origin_chat_id == "user-789"
 
 
-@pytest.mark.asyncio
 async def test_webui_cron_tool_uses_origin_session_when_unified_enabled(tmp_path) -> None:
     """WebUI-created cron jobs stay attached to the creating chat."""
     tool = CronTool(CronService(tmp_path / "jobs.json"))
@@ -312,7 +301,6 @@ async def test_webui_cron_tool_uses_origin_session_when_unified_enabled(tmp_path
     assert jobs[0].payload.origin_metadata == {"webui": True}
 
 
-@pytest.mark.asyncio
 async def test_cron_tool_snapshots_only_persistable_request_metadata(tmp_path) -> None:
     """Live runtime context must not poison a persisted WebUI cron job."""
     store_path = tmp_path / "jobs.json"
@@ -347,7 +335,6 @@ async def test_cron_tool_snapshots_only_persistable_request_metadata(tmp_path) -
         service.stop()
 
 
-@pytest.mark.asyncio
 async def test_cron_tool_preserves_thread_scoped_session_key(tmp_path) -> None:
     """Channel-provided thread session keys should remain the cron owner."""
     tool = CronTool(CronService(tmp_path / "jobs.json"))
@@ -370,7 +357,6 @@ async def test_cron_tool_preserves_thread_scoped_session_key(tmp_path) -> None:
     assert jobs[0].payload.origin_metadata == {"slack": {"thread_ts": "1700.42"}}
 
 
-@pytest.mark.asyncio
 async def test_cron_tool_no_context_returns_error(tmp_path) -> None:
     """Without a request context, add should fail with a clear error."""
     tool = CronTool(CronService(tmp_path / "jobs.json"))

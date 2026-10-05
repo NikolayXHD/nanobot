@@ -59,7 +59,6 @@ def _mutation_request(path: str, payload: dict[str, object]) -> SimpleNamespace:
     return request
 
 
-@pytest.mark.asyncio
 async def test_close_releases_channel_connectors() -> None:
     router = _router()
     closed = False
@@ -77,7 +76,6 @@ async def test_close_releases_channel_connectors() -> None:
     assert router._system._channel_connectors == {}
 
 
-@pytest.mark.asyncio
 async def test_mcp_list_serializes_local_runtime_failure_snapshot(tmp_path) -> None:
     config_path = tmp_path / "config.json"
     custom_mcp_action(
@@ -117,7 +115,6 @@ async def test_mcp_list_serializes_local_runtime_failure_snapshot(tmp_path) -> N
     assert snapshot_calls == 1
 
 
-@pytest.mark.asyncio
 async def test_usage_query_runs_off_the_event_loop(monkeypatch) -> None:
     calling_thread = threading.get_ident()
     worker_threads: list[int] = []
@@ -136,7 +133,6 @@ async def test_usage_query_runs_off_the_event_loop(monkeypatch) -> None:
     assert worker_threads and worker_threads[0] != calling_thread
 
 
-@pytest.mark.asyncio
 async def test_full_settings_query_runs_off_the_event_loop(monkeypatch) -> None:
     calling_thread = threading.get_ident()
     worker_threads: list[int] = []
@@ -156,7 +152,6 @@ async def test_full_settings_query_runs_off_the_event_loop(monkeypatch) -> None:
     assert worker_threads and worker_threads[0] != calling_thread
 
 
-@pytest.mark.asyncio
 async def test_mcp_reload_callback_is_bounded(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -183,7 +178,6 @@ async def test_mcp_reload_callback_is_bounded(
     }
 
 
-@pytest.mark.asyncio
 async def test_mcp_oauth_start_uses_gateway_callback_and_requires_api_auth(monkeypatch) -> None:
     config = SimpleNamespace(
         type="streamableHttp",
@@ -236,7 +230,6 @@ async def test_mcp_oauth_start_uses_gateway_callback_and_requires_api_auth(monke
     assert b"upstream secret response" not in failed_response.body
 
 
-@pytest.mark.asyncio
 async def test_mcp_oauth_callback_is_state_authenticated_and_returns_close_page() -> None:
     router = _router(authorized=False)
     submit = MagicMock(return_value="xmind")
@@ -259,7 +252,6 @@ async def test_mcp_oauth_callback_is_state_authenticated_and_returns_close_page(
     submit.assert_called_once_with(state="state-123", code="oauth-code", error=None)
 
 
-@pytest.mark.asyncio
 async def test_mcp_oauth_manual_completion_reads_websocket_payload() -> None:
     callback_url = (
         "http://127.0.0.1:8765/auth/mcp/callback?code=oauth-code&state=state-123"
@@ -308,7 +300,6 @@ async def test_mcp_oauth_manual_completion_reads_websocket_payload() -> None:
         ),
     ],
 )
-@pytest.mark.asyncio
 async def test_oauth_completion_reads_websocket_payload(
     monkeypatch,
     provider: str,
@@ -409,7 +400,6 @@ async def test_oauth_completion_reads_websocket_payload(
         ),
     ],
 )
-@pytest.mark.asyncio
 async def test_runtime_config_mutation_routes_refresh_live_runtime(
     monkeypatch,
     route_path: str,
@@ -438,7 +428,6 @@ async def test_runtime_config_mutation_routes_refresh_live_runtime(
     refresh_runtime_config.assert_called_once_with()
 
 
-@pytest.mark.asyncio
 async def test_model_update_route_forwards_session_rename_dependency(monkeypatch) -> None:
     rename_model_preset = MagicMock(return_value=2)
     refresh_runtime_config = MagicMock()
@@ -470,7 +459,6 @@ async def test_model_update_route_forwards_session_rename_dependency(monkeypatch
     refresh_runtime_config.assert_called_once_with()
 
 
-@pytest.mark.asyncio
 async def test_settings_get_mutation_route_is_method_not_allowed() -> None:
     path = "/api/settings/provider/update"
     request = SimpleNamespace(
@@ -507,7 +495,6 @@ async def test_settings_get_mutation_route_is_method_not_allowed() -> None:
         ),
     ],
 )
-@pytest.mark.asyncio
 async def test_version_check_route_returns_stable_payload(
     monkeypatch: pytest.MonkeyPatch,
     update_info: dict[str, str] | None,
@@ -526,7 +513,6 @@ async def test_version_check_route_returns_stable_payload(
     assert json.loads(response.body) == expected
 
 
-@pytest.mark.asyncio
 async def test_version_check_route_enforces_auth_and_bounds_failures(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

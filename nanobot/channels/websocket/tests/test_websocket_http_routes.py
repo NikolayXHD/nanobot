@@ -223,7 +223,6 @@ def _stub_matrix_feature(
         )
 
 
-@pytest.mark.asyncio
 async def test_bootstrap_returns_token_for_localhost(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -266,7 +265,6 @@ async def test_bootstrap_returns_token_for_localhost(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_sessions_list_requires_bearer_token(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -294,7 +292,6 @@ async def test_sessions_list_requires_bearer_token(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_sessions_list_and_thread_restore_transcript_without_canonical_file(
     bus: MagicMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -348,7 +345,6 @@ async def test_sessions_list_and_thread_restore_transcript_without_canonical_fil
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_session_automations_route_filters_by_webui_session(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -421,7 +417,6 @@ async def test_session_automations_route_filters_by_webui_session(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_session_automations_route_ignores_unified_owner(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -472,7 +467,6 @@ async def test_session_automations_route_ignores_unified_owner(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_session_automations_route_lists_local_triggers(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -520,7 +514,6 @@ async def test_session_automations_route_lists_local_triggers(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_webui_skills_route_requires_token_and_hides_paths(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -610,7 +603,6 @@ async def test_webui_skills_route_requires_token_and_hides_paths(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_webui_skill_management_routes(
     bus: MagicMock,
     tmp_path: Path,
@@ -698,7 +690,6 @@ async def test_webui_skill_management_routes(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_webui_skills_marketplace_routes_search_and_install(
     bus: MagicMock,
     tmp_path: Path,
@@ -827,7 +818,6 @@ async def test_webui_skills_marketplace_routes_search_and_install(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_webui_skill_install_rejects_overlapping_requests(
     bus: MagicMock,
     tmp_path: Path,
@@ -886,7 +876,6 @@ async def test_webui_skill_install_rejects_overlapping_requests(
     assert install_mock.await_count == 1
 
 
-@pytest.mark.asyncio
 async def test_webui_skill_delete_remains_local_only(
     bus: MagicMock,
     tmp_path: Path,
@@ -915,7 +904,6 @@ async def test_webui_skill_delete_remains_local_only(
     delete.assert_not_called()
 
 
-@pytest.mark.asyncio
 async def test_webui_skill_install_honors_remote_install_opt_in(
     bus: MagicMock,
     tmp_path: Path,
@@ -961,7 +949,6 @@ async def test_webui_skill_install_honors_remote_install_opt_in(
     assert response.json()["last_action"]["name"] == "react-testing"
 
 
-@pytest.mark.asyncio
 async def test_cli_apps_routes_require_token_and_return_payload(
     bus: MagicMock,
     tmp_path: Path,
@@ -1036,7 +1023,6 @@ async def test_cli_apps_routes_require_token_and_return_payload(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_nanobot_feature_routes_require_token_and_enable(
     bus: MagicMock,
     tmp_path: Path,
@@ -1099,7 +1085,6 @@ async def test_nanobot_feature_routes_require_token_and_enable(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_nanobot_feature_route_reports_live_channel_failure(
     bus: MagicMock,
     tmp_path: Path,
@@ -1153,7 +1138,6 @@ async def test_nanobot_feature_route_reports_live_channel_failure(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_pairing_routes_require_token_and_approve_or_deny(
     bus: MagicMock,
     tmp_path: Path,
@@ -1235,7 +1219,6 @@ async def test_pairing_routes_require_token_and_approve_or_deny(
     assert "Missing pairing code" in missing_code.text
 
 
-@pytest.mark.asyncio
 async def test_nanobot_feature_remote_install_requires_opt_in(
     bus: MagicMock,
     tmp_path: Path,
@@ -1278,7 +1261,6 @@ async def test_nanobot_feature_remote_install_requires_opt_in(
     assert install_calls == ["matrix"]
 
 
-@pytest.mark.asyncio
 async def test_nanobot_feature_local_install_allowed_by_default(
     bus: MagicMock,
     tmp_path: Path,
@@ -1307,7 +1289,6 @@ async def test_nanobot_feature_local_install_allowed_by_default(
     ] is True
 
 
-@pytest.mark.asyncio
 async def test_nanobot_feature_channel_action_can_apply_without_restart(
     bus: MagicMock,
     tmp_path: Path,
@@ -1351,7 +1332,6 @@ async def test_nanobot_feature_channel_action_can_apply_without_restart(
     assert body["last_action"]["message"].endswith("Matrix channel applied without restart.")
 
 
-@pytest.mark.asyncio
 async def test_nanobot_feature_install_only_does_not_start_channel(
     bus: MagicMock,
     tmp_path: Path,
@@ -1412,7 +1392,6 @@ async def test_nanobot_feature_install_only_does_not_start_channel(
     assert response.json()["features"][0]["enabled"] is False
 
 
-@pytest.mark.asyncio
 async def test_channel_connect_runtime_import_error_is_not_reported_as_unsupported(
     bus: MagicMock,
     tmp_path: Path,
@@ -1442,7 +1421,6 @@ async def test_channel_connect_runtime_import_error_is_not_reported_as_unsupport
     assert "failed to start fake connection" in response.text
 
 
-@pytest.mark.asyncio
 async def test_feishu_connect_routes_write_config_and_hot_reload(
     bus: MagicMock,
     tmp_path: Path,
@@ -1637,7 +1615,6 @@ def test_feishu_connect_create_appends_instance(
     assert len(duplicate_instances) == 2
 
 
-@pytest.mark.asyncio
 async def test_channel_configure_route_saves_discord_config_and_hot_reloads(
     bus: MagicMock,
     tmp_path: Path,
@@ -1731,7 +1708,6 @@ async def test_channel_configure_route_saves_discord_config_and_hot_reloads(
     }
 
 
-@pytest.mark.asyncio
 async def test_channel_configure_route_preserves_existing_channel_values(
     bus: MagicMock,
     tmp_path: Path,
@@ -1791,7 +1767,6 @@ async def test_channel_configure_route_preserves_existing_channel_values(
     }
 
 
-@pytest.mark.asyncio
 async def test_channel_configure_route_saves_matrix_device_id_without_replacing_token(
     bus: MagicMock,
     tmp_path: Path,
@@ -1834,7 +1809,6 @@ async def test_channel_configure_route_saves_matrix_device_id_without_replacing_
     assert data["channels"]["matrix"]["deviceId"] == "DEVICE-ID"
 
 
-@pytest.mark.asyncio
 async def test_channel_configure_route_saves_mattermost_setup(
     bus: MagicMock,
     tmp_path: Path,
@@ -1870,7 +1844,6 @@ async def test_channel_configure_route_saves_mattermost_setup(
     }
 
 
-@pytest.mark.asyncio
 async def test_nanobot_feature_loopback_reverse_proxy_install_requires_opt_in(
     bus: MagicMock,
     tmp_path: Path,
@@ -1916,7 +1889,6 @@ async def test_nanobot_feature_loopback_reverse_proxy_install_requires_opt_in(
     assert install_calls == ["matrix"]
 
 
-@pytest.mark.asyncio
 async def test_nanobot_feature_remote_enable_without_install_is_allowed(
     bus: MagicMock,
     tmp_path: Path,
@@ -1946,7 +1918,6 @@ async def test_nanobot_feature_remote_enable_without_install_is_allowed(
     ] is True
 
 
-@pytest.mark.asyncio
 async def test_nanobot_feature_remote_disable_does_not_need_install_policy(
     bus: MagicMock,
     tmp_path: Path,
@@ -1973,7 +1944,6 @@ async def test_nanobot_feature_remote_disable_does_not_need_install_policy(
     assert data["channels"]["matrix"]["homeserver"] == "keep"
 
 
-@pytest.mark.asyncio
 async def test_cli_apps_catalog_does_not_block_other_webui_http_routes(
     bus: MagicMock,
     tmp_path: Path,
@@ -2021,7 +1991,6 @@ async def test_cli_apps_catalog_does_not_block_other_webui_http_routes(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_cli_apps_route_supports_installed_only_payload(
     bus: MagicMock,
     tmp_path: Path,
@@ -2057,7 +2026,6 @@ async def test_cli_apps_route_supports_installed_only_payload(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_mcp_presets_routes_require_token_and_return_payload(
     bus: MagicMock,
     tmp_path: Path,
@@ -2207,7 +2175,6 @@ async def test_mcp_presets_routes_require_token_and_return_payload(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_sessions_list_only_returns_websocket_sessions_by_default(
     bus: MagicMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -2268,7 +2235,6 @@ async def test_sessions_list_only_returns_websocket_sessions_by_default(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_webui_sidebar_state_routes_are_config_dir_scoped(
     bus: MagicMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -2317,7 +2283,6 @@ async def test_webui_sidebar_state_routes_are_config_dir_scoped(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_session_delete_removes_file(
     bus: MagicMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -2347,7 +2312,6 @@ async def test_session_delete_removes_file(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_session_delete_removes_transcript_without_canonical_file(
     bus: MagicMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -2381,7 +2345,6 @@ async def test_session_delete_removes_transcript_without_canonical_file(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_session_delete_removes_unpersisted_new_chat(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -2424,7 +2387,6 @@ async def test_session_delete_removes_unpersisted_new_chat(
     assert channel.gateway.workspaces.scope_for_session_key(key).project_path == tmp_path.resolve()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("kind", ["every", "cron", "at"])
 async def test_webui_automation_edit_keeps_pending_run(bus, tmp_path, monkeypatch, kind):
     now = 1_900_000_000_000
@@ -2478,7 +2440,6 @@ async def test_webui_automation_edit_keeps_pending_run(bus, tmp_path, monkeypatc
         await channel.stop()
 
 
-@pytest.mark.asyncio
 async def test_webui_automation_result_is_authenticated_and_returns_only_selected_response(
     bus: MagicMock, tmp_path: Path,
 ) -> None:
@@ -2530,7 +2491,6 @@ async def test_webui_automation_result_is_authenticated_and_returns_only_selecte
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_remote_new_chat_accepts_server_project_path_but_rejects_remote_full_access(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -2599,7 +2559,6 @@ async def test_remote_new_chat_accepts_server_project_path_but_rejects_remote_fu
     ]
 
 
-@pytest.mark.asyncio
 async def test_webui_automations_route_lists_all_jobs_and_allows_user_actions(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -2842,7 +2801,6 @@ async def test_webui_automations_route_lists_all_jobs_and_allows_user_actions(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_webui_automations_route_manages_local_triggers(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -2927,7 +2885,6 @@ async def test_webui_automations_route_manages_local_triggers(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_session_delete_blocks_when_bound_automation_exists(
     bus: MagicMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -2964,7 +2921,6 @@ async def test_session_delete_blocks_when_bound_automation_exists(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_session_delete_blocks_and_cascades_local_triggers(
     bus: MagicMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -3008,7 +2964,6 @@ async def test_session_delete_blocks_and_cascades_local_triggers(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_session_delete_can_cascade_bound_automations(
     bus: MagicMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -3050,7 +3005,6 @@ async def test_session_delete_can_cascade_bound_automations(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_session_delete_blocks_origin_automation_when_unified_enabled(
     bus: MagicMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -3094,7 +3048,6 @@ async def test_session_delete_blocks_origin_automation_when_unified_enabled(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_session_delete_action_accepts_websocket_keys(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -3117,7 +3070,6 @@ async def test_session_delete_action_accepts_websocket_keys(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_webui_thread_resigns_assistant_media_urls(
     bus: MagicMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -3189,7 +3141,6 @@ async def test_webui_thread_resigns_assistant_media_urls(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_sessions_list_negotiates_gzip_across_repeated_headers(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -3217,7 +3168,6 @@ async def test_sessions_list_negotiates_gzip_across_repeated_headers(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_webui_thread_complete_transcript_skips_session_history_read(
     bus: MagicMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -3267,7 +3217,6 @@ async def test_webui_thread_complete_transcript_skips_session_history_read(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_webui_thread_negotiates_gzip_for_large_payloads(
     bus: MagicMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -3327,7 +3276,6 @@ async def test_webui_thread_negotiates_gzip_for_large_payloads(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_webui_thread_revalidates_and_loads_large_trace_details(
     bus: MagicMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -3403,7 +3351,6 @@ async def test_webui_thread_revalidates_and_loads_large_trace_details(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_webui_thread_omits_validator_when_transcript_changes_during_replay(
     bus: MagicMock, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -3440,7 +3387,6 @@ async def test_webui_thread_omits_validator_when_transcript_changes_during_repla
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_session_delete_rejects_non_websocket_keys(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -3478,7 +3424,6 @@ async def test_session_delete_rejects_non_websocket_keys(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_session_delete_rejects_invalid_key(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -3499,7 +3444,6 @@ async def test_session_delete_rejects_invalid_key(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_static_serves_index_when_dist_present(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -3528,7 +3472,6 @@ async def test_static_serves_index_when_dist_present(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_static_rejects_path_traversal(
     bus: MagicMock, tmp_path: Path
 ) -> None:
@@ -3548,7 +3491,6 @@ async def test_static_rejects_path_traversal(
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_unknown_route_returns_404(bus: MagicMock) -> None:
     channel = _ch(bus, port=29907)
     server_task = asyncio.create_task(channel.start())
@@ -3560,7 +3502,6 @@ async def test_unknown_route_returns_404(bus: MagicMock) -> None:
         await server_task
 
 
-@pytest.mark.asyncio
 async def test_api_token_pool_purges_expired(bus: MagicMock, tmp_path: Path) -> None:
     sm = _seed_session(tmp_path)
     channel = _ch(bus, session_manager=sm, port=29908)
@@ -3633,7 +3574,6 @@ async def _webui_mutate(
     )
 
 
-@pytest.mark.asyncio
 async def test_recovery_mutation_uses_authenticated_websocket_action(bus: MagicMock) -> None:
     recovery_action = AsyncMock(return_value={
         "status": "resuming",
@@ -3655,7 +3595,6 @@ async def test_recovery_mutation_uses_authenticated_websocket_action(bus: MagicM
     )
 
 
-@pytest.mark.asyncio
 async def test_workspace_folder_picker_is_local_authenticated_mutation(
     bus: MagicMock,
     tmp_path: Path,
@@ -3726,7 +3665,6 @@ def test_workspace_payload_separates_remote_project_selection_from_full_access(
     assert controls["can_pick_folder"] is (can_pick_folder and native_picker_available)
 
 
-@pytest.mark.asyncio
 async def test_workspace_folder_picker_rejects_direct_http(
     bus: MagicMock,
     monkeypatch: pytest.MonkeyPatch,
@@ -3753,7 +3691,6 @@ async def test_workspace_folder_picker_rejects_direct_http(
     pick_folder.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("connection", "host"),
     [(_REMOTE, "127.0.0.1"), (_LOCAL, "0.0.0.0")],
@@ -3879,7 +3816,6 @@ def test_trusted_proxy_bootstrap_has_no_tokens(
     assert payload["ws_path"] == "/"
 
 
-@pytest.mark.asyncio
 async def test_trusted_proxy_authorizes_rest_without_api_token(bus: MagicMock) -> None:
     channel = _ch(bus, **_trusted_proxy_config())
     response = await channel.gateway.http.dispatch(
@@ -4206,7 +4142,6 @@ def test_bootstrap_secret_also_enforced_on_localhost(bus: MagicMock) -> None:
     assert resp.status_code == 401
 
 
-@pytest.mark.asyncio
 async def test_star_prompt_requires_authenticated_mutation_and_persists_dismissal(
     bus: MagicMock,
 ) -> None:

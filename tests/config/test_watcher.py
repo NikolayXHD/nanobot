@@ -2,13 +2,11 @@ import asyncio
 from contextlib import suppress
 from pathlib import Path
 
-import pytest
 from watchfiles import Change
 
 import nanobot.config.watcher as config_watcher
 
 
-@pytest.mark.asyncio
 async def test_watch_config_file_filters_directory_events(
     tmp_path: Path,
     monkeypatch,
@@ -34,7 +32,6 @@ async def test_watch_config_file_filters_directory_events(
     assert changes == [None]
 
 
-@pytest.mark.asyncio
 async def test_watch_config_file_observes_atomic_replace(tmp_path: Path) -> None:
     config_path = tmp_path / "config.json"
     config_path.write_text("{}", encoding="utf-8")

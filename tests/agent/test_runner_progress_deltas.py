@@ -19,7 +19,6 @@ from nanobot.utils.progress_events import output_events
 _MAX_TOOL_RESULT_CHARS = AgentDefaults().max_tool_result_chars
 
 
-@pytest.mark.asyncio
 async def test_runner_routes_hosted_tool_events_to_structured_progress():
     provider = MagicMock()
 
@@ -107,7 +106,6 @@ async def test_runner_routes_hosted_tool_events_to_structured_progress():
     provider.chat_with_retry.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_runner_fails_pending_hosted_tool_when_model_request_fails():
     provider = MagicMock()
 
@@ -168,7 +166,6 @@ async def test_runner_fails_pending_hosted_tool_when_model_request_fails():
     provider.chat_with_retry.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_runner_emits_write_file_diff_from_tool_execution_snapshots(tmp_path, monkeypatch):
     provider = MagicMock()
     call_count = 0
@@ -236,7 +233,6 @@ async def test_runner_emits_write_file_diff_from_tool_execution_snapshots(tmp_pa
     )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("tool_name", ["edit_file", "apply_patch"])
 async def test_runner_reuses_edit_diff_for_summary_and_progress(tmp_path, monkeypatch, tool_name):
     provider = MagicMock()
@@ -318,7 +314,6 @@ async def test_runner_reuses_edit_diff_for_summary_and_progress(tmp_path, monkey
     )
 
 
-@pytest.mark.asyncio
 async def test_runner_marks_file_edit_activity_failed_when_tool_errors(tmp_path):
     provider = MagicMock()
     call_count = 0
@@ -374,7 +369,6 @@ async def test_runner_marks_file_edit_activity_failed_when_tool_errors(tmp_path)
     assert progress_events[-1]["status"] == "error"
 
 
-@pytest.mark.asyncio
 async def test_runner_marks_file_edit_activity_failed_when_cancelled(tmp_path):
     provider = MagicMock()
     progress_events: list[dict] = []

@@ -184,7 +184,6 @@ def test_list_at_job_shows_iso_timestamp(tmp_path) -> None:
     assert "Asia/Shanghai" in result
 
 
-@pytest.mark.asyncio
 async def test_list_shows_last_run_state(tmp_path) -> None:
     tool = _make_tool(tmp_path)
     tool._cron._running = True
@@ -204,7 +203,6 @@ async def test_list_shows_last_run_state(tmp_path) -> None:
     assert "ok" in result
     assert "(UTC)" in result
 
-@pytest.mark.asyncio
 async def test_list_shows_error_message(tmp_path) -> None:
     tool = _make_tool(tmp_path)
     tool._cron._running = True
@@ -367,7 +365,6 @@ def test_validate_params_rejects_non_positive_interval(tmp_path, every_seconds: 
     assert any("every_seconds" in error for error in errors)
 
 
-@pytest.mark.asyncio
 async def test_legacy_zero_interval_job_can_be_listed_repaired_and_removed(tmp_path) -> None:
     tool = _make_tool(tmp_path)
     store_path = tool._cron.store_path

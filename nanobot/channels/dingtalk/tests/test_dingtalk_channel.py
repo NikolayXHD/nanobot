@@ -94,7 +94,6 @@ class _NetworkErrorHttp:
         raise httpx.ConnectError("Connection refused")
 
 
-@pytest.mark.asyncio
 async def test_group_message_keeps_sender_id_and_routes_chat_id() -> None:
     config = DingTalkConfig(client_id="app", client_secret="secret", allow_from=["user1"])
     bus = MessageBus()
@@ -114,7 +113,6 @@ async def test_group_message_keeps_sender_id_and_routes_chat_id() -> None:
     assert msg.metadata["conversation_type"] == "2"
 
 
-@pytest.mark.asyncio
 async def test_group_user_isolation_false_uses_shared_session() -> None:
     """By default group messages share the same session_key."""
     config = DingTalkConfig(
@@ -138,7 +136,6 @@ async def test_group_user_isolation_false_uses_shared_session() -> None:
     assert msg1.chat_id == msg2.chat_id == "group:conv123"
 
 
-@pytest.mark.asyncio
 async def test_group_user_isolation_true_separates_sessions() -> None:
     """When group_user_isolation is True, each user gets their own session_key."""
     config = DingTalkConfig(
@@ -170,7 +167,6 @@ def test_disable_private_chat_uses_camel_case_config_key() -> None:
     assert config.model_dump(mode="json", by_alias=True)["disablePrivateChat"] is True
 
 
-@pytest.mark.asyncio
 async def test_dm_rejected_when_private_chat_disabled(monkeypatch) -> None:
     """With disable_private_chat=True, a 1:1 DM is rejected: nothing reaches the
     bus (no session is created) and the bot replies with a notice directing the
@@ -209,7 +205,6 @@ async def test_dm_rejected_when_private_chat_disabled(monkeypatch) -> None:
     assert "该机器人未开启私聊，请在群聊中与我对话。" in call["json"]["msgParam"]
 
 
-@pytest.mark.asyncio
 async def test_dm_allowed_when_private_chat_not_disabled() -> None:
     """By default (disable_private_chat=False), a 1:1 DM still reaches the bus."""
     config = DingTalkConfig(client_id="app", client_secret="secret", allow_from=["*"])
@@ -228,7 +223,6 @@ async def test_dm_allowed_when_private_chat_not_disabled() -> None:
     assert msg.metadata["conversation_type"] == "1"
 
 
-@pytest.mark.asyncio
 async def test_group_message_allowed_when_private_chat_disabled() -> None:
     """Disabling private chat must not affect group messages."""
     config = DingTalkConfig(
@@ -249,7 +243,6 @@ async def test_group_message_allowed_when_private_chat_disabled() -> None:
     assert msg.chat_id == "group:conv123"
 
 
-@pytest.mark.asyncio
 async def test_group_send_uses_group_messages_api() -> None:
     config = DingTalkConfig(client_id="app", client_secret="secret", allow_from=["*"])
     channel = DingTalkChannel(config, MessageBus())
@@ -269,7 +262,6 @@ async def test_group_send_uses_group_messages_api() -> None:
     assert call["json"]["msgKey"] == "sampleMarkdown"
 
 
-@pytest.mark.asyncio
 async def test_group_send_prepends_sender_mention(monkeypatch) -> None:
     """Group replies are prefixed with a markdown header naming the sender."""
     config = DingTalkConfig(client_id="app", client_secret="secret", allow_from=["*"])
@@ -294,7 +286,6 @@ async def test_group_send_prepends_sender_mention(monkeypatch) -> None:
     assert sent_text == "# @Alice\n\nhello"
 
 
-@pytest.mark.asyncio
 async def test_group_send_escapes_untrusted_sender_name(monkeypatch) -> None:
     """A sender nickname cannot inject extra Markdown blocks into the reply."""
     config = DingTalkConfig(client_id="app", client_secret="secret", allow_from=["*"])
@@ -319,7 +310,6 @@ async def test_group_send_escapes_untrusted_sender_name(monkeypatch) -> None:
     assert sent_text == r"# @Alice \# \[click\]\(https://evil\) \*admin\*" + "\n\nhello"
 
 
-@pytest.mark.asyncio
 async def test_private_send_does_not_prepend_mention(monkeypatch) -> None:
     """Private replies are sent verbatim, without the sender header."""
     config = DingTalkConfig(client_id="app", client_secret="secret", allow_from=["*"])
@@ -344,7 +334,6 @@ async def test_private_send_does_not_prepend_mention(monkeypatch) -> None:
     assert sent_text == "hello"
 
 
-@pytest.mark.asyncio
 async def test_message_without_sender_id_is_dropped() -> None:
     """Malformed inbound events must not publish or attempt an invalid reply."""
     config = DingTalkConfig(
@@ -368,7 +357,6 @@ async def test_message_without_sender_id_is_dropped() -> None:
     assert channel._http.calls == []
 
 
-@pytest.mark.asyncio
 async def test_handler_uses_voice_recognition_text_when_text_is_empty(monkeypatch) -> None:
     bus = MessageBus()
     channel = DingTalkChannel(
@@ -411,7 +399,6 @@ async def test_handler_uses_voice_recognition_text_when_text_is_empty(monkeypatc
     assert msg.chat_id == "group:conv123"
 
 
-@pytest.mark.asyncio
 async def test_handler_retrieves_background_message_failure(monkeypatch) -> None:
     bus = MessageBus()
     channel = DingTalkChannel(
@@ -466,7 +453,6 @@ async def test_handler_retrieves_background_message_failure(monkeypatch) -> None
     )
 
 
-@pytest.mark.asyncio
 async def test_handler_processes_file_message(monkeypatch) -> None:
     """Test that file messages are handled and forwarded with downloaded path."""
     bus = MessageBus()
@@ -515,7 +501,6 @@ async def test_handler_processes_file_message(monkeypatch) -> None:
     assert "/tmp/nanobot_dingtalk/user1/report.xlsx" in msg.content
 
 
-@pytest.mark.asyncio
 async def test_handler_does_not_spawn_message_task_after_stop_during_download(
     monkeypatch,
 ) -> None:
@@ -599,7 +584,6 @@ def _rich_text_message(rich_text_list):
     return _FakeRichTextChatbotMessage
 
 
-@pytest.mark.asyncio
 async def test_handler_richtext_keeps_formatted_segments(monkeypatch) -> None:
     """richText segments with non-'text' types (bold/italic/code/pre) must be kept
     and mapped to Markdown, not dropped (issue #4497)."""
@@ -629,7 +613,6 @@ async def test_handler_richtext_keeps_formatted_segments(monkeypatch) -> None:
     assert msg.content == "**Title** plain *em* `x = 1` ```\nblock\n```"
 
 
-@pytest.mark.asyncio
 async def test_handler_richtext_all_formatted_not_dropped(monkeypatch) -> None:
     """A richText message made only of formatted segments must not end up with empty
     content and fall through to the 'unsupported message type' path (issue #4497)."""
@@ -655,7 +638,6 @@ async def test_handler_richtext_all_formatted_not_dropped(monkeypatch) -> None:
     assert msg.content == "**Important**"
 
 
-@pytest.mark.asyncio
 async def test_handler_richtext_item_with_text_and_download(monkeypatch) -> None:
     """A rich-text item carrying both text and a downloadCode must yield both the
     text and the downloaded file, not drop the attachment (issue #4497)."""
@@ -688,7 +670,6 @@ async def test_handler_richtext_item_with_text_and_download(monkeypatch) -> None
     assert "/tmp/nanobot_dingtalk/user1/report.xlsx" in msg.content
 
 
-@pytest.mark.asyncio
 async def test_start_configures_http_timeout(monkeypatch) -> None:
     """The shared httpx client must be created with an explicit timeout so file/image
     downloads don't hit httpx's 5s default and ConnectTimeout (issue #4497)."""
@@ -725,7 +706,6 @@ async def test_start_configures_http_timeout(monkeypatch) -> None:
     await channel.stop()
 
 
-@pytest.mark.asyncio
 async def test_stop_cancels_stream_client_after_sdk_swallows_first_cancel(monkeypatch) -> None:
     channel = DingTalkChannel(
         DingTalkConfig(client_id="app", client_secret="secret", allow_from=["*"]),
@@ -780,7 +760,6 @@ async def test_stop_cancels_stream_client_after_sdk_swallows_first_cancel(monkey
     assert start_task.cancelled()
 
 
-@pytest.mark.asyncio
 async def test_stop_waits_for_background_message_tasks() -> None:
     channel = DingTalkChannel(
         DingTalkConfig(client_id="app", client_secret="secret", allow_from=["*"]),
@@ -815,7 +794,6 @@ async def test_stop_waits_for_background_message_tasks() -> None:
         await asyncio.gather(task, return_exceptions=True)
 
 
-@pytest.mark.asyncio
 async def test_download_dingtalk_file(tmp_path, monkeypatch) -> None:
     """Test the two-step file download flow (get URL then download content)."""
     channel = DingTalkChannel(
@@ -856,7 +834,6 @@ async def test_download_dingtalk_file(tmp_path, monkeypatch) -> None:
     assert channel._http.calls[1]["method"] == "GET"
 
 
-@pytest.mark.asyncio
 async def test_read_media_bytes_rejects_private_http_target_before_fetch() -> None:
     """Remote media fetches must not reach loopback/private addresses."""
     channel = DingTalkChannel(
@@ -880,7 +857,6 @@ async def test_read_media_bytes_rejects_private_http_target_before_fetch() -> No
     assert channel._http.calls == []
 
 
-@pytest.mark.asyncio
 async def test_read_media_bytes_rejects_private_redirect_result() -> None:
     """A public-looking media URL must not be accepted after redirecting private."""
     channel = DingTalkChannel(
@@ -904,7 +880,6 @@ async def test_read_media_bytes_rejects_private_redirect_result() -> None:
     assert len(channel._http.calls) == 1
 
 
-@pytest.mark.asyncio
 async def test_read_media_bytes_rejects_oversized_remote_response(monkeypatch) -> None:
     """DingTalk media downloads should enforce a byte cap before upload."""
     monkeypatch.setattr(dingtalk_module, "DINGTALK_MAX_REMOTE_MEDIA_BYTES", 8, raising=False)
@@ -928,7 +903,6 @@ async def test_read_media_bytes_rejects_oversized_remote_response(monkeypatch) -
     assert (data, filename, content_type) == (None, None, None)
 
 
-@pytest.mark.asyncio
 async def test_read_media_bytes_does_not_follow_remote_redirects_by_default() -> None:
     """Redirects are refused by default instead of followed into internal networks."""
     channel = DingTalkChannel(
@@ -951,7 +925,6 @@ async def test_read_media_bytes_does_not_follow_remote_redirects_by_default() ->
     assert channel._http.calls[0]["kwargs"]["follow_redirects"] is False
 
 
-@pytest.mark.asyncio
 async def test_read_media_bytes_follows_safe_redirect_when_explicitly_enabled() -> None:
     """Operators can opt in to public redirects without enabling private redirects."""
     channel = DingTalkChannel(
@@ -989,7 +962,6 @@ async def test_read_media_bytes_follows_safe_redirect_when_explicitly_enabled() 
     assert all(call["kwargs"]["follow_redirects"] is False for call in channel._http.calls)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "response_body, redirect_url",
     [
@@ -1037,7 +1009,6 @@ async def test_read_media_bytes_blocks_untrusted_redirects(response_body, redire
     assert [call["url"] for call in channel._http.calls] == ["https://example.com/redirect.txt"]
 
 
-@pytest.mark.asyncio
 async def test_read_media_bytes_allows_cross_host_redirect_when_allowlisted() -> None:
     """Operators can explicitly allow a known CDN/download host for redirects."""
     channel = DingTalkChannel(
@@ -1095,7 +1066,6 @@ def test_normalize_upload_payload_zips_html_attachment() -> None:
     assert archive.read("report.html") == b"<html><body>Hello</body></html>"
 
 
-@pytest.mark.asyncio
 async def test_send_media_ref_zips_html_before_upload(tmp_path, monkeypatch) -> None:
     channel = DingTalkChannel(
         DingTalkConfig(client_id="app", client_secret="secret", allow_from=["*"]),
@@ -1153,7 +1123,6 @@ async def test_send_media_ref_zips_html_before_upload(tmp_path, monkeypatch) -> 
 # ── Exception handling tests ──────────────────────────────────────────
 
 
-@pytest.mark.asyncio
 async def test_send_batch_message_propagates_transport_error() -> None:
     """Network/transport errors must re-raise so callers can retry."""
     config = DingTalkConfig(client_id="app", client_secret="secret", allow_from=["*"])
@@ -1173,7 +1142,6 @@ async def test_send_batch_message_propagates_transport_error() -> None:
     assert channel._http.calls[0]["method"] == "POST"
 
 
-@pytest.mark.asyncio
 async def test_send_batch_message_returns_false_on_api_error() -> None:
     """DingTalk API-level errors (non-200 status, errcode != 0) should return False."""
     config = DingTalkConfig(client_id="app", client_secret="secret", allow_from=["*"])
@@ -1201,7 +1169,6 @@ async def test_send_batch_message_returns_false_on_api_error() -> None:
     assert result is True
 
 
-@pytest.mark.asyncio
 async def test_send_raises_when_access_token_is_unavailable(monkeypatch) -> None:
     channel = DingTalkChannel(
         DingTalkConfig(client_id="app", client_secret="secret", allow_from=["*"]),
@@ -1215,7 +1182,6 @@ async def test_send_raises_when_access_token_is_unavailable(monkeypatch) -> None
         )
 
 
-@pytest.mark.asyncio
 async def test_send_raises_when_text_is_not_delivered(monkeypatch) -> None:
     channel = DingTalkChannel(
         DingTalkConfig(client_id="app", client_secret="secret", allow_from=["*"]),
@@ -1230,7 +1196,6 @@ async def test_send_raises_when_text_is_not_delivered(monkeypatch) -> None:
         )
 
 
-@pytest.mark.asyncio
 async def test_send_media_ref_short_circuits_on_transport_error() -> None:
     """When the first send fails with a transport error, _send_media_ref must
     re-raise immediately instead of trying download+upload+fallback."""
@@ -1247,7 +1212,6 @@ async def test_send_media_ref_short_circuits_on_transport_error() -> None:
     assert channel._http.calls[0]["method"] == "POST"
 
 
-@pytest.mark.asyncio
 async def test_send_media_ref_short_circuits_on_download_transport_error() -> None:
     """When the image URL send returns an API error (False) but the download
     for the fallback hits a transport error, it must re-raise rather than
@@ -1280,7 +1244,6 @@ async def test_send_media_ref_short_circuits_on_download_transport_error() -> No
     assert channel._http.calls[1]["method"] == "GET"
 
 
-@pytest.mark.asyncio
 async def test_send_media_ref_short_circuits_on_upload_transport_error() -> None:
     """When download succeeds but upload hits a transport error, must re-raise."""
     config = DingTalkConfig(client_id="app", client_secret="secret", allow_from=["*"])

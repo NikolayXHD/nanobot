@@ -38,7 +38,6 @@ def _resolve_public(host: str, port: int | None, *args, **kwargs):
     [None, "http://127.0.0.1:23458"],
     ids=["direct", "explicit-proxy"],
 )
-@pytest.mark.asyncio
 async def test_generated_image_download_blocks_unsafe_target(
     url: str,
     proxy: str | None,
@@ -60,7 +59,6 @@ async def test_generated_image_download_blocks_unsafe_target(
     assert requested is False
 
 
-@pytest.mark.asyncio
 async def test_generated_image_download_revalidates_redirects(monkeypatch) -> None:
     original_getaddrinfo = socket.getaddrinfo
 
@@ -85,7 +83,6 @@ async def test_generated_image_download_revalidates_redirects(monkeypatch) -> No
     assert requested == ["https://cdn.example/image.png"]
 
 
-@pytest.mark.asyncio
 async def test_generated_image_download_returns_valid_data_url(monkeypatch) -> None:
     monkeypatch.setattr(
         "nanobot.security.network.socket.getaddrinfo",
@@ -109,7 +106,6 @@ class _OversizedStream(httpx.AsyncByteStream):
         yield b"6789"
 
 
-@pytest.mark.asyncio
 async def test_generated_image_download_enforces_streaming_size_limit(monkeypatch) -> None:
     monkeypatch.setattr(
         "nanobot.security.network.socket.getaddrinfo",
@@ -138,7 +134,6 @@ class _StreamContext:
         await self.response.aclose()
 
 
-@pytest.mark.asyncio
 async def test_generated_image_download_delegates_unresolved_host_to_provider_proxy(
     monkeypatch,
 ) -> None:
@@ -181,7 +176,6 @@ async def test_generated_image_download_delegates_unresolved_host_to_provider_pr
     }
 
 
-@pytest.mark.asyncio
 async def test_proxied_generated_image_download_revalidates_redirects(
     monkeypatch,
 ) -> None:

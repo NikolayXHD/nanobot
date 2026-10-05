@@ -34,7 +34,6 @@ def _context(loop: MagicMock, *, trusted: bool, command: str = "pwd") -> Command
     )
 
 
-@pytest.mark.asyncio
 async def test_user_shell_rejects_untrusted_transport_metadata() -> None:
     loop = MagicMock()
     loop.execute_user_shell_command = AsyncMock()
@@ -45,7 +44,6 @@ async def test_user_shell_rejects_untrusted_transport_metadata() -> None:
     loop.execute_user_shell_command.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("log_content", [True, False])
 @pytest.mark.parametrize("context_session", [True, False])
 async def test_user_shell_uses_exec_tool_with_workspace_scope(
@@ -78,7 +76,6 @@ async def test_user_shell_uses_exec_tool_with_workspace_scope(
     assert current_request_context() is None
 
 
-@pytest.mark.asyncio
 async def test_user_shell_delegates_trusted_request_to_agent_loop() -> None:
     loop = MagicMock()
     expected = OutboundMessage(channel="websocket", chat_id="chat", content="ok")

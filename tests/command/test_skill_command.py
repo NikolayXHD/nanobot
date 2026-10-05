@@ -3,8 +3,6 @@
 from pathlib import Path
 from unittest.mock import MagicMock
 
-import pytest
-
 from nanobot.agent.loop import AgentLoop
 from nanobot.agent.skills import SkillsLoader
 from nanobot.bus.events import InboundMessage
@@ -65,14 +63,12 @@ def _loop_with_skills(tmp_path: Path) -> AgentLoop:
     return loop
 
 
-@pytest.mark.asyncio
 async def test_skill_command_no_skills(tmp_path: Path) -> None:
     loop = _loop_with_skills(tmp_path)
     out = await cmd_skill(_ctx(loop))
     assert out.content == "No skills available."
 
 
-@pytest.mark.asyncio
 async def test_skill_command_lists_names_and_descriptions(tmp_path: Path) -> None:
     ws_skills = tmp_path / "skills"
     ws_skills.mkdir()
@@ -90,7 +86,6 @@ async def test_skill_command_lists_names_and_descriptions(tmp_path: Path) -> Non
     assert "/skills/" not in out.content
 
 
-@pytest.mark.asyncio
 async def test_skill_command_excludes_disabled(tmp_path: Path) -> None:
     ws_skills = tmp_path / "skills"
     ws_skills.mkdir()
@@ -106,7 +101,6 @@ async def test_skill_command_excludes_disabled(tmp_path: Path) -> None:
     assert "**beta** — Beta skill" in out.content
 
 
-@pytest.mark.asyncio
 async def test_skill_command_fallback_description(tmp_path: Path) -> None:
     ws_skills = tmp_path / "skills"
     ws_skills.mkdir()
@@ -118,7 +112,6 @@ async def test_skill_command_fallback_description(tmp_path: Path) -> None:
     assert "**plain** — plain" in out.content
 
 
-@pytest.mark.asyncio
 async def test_skill_command_no_render_as_text(tmp_path: Path) -> None:
     """Output is markdown; CLI should render it (not forced as plain text)."""
     loop = _make_loop(tmp_path)
@@ -126,7 +119,6 @@ async def test_skill_command_no_render_as_text(tmp_path: Path) -> None:
     assert out.metadata.get("render_as") != "text"
 
 
-@pytest.mark.asyncio
 async def test_skill_command_does_not_list_goal_runtime_protocol(tmp_path: Path) -> None:
     loop = _make_loop(tmp_path)
     out = await cmd_skill(_ctx(loop))
@@ -134,7 +126,6 @@ async def test_skill_command_does_not_list_goal_runtime_protocol(tmp_path: Path)
     assert "long-goal" not in out.content
 
 
-@pytest.mark.asyncio
 async def test_skill_command_registered_on_router(tmp_path: Path) -> None:
     router = CommandRouter()
     register_builtin_commands(router)

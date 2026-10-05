@@ -127,7 +127,6 @@ class TestMidTurnCommandDispatchedDirectly:
         msg.metadata = {}
         return msg
 
-    @pytest.mark.asyncio
     async def test_new_dispatched_with_session_none(
         self, router: CommandRouter, fake_loop: MagicMock, fake_msg: MagicMock,
     ) -> None:
@@ -141,7 +140,6 @@ class TestMidTurnCommandDispatchedDirectly:
         assert "New session" in result.content
         fake_loop.sessions.get_or_create.assert_called_once_with("test:chat1")
 
-    @pytest.mark.asyncio
     async def test_help_dispatched_with_session_none(
         self, router: CommandRouter, fake_loop: MagicMock, fake_msg: MagicMock,
     ) -> None:
@@ -157,7 +155,6 @@ class TestMidTurnCommandDispatchedDirectly:
         assert "/new" in result.content
         assert "/pairing [list|approve <code>|deny <code>|revoke <user_id>]" in result.content
 
-    @pytest.mark.asyncio
     async def test_prefix_command_args_populated(self, router: CommandRouter) -> None:
         """Prefix commands have args populated correctly in mid-turn path."""
         # Use a custom prefix handler to avoid needing full mock setup.
@@ -177,7 +174,6 @@ class TestMidTurnCommandDispatchedDirectly:
         await custom.dispatch(ctx)
         assert captured_args == ["hello world"]
 
-    @pytest.mark.asyncio
     async def test_non_command_returns_none(
         self, router: CommandRouter, fake_loop: MagicMock, fake_msg: MagicMock,
     ) -> None:
@@ -189,7 +185,6 @@ class TestMidTurnCommandDispatchedDirectly:
         result = await router.dispatch(ctx)
         assert result is None
 
-    @pytest.mark.asyncio
     async def test_unknown_command_suggests_close_match(
         self, router: CommandRouter, fake_loop: MagicMock, fake_msg: MagicMock,
     ) -> None:
@@ -205,7 +200,6 @@ class TestMidTurnCommandDispatchedDirectly:
         assert result.content == 'Unknown command "/neaw". Did you mean "/new"?'
         assert result.metadata["render_as"] == "text"
 
-    @pytest.mark.asyncio
     async def test_exact_command_with_arguments_suggests_valid_form(
         self, router: CommandRouter, fake_loop: MagicMock, fake_msg: MagicMock,
     ) -> None:
@@ -222,7 +216,6 @@ class TestMidTurnCommandDispatchedDirectly:
             'Command "/status" does not accept arguments. Did you mean "/status"?'
         )
 
-    @pytest.mark.asyncio
     async def test_unknown_command_without_close_match_points_to_help(
         self, router: CommandRouter, fake_loop: MagicMock, fake_msg: MagicMock,
     ) -> None:
@@ -259,7 +252,6 @@ class TestPairingCommandDispatch:
         msg.metadata = {}
         return msg
 
-    @pytest.mark.asyncio
     async def test_pairing_list_dispatched(
         self, router: CommandRouter, fake_msg: MagicMock, monkeypatch,
     ) -> None:
@@ -283,7 +275,6 @@ class TestPairingCommandDispatch:
         assert "ABCD-EFGH" in result.content
         assert result.metadata.get("_pairing_command") is True
 
-    @pytest.mark.asyncio
     async def test_pairing_approve_dispatched(
         self, router: CommandRouter, fake_msg: MagicMock, monkeypatch,
     ) -> None:
@@ -305,7 +296,6 @@ class TestPairingCommandDispatch:
         )
         assert result.metadata.get("_pairing_command") is True
 
-    @pytest.mark.asyncio
     async def test_pairing_revoke_dispatched(
         self, router: CommandRouter, fake_msg: MagicMock, monkeypatch,
     ) -> None:

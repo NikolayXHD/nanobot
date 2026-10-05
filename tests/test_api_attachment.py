@@ -206,7 +206,6 @@ def test_parse_json_content_rejects_oversized_base64_file(tmp_path) -> None:
 # ---------------------------------------------------------------------------
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 async def test_multipart_upload_saves_file(aiohttp_client, mock_agent, tmp_path) -> None:
     """Multipart upload saves file to media dir and passes path to process_direct."""
     import os
@@ -234,7 +233,6 @@ async def test_multipart_upload_saves_file(aiohttp_client, mock_agent, tmp_path)
 
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 async def test_multipart_multiple_files(aiohttp_client, mock_agent, tmp_path) -> None:
     """Multipart upload with multiple files saves all and passes paths."""
     import os
@@ -261,7 +259,6 @@ async def test_multipart_multiple_files(aiohttp_client, mock_agent, tmp_path) ->
 
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 async def test_multipart_file_size_limit(aiohttp_client, mock_agent, tmp_path) -> None:
     """File exceeding MAX_FILE_SIZE returns 413."""
     import os
@@ -287,7 +284,6 @@ async def test_multipart_file_size_limit(aiohttp_client, mock_agent, tmp_path) -
 
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 async def test_multipart_defaults_text_when_missing(aiohttp_client, mock_agent, tmp_path) -> None:
     """Multipart without message field uses default text."""
     import os
@@ -314,7 +310,6 @@ async def test_multipart_defaults_text_when_missing(aiohttp_client, mock_agent, 
 
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 async def test_multipart_with_session_id(aiohttp_client, mock_agent, tmp_path) -> None:
     """Multipart upload with session_id uses custom session key."""
     import os
@@ -345,7 +340,6 @@ async def test_multipart_with_session_id(aiohttp_client, mock_agent, tmp_path) -
 # ---------------------------------------------------------------------------
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 async def test_plain_text_backward_compat(aiohttp_client, mock_agent) -> None:
     """Plain text JSON request (no media) works as before."""
     app = create_app(mock_agent, model_name="m", api_key=API_KEY)
@@ -364,7 +358,6 @@ async def test_plain_text_backward_compat(aiohttp_client, mock_agent) -> None:
 
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 async def test_json_base64_image_upload(aiohttp_client, mock_agent, tmp_path) -> None:
     """JSON request with base64 data URL saves file and passes path."""
     import os
@@ -406,7 +399,6 @@ async def test_json_base64_image_upload(aiohttp_client, mock_agent, tmp_path) ->
 # ---------------------------------------------------------------------------
 
 @pytest.mark.skipif(not HAS_AIOHTTP, reason="aiohttp not installed")
-@pytest.mark.asyncio
 async def test_docx_upload_passes_media_path(aiohttp_client, tmp_path) -> None:
     """Uploaded DOCX is saved to disk and its path is passed through unchanged."""
     agent = _make_mock_agent("report summary")

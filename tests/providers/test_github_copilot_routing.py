@@ -8,8 +8,6 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from nanobot.providers.base import ProviderCallContext
 from nanobot.providers.openai_compat_provider import OpenAICompatProvider
 from nanobot.providers.registry import find_by_name
@@ -51,7 +49,6 @@ def test_build_responses_body_strips_github_copilot_prefix():
     assert "context_management" not in body
 
 
-@pytest.mark.asyncio
 async def test_github_copilot_does_not_fall_back_from_responses_error():
     """On /responses failure, github_copilot must re-raise instead of hitting /chat/completions."""
     from nanobot.providers.github_copilot_provider import GitHubCopilotProvider

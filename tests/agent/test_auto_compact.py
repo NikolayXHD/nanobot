@@ -5,8 +5,6 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 from nanobot.agent.loop import AgentLoop
 from nanobot.agent.tools.registry import ToolRegistry
 from nanobot.bus.events import InboundMessage
@@ -258,7 +256,6 @@ class TestAgentLoopTTLParam:
 class TestAutoCompact:
     """Test the _archive method."""
 
-    @pytest.mark.asyncio
     async def test_check_expired_only_archives_expired_sessions(self, tmp_path):
         """With multiple sessions, only the expired one should be archived."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -281,7 +278,6 @@ class TestAutoCompact:
         assert active_after.messages[0]["content"] == "recent"
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_auto_compact_archives_full_tail_without_deleting_history(self, tmp_path):
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
         session = loop.sessions.get_or_create("cli:test")
@@ -303,7 +299,6 @@ class TestAutoCompact:
         assert visible == []
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_auto_compact_replaces_entire_tool_turn(self, tmp_path):
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
         session = loop.sessions.get_or_create("cli:test")
@@ -322,7 +317,6 @@ class TestAutoCompact:
         assert visible == []
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_auto_compact_stores_summary(self, tmp_path):
         """_archive should store the summary in _summaries."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -344,7 +338,6 @@ class TestAutoCompact:
         assert session_after.get_history(max_messages=12) == []
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_auto_compact_empty_session(self, tmp_path):
         """_archive on empty session should not store a summary."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -358,7 +351,6 @@ class TestAutoCompact:
         assert "cli:test" not in loop.auto_compact._summaries
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_auto_compact_respects_last_archived(self, tmp_path):
         """_archive should process only unarchived messages."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -381,7 +373,6 @@ class TestAutoCompact:
 class TestAutoCompactIdleDetection:
     """Idle detection tests."""
 
-    @pytest.mark.asyncio
     async def test_no_auto_compact_when_ttl_disabled(self, tmp_path):
         loop = _make_loop(tmp_path, session_ttl_minutes=0)
         session = loop.sessions.get_or_create("cli:test")
@@ -396,7 +387,6 @@ class TestAutoCompactIdleDetection:
         assert any(m["content"] == "old message" for m in session_after.messages)
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_auto_compact_triggers_on_idle(self, tmp_path):
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
         session = loop.sessions.get_or_create("cli:test")
@@ -425,7 +415,6 @@ class TestAutoCompactIdleDetection:
         assert any(m["content"] == "new msg" for m in session_after.messages)
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_no_auto_compact_when_active(self, tmp_path):
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
         session = loop.sessions.get_or_create("cli:test")
@@ -439,7 +428,6 @@ class TestAutoCompactIdleDetection:
         assert any(m["content"] == "recent message" for m in session_after.messages)
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_auto_compact_does_not_affect_priority_commands(self, tmp_path):
         """Priority commands (/stop, /restart) bypass _process_message entirely via run()."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -462,7 +450,6 @@ class TestAutoCompactIdleDetection:
         assert any(m["content"] == "old message" for m in session_after.messages)
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_auto_compact_with_slash_new(self, tmp_path):
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
         session = loop.sessions.get_or_create("cli:test")
@@ -484,7 +471,6 @@ class TestAutoCompactIdleDetection:
         assert len(session_after.messages) == 0
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_shortcut_command_persisted_with_command_flag(self, tmp_path):
         """Shortcut commands (e.g. /help) are persisted so WebUI can show them,
         but tagged with _command so they don't leak into LLM context."""
@@ -503,7 +489,6 @@ class TestAutoCompactIdleDetection:
         assert AgentLoop._PENDING_USER_TURN_KEY not in session_after.metadata
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_shortcut_command_excluded_from_get_history(self, tmp_path):
         """Messages marked _command are invisible to get_history (LLM context)."""
         loop = _make_loop(tmp_path)
@@ -523,7 +508,6 @@ class TestAutoCompactIdleDetection:
 class TestAutoCompactSystemMessages:
     """System-message idle compaction tests."""
 
-    @pytest.mark.asyncio
     async def test_auto_compact_triggers_for_system_messages(self, tmp_path):
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
         session = loop.sessions.get_or_create("cli:test")
@@ -554,7 +538,6 @@ class TestAutoCompactSystemMessages:
 class TestAutoCompactEdgeCases:
     """Edge cases for auto session new."""
 
-    @pytest.mark.asyncio
     async def test_auto_compact_with_nothing_summary(self, tmp_path):
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
         session = loop.sessions.get_or_create("cli:test")
@@ -576,7 +559,6 @@ class TestAutoCompactEdgeCases:
 
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_auto_compact_archive_failure_preserves_raw_history(self, tmp_path):
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
         session = loop.sessions.get_or_create("cli:test")
@@ -595,7 +577,6 @@ class TestAutoCompactEdgeCases:
 
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_auto_compact_preserves_runtime_checkpoint_before_check(self, tmp_path):
         """Short expired sessions keep recent messages; checkpoint restore still works on resume."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -631,7 +612,6 @@ class TestAutoCompactEdgeCases:
 class TestAutoCompactIntegration:
     """Idle compaction integration tests."""
 
-    @pytest.mark.asyncio
     async def test_full_lifecycle(self, tmp_path):
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
         session = loop.sessions.get_or_create("cli:test")
@@ -705,7 +685,6 @@ class TestAutoCompactIntegration:
 
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_runtime_context_markers_not_persisted_for_multi_paragraph_turn(self, tmp_path):
         """Auto-compact resume context must not leak runtime markers into persisted session history."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -747,7 +726,6 @@ class TestProactiveAutoCompact:
         )
         await _drain_background_tasks(loop)
 
-    @pytest.mark.asyncio
     async def test_idle_tick_survives_session_removed_during_listing(
         self,
         tmp_path,
@@ -781,7 +759,6 @@ class TestProactiveAutoCompact:
 
         assert [row["key"] for row in loop.sessions.list_sessions()] == ["cli:healthy"]
 
-    @pytest.mark.asyncio
     async def test_no_check_when_ttl_disabled(self, tmp_path):
         """check_expired should be a no-op when TTL is 0."""
         loop = _make_loop(tmp_path, session_ttl_minutes=0)
@@ -796,7 +773,6 @@ class TestProactiveAutoCompact:
         assert len(session_after.messages) == 1
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_proactive_archive_on_idle_tick(self, tmp_path):
         """Expired session should be archived during idle tick."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -821,7 +797,6 @@ class TestProactiveAutoCompact:
         assert entry["text"] == "User chatted about old things."
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_proactive_archive_skips_dream_sessions(self, tmp_path):
         """Internal Dream sessions should be left to Dream retention, not idle compact."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -842,7 +817,6 @@ class TestProactiveAutoCompact:
         assert "dream:20260602-155256" not in loop.auto_compact._summaries
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_no_proactive_archive_when_active(self, tmp_path):
         """Recently active session should NOT be archived on idle tick."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -856,7 +830,6 @@ class TestProactiveAutoCompact:
         assert len(session_after.messages) == 1
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_no_duplicate_archive(self, tmp_path):
         """Should not archive the same session twice if already in progress."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -892,7 +865,6 @@ class TestProactiveAutoCompact:
         await _drain_background_tasks(loop)
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_proactive_archive_error_does_not_block(self, tmp_path):
         """Proactive archive failure should be caught and not block future ticks."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -913,7 +885,6 @@ class TestProactiveAutoCompact:
         assert "cli:test" not in loop.auto_compact._archiving
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_proactive_archive_skips_empty_sessions(self, tmp_path):
         """Proactive archive should not produce a summary for sessions with no messages."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -929,7 +900,6 @@ class TestProactiveAutoCompact:
         assert "cli:test" not in loop.auto_compact._summaries
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_skip_expired_session_with_active_agent_task(self, tmp_path):
         """Expired session with an active agent task should NOT be archived."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -950,7 +920,6 @@ class TestProactiveAutoCompact:
 
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_archive_after_active_task_completes(self, tmp_path):
         """Session should be archived on next tick after active task completes."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -971,7 +940,6 @@ class TestProactiveAutoCompact:
         assert _fake_compact.state["count"] == 1
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_partial_active_set_only_archives_inactive_expired(self, tmp_path):
         """With multiple sessions, only the expired+inactive one should be archived."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -1005,7 +973,6 @@ class TestProactiveAutoCompact:
         assert len(s3_after.messages) == 1  # Preserved
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_no_reschedule_after_successful_archive(self, tmp_path):
         """Already-archived session should NOT be re-scheduled on subsequent ticks."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -1026,7 +993,6 @@ class TestProactiveAutoCompact:
         assert _fake_compact.state["count"] == 1  # Still 1, not re-scheduled
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_empty_session_does_not_schedule_idle_compact(self, tmp_path):
         """Empty expired sessions have no removable tail and should not schedule."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -1046,7 +1012,6 @@ class TestProactiveAutoCompact:
         assert "cli:test" not in loop.auto_compact._summaries
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_session_can_be_compacted_again_after_new_messages(self, tmp_path):
         """After successful compact + user sends new messages + idle again, should compact again."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -1081,7 +1046,6 @@ class TestProactiveAutoCompact:
 class TestSummaryPersistence:
     """Test that summary survives restart via session metadata."""
 
-    @pytest.mark.asyncio
     async def test_summary_persisted_in_session_metadata(self, tmp_path):
         """After archive, _last_summary should be in session metadata."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -1104,7 +1068,6 @@ class TestSummaryPersistence:
         assert "last_active" in meta
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_summary_recovered_after_restart(self, tmp_path):
         """Summary should be recovered from metadata when _summaries is empty (simulates restart)."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -1137,7 +1100,6 @@ class TestSummaryPersistence:
         assert "_last_summary" in reloaded.metadata
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_metadata_persists_for_restart(self, tmp_path):
         """_last_summary stays in metadata so it survives process restarts."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -1165,7 +1127,6 @@ class TestSummaryPersistence:
         assert "_last_summary" in reloaded.metadata
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_metadata_cleanup_on_inmemory_path(self, tmp_path):
         """In-memory _summaries path should also clean up _last_summary from metadata."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -1191,7 +1152,6 @@ class TestSummaryPersistence:
         assert "_last_summary" in reloaded.metadata
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_new_summary_overrides_old(self, tmp_path):
         """A fresh archive writes a new summary that replaces the old one."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)
@@ -1233,7 +1193,6 @@ class TestSummaryPersistence:
         assert summary2["text"] == "Second summary."
         await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_new_command_clears_last_summary(self, tmp_path):
         """/new should clear _last_summary so the new session starts fresh."""
         loop = _make_loop(tmp_path, session_ttl_minutes=15)

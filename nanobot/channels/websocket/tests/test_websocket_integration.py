@@ -57,7 +57,6 @@ def bus() -> MagicMock:
 # -- Connection basics ----------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_ready_event_fields(bus: MagicMock) -> None:
     ch = _ch(bus, 29901)
     t = asyncio.create_task(ch.start())
@@ -72,7 +71,6 @@ async def test_ready_event_fields(bus: MagicMock) -> None:
         await t
 
 
-@pytest.mark.asyncio
 async def test_anonymous_client_gets_generated_id(bus: MagicMock) -> None:
     ch = _ch(bus, 29902)
     t = asyncio.create_task(ch.start())
@@ -85,7 +83,6 @@ async def test_anonymous_client_gets_generated_id(bus: MagicMock) -> None:
         await t
 
 
-@pytest.mark.asyncio
 async def test_each_connection_unique_chat_id(bus: MagicMock) -> None:
     ch = _ch(bus, 29903)
     t = asyncio.create_task(ch.start())
@@ -101,7 +98,6 @@ async def test_each_connection_unique_chat_id(bus: MagicMock) -> None:
 # -- Inbound messages (client -> server) ----------------------------------
 
 
-@pytest.mark.asyncio
 async def test_plain_text(bus: MagicMock) -> None:
     ch = _ch(bus, 29904)
     t = asyncio.create_task(ch.start())
@@ -118,7 +114,6 @@ async def test_plain_text(bus: MagicMock) -> None:
         await t
 
 
-@pytest.mark.asyncio
 async def test_json_content_field(bus: MagicMock) -> None:
     ch = _ch(bus, 29905)
     t = asyncio.create_task(ch.start())
@@ -133,7 +128,6 @@ async def test_json_content_field(bus: MagicMock) -> None:
         await t
 
 
-@pytest.mark.asyncio
 async def test_json_text_and_message_fields(bus: MagicMock) -> None:
     ch = _ch(bus, 29906)
     t = asyncio.create_task(ch.start())
@@ -151,7 +145,6 @@ async def test_json_text_and_message_fields(bus: MagicMock) -> None:
         await t
 
 
-@pytest.mark.asyncio
 async def test_empty_payload_ignored(bus: MagicMock) -> None:
     ch = _ch(bus, 29907)
     t = asyncio.create_task(ch.start())
@@ -167,7 +160,6 @@ async def test_empty_payload_ignored(bus: MagicMock) -> None:
         await t
 
 
-@pytest.mark.asyncio
 async def test_messages_preserve_order(bus: MagicMock) -> None:
     ch = _ch(bus, 29908)
     t = asyncio.create_task(ch.start())
@@ -187,7 +179,6 @@ async def test_messages_preserve_order(bus: MagicMock) -> None:
 # -- Outbound messages (server -> client) ---------------------------------
 
 
-@pytest.mark.asyncio
 async def test_server_send_message(bus: MagicMock) -> None:
     ch = _ch(bus, 29909)
     t = asyncio.create_task(ch.start())
@@ -204,7 +195,6 @@ async def test_server_send_message(bus: MagicMock) -> None:
         await t
 
 
-@pytest.mark.asyncio
 async def test_server_send_tags_tool_hint_with_kind(bus: MagicMock) -> None:
     """Tool-hint progress events surface as ``kind: "tool_hint"``."""
     ch = _ch(bus, 29919)
@@ -242,7 +232,6 @@ async def test_server_send_tags_tool_hint_with_kind(bus: MagicMock) -> None:
         await t
 
 
-@pytest.mark.asyncio
 async def test_server_send_with_media_and_reply(bus: MagicMock) -> None:
     ch = _ch(bus, 29910)
     t = asyncio.create_task(ch.start())
@@ -265,7 +254,6 @@ async def test_server_send_with_media_and_reply(bus: MagicMock) -> None:
 # -- Streaming ------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_streaming_deltas_and_end(bus: MagicMock) -> None:
     ch = _ch(bus, 29911, streaming=True)
     t = asyncio.create_task(ch.start())
@@ -286,7 +274,6 @@ async def test_streaming_deltas_and_end(bus: MagicMock) -> None:
         await t
 
 
-@pytest.mark.asyncio
 async def test_interleaved_streams(bus: MagicMock) -> None:
     ch = _ch(bus, 29912, streaming=True)
     t = asyncio.create_task(ch.start())
@@ -313,7 +300,6 @@ async def test_interleaved_streams(bus: MagicMock) -> None:
 # -- Multi-client ---------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_independent_sessions(bus: MagicMock) -> None:
     ch = _ch(bus, 29913)
     t = asyncio.create_task(ch.start())
@@ -334,7 +320,6 @@ async def test_independent_sessions(bus: MagicMock) -> None:
         await t
 
 
-@pytest.mark.asyncio
 async def test_same_session_projects_one_turn_to_both_clients(bus: MagicMock) -> None:
     ch = _ch(bus, 29925)
     t = asyncio.create_task(ch.start())
@@ -384,7 +369,6 @@ async def test_same_session_projects_one_turn_to_both_clients(bus: MagicMock) ->
         await t
 
 
-@pytest.mark.asyncio
 async def test_disconnected_client_cleanup(bus: MagicMock) -> None:
     ch = _ch(bus, 29914)
     t = asyncio.create_task(ch.start())
@@ -405,7 +389,6 @@ async def test_disconnected_client_cleanup(bus: MagicMock) -> None:
 # -- Authentication -------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_static_token_accepted(bus: MagicMock) -> None:
     ch = _ch(bus, 29915, token="secret")
     t = asyncio.create_task(ch.start())
@@ -417,7 +400,6 @@ async def test_static_token_accepted(bus: MagicMock) -> None:
         await t
 
 
-@pytest.mark.asyncio
 async def test_static_token_rejected(bus: MagicMock) -> None:
     ch = _ch(bus, 29916, token="correct")
     t = asyncio.create_task(ch.start())
@@ -431,7 +413,6 @@ async def test_static_token_rejected(bus: MagicMock) -> None:
         await t
 
 
-@pytest.mark.asyncio
 async def test_token_issue_full_flow(bus: MagicMock) -> None:
     ch = _ch(bus, 29917, path="/ws",
              tokenIssuePath="/auth/token", tokenIssueSecret="s",
@@ -468,7 +449,6 @@ async def test_token_issue_full_flow(bus: MagicMock) -> None:
 # -- Path routing ---------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_custom_path(bus: MagicMock) -> None:
     ch = _ch(bus, 29918, path="/my-chat")
     t = asyncio.create_task(ch.start())
@@ -480,7 +460,6 @@ async def test_custom_path(bus: MagicMock) -> None:
         await t
 
 
-@pytest.mark.asyncio
 async def test_wrong_path_404(bus: MagicMock) -> None:
     ch = _ch(bus, 29919, path="/ws")
     t = asyncio.create_task(ch.start())
@@ -494,7 +473,6 @@ async def test_wrong_path_404(bus: MagicMock) -> None:
         await t
 
 
-@pytest.mark.asyncio
 async def test_trailing_slash_normalized(bus: MagicMock) -> None:
     ch = _ch(bus, 29920, path="/ws")
     t = asyncio.create_task(ch.start())
@@ -509,7 +487,6 @@ async def test_trailing_slash_normalized(bus: MagicMock) -> None:
 # -- Edge cases -----------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_large_message(bus: MagicMock) -> None:
     ch = _ch(bus, 29921)
     t = asyncio.create_task(ch.start())
@@ -525,7 +502,6 @@ async def test_large_message(bus: MagicMock) -> None:
         await t
 
 
-@pytest.mark.asyncio
 async def test_unicode_roundtrip(bus: MagicMock) -> None:
     ch = _ch(bus, 29922)
     t = asyncio.create_task(ch.start())
@@ -545,7 +521,6 @@ async def test_unicode_roundtrip(bus: MagicMock) -> None:
         await t
 
 
-@pytest.mark.asyncio
 async def test_rapid_fire(bus: MagicMock) -> None:
     ch = _ch(bus, 29923)
     t = asyncio.create_task(ch.start())
@@ -567,7 +542,6 @@ async def test_rapid_fire(bus: MagicMock) -> None:
         await t
 
 
-@pytest.mark.asyncio
 async def test_invalid_json_as_plain_text(bus: MagicMock) -> None:
     ch = _ch(bus, 29924)
     t = asyncio.create_task(ch.start())

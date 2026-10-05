@@ -102,7 +102,6 @@ def test_file_edit_result_copies_and_serializes_only_observation(tmp_path: Path)
     assert result.file_diffs
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("changed_state", ["before", "after"])
 async def test_activity_recomputes_diff_when_snapshots_changed(tmp_path: Path, changed_state: str) -> None:
     target = tmp_path / "notes.txt"
@@ -166,7 +165,6 @@ def test_write_file_start_tracks_snapshot_and_end_emits_exact_diff(tmp_path: Pat
     assert "+extra" in diff_text
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(("before", "content", "operation"), [
     (None, "", "create"),
     (None, "hello\n", "create"),

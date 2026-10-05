@@ -31,7 +31,6 @@ from nanobot.utils.document import extract_text
 from nanobot.utils.llm_runtime import LLMRuntime
 
 
-@pytest.mark.asyncio
 async def test_web_search_tool_refreshes_dynamic_config_loader(monkeypatch) -> None:
     tool = WebSearchTool(
         config=WebSearchConfig(provider="brave"),
@@ -46,7 +45,6 @@ async def test_web_search_tool_refreshes_dynamic_config_loader(monkeypatch) -> N
     assert await tool.execute("nanobot") == "duckduckgo:nanobot:3"
 
 
-@pytest.mark.asyncio
 async def test_find_files_filters_by_query_glob_and_type(tmp_path: Path) -> None:
     (tmp_path / "src").mkdir()
     (tmp_path / "src" / "settings_view.tsx").write_text("export {}\n", encoding="utf-8")
@@ -97,7 +95,6 @@ async def test_search_recursive_glob_matches_zero_or_more_directories(
     assert sorted(result.splitlines()) == expected
 
 
-@pytest.mark.asyncio
 async def test_find_files_can_include_directories(tmp_path: Path) -> None:
     (tmp_path / "src" / "settings").mkdir(parents=True)
     (tmp_path / "src" / "settings" / "index.ts").write_text("export {}\n", encoding="utf-8")
@@ -109,7 +106,6 @@ async def test_find_files_can_include_directories(tmp_path: Path) -> None:
     assert "src/settings/index.ts" in result.splitlines()
 
 
-@pytest.mark.asyncio
 async def test_find_files_supports_modified_sort_and_pagination(tmp_path: Path) -> None:
     (tmp_path / "src").mkdir()
     for idx, name in enumerate(("a.py", "b.py", "c.py"), start=1):
@@ -130,7 +126,6 @@ async def test_find_files_supports_modified_sort_and_pagination(tmp_path: Path) 
     assert "pagination: limit=1, offset=1" in result
 
 
-@pytest.mark.asyncio
 async def test_find_files_rejects_paths_outside_workspace(tmp_path: Path) -> None:
     outside = tmp_path.parent / "outside-find-files.txt"
     outside.write_text("secret\n", encoding="utf-8")
@@ -141,7 +136,6 @@ async def test_find_files_rejects_paths_outside_workspace(tmp_path: Path) -> Non
     assert result.startswith("Error:")
 
 
-@pytest.mark.asyncio
 async def test_find_files_worker_preserves_current_workspace_scope(tmp_path: Path) -> None:
     project = tmp_path / "project"
     project.mkdir()
@@ -157,7 +151,6 @@ async def test_find_files_worker_preserves_current_workspace_scope(tmp_path: Pat
     assert result == "inside.txt"
 
 
-@pytest.mark.asyncio
 async def test_find_files_scan_keeps_event_loop_responsive(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -188,7 +181,6 @@ async def test_find_files_scan_keeps_event_loop_responsive(
     assert await asyncio.wait_for(task, timeout=0.5) == "match.txt"
 
 
-@pytest.mark.asyncio
 async def test_find_files_cancellation_stops_worker_scan(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -217,7 +209,6 @@ async def test_find_files_cancellation_stops_worker_scan(
     assert await asyncio.to_thread(stopped.wait, 0.5)
 
 
-@pytest.mark.asyncio
 async def test_find_files_path_limit_stops_after_pagination_lookahead(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -243,7 +234,6 @@ async def test_find_files_path_limit_stops_after_pagination_lookahead(
     assert visited == ["a.txt", "b.txt"]
 
 
-@pytest.mark.asyncio
 async def test_find_files_path_budget_counts_directories(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -258,7 +248,6 @@ async def test_find_files_path_budget_counts_directories(
     assert result.startswith("Error: find_files scan exceeded 1 paths")
 
 
-@pytest.mark.asyncio
 async def test_find_files_enforces_time_budget(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -272,7 +261,6 @@ async def test_find_files_enforces_time_budget(
     assert result.startswith("Error: find_files scan exceeded 0 seconds")
 
 
-@pytest.mark.asyncio
 async def test_find_files_path_sort_matches_existing_lexicographic_contract(
     tmp_path: Path,
 ) -> None:
@@ -287,7 +275,6 @@ async def test_find_files_path_sort_matches_existing_lexicographic_contract(
     assert result.splitlines() == ["a+", "a.py", "a/inside.txt"]
 
 
-@pytest.mark.asyncio
 async def test_grep_respects_glob_filter_and_context(tmp_path: Path) -> None:
     (tmp_path / "src").mkdir()
     (tmp_path / "src" / "main.py").write_text(
@@ -313,7 +300,6 @@ async def test_grep_respects_glob_filter_and_context(tmp_path: Path) -> None:
     assert "README.md" not in result
 
 
-@pytest.mark.asyncio
 async def test_grep_defaults_to_match_context(tmp_path: Path) -> None:
     (tmp_path / "src").mkdir()
     (tmp_path / "src" / "main.py").write_text(
@@ -336,7 +322,6 @@ async def test_grep_defaults_to_match_context(tmp_path: Path) -> None:
     assert "line 12" not in result
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("declared_dimension", ["A1:B2", "A1:A1", "A1:A2", "A1:B1"])
 async def test_grep_searches_xlsx_with_sheet_cell_locator(
     tmp_path: Path, declared_dimension: str, monkeypatch: pytest.MonkeyPatch,
@@ -377,7 +362,6 @@ async def test_grep_searches_xlsx_with_sheet_cell_locator(
     assert "Ada\tEngineer" in result
 
 
-@pytest.mark.asyncio
 async def test_grep_searches_docx_with_paragraph_locator(tmp_path: Path) -> None:
     from docx import Document
 
@@ -398,7 +382,6 @@ async def test_grep_searches_docx_with_paragraph_locator(tmp_path: Path) -> None
     assert "late needle" in result
 
 
-@pytest.mark.asyncio
 async def test_grep_searches_pptx_with_slide_locator(tmp_path: Path) -> None:
     from pptx import Presentation
     from pptx.util import Inches
@@ -423,7 +406,6 @@ async def test_grep_searches_pptx_with_slide_locator(tmp_path: Path) -> None:
     assert "slide needle" in result
 
 
-@pytest.mark.asyncio
 async def test_grep_searches_pdf_with_page_locator(tmp_path: Path) -> None:
     import fitz
 
@@ -445,7 +427,6 @@ async def test_grep_searches_pdf_with_page_locator(tmp_path: Path) -> None:
     assert "pdf needle" in result
 
 
-@pytest.mark.asyncio
 async def test_grep_searches_xlsx_beyond_attachment_preview_limit(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -481,7 +462,6 @@ async def test_grep_searches_xlsx_beyond_attachment_preview_limit(
     assert "No matches found" not in result
 
 
-@pytest.mark.asyncio
 async def test_grep_keeps_an_oversized_matching_line_visible(tmp_path: Path) -> None:
     long_line = "x" * 130_000 + "needle" + "y" * 10_000
     (tmp_path / "huge-line.txt").write_text(long_line, encoding="utf-8")
@@ -501,7 +481,6 @@ async def test_grep_keeps_an_oversized_matching_line_visible(tmp_path: Path) -> 
     assert len(result) < GrepTool._MAX_RESULT_CHARS
 
 
-@pytest.mark.asyncio
 async def test_grep_size_limit_returns_a_resumable_offset(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -544,7 +523,6 @@ async def test_grep_size_limit_returns_a_resumable_offset(
     assert first_headers.isdisjoint(second_headers)
 
 
-@pytest.mark.asyncio
 async def test_grep_reports_an_invalid_pdf_page_range(tmp_path: Path) -> None:
     from pypdf import PdfWriter
 
@@ -571,7 +549,6 @@ async def test_grep_reports_an_invalid_pdf_page_range(tmp_path: Path) -> None:
     )
 
 
-@pytest.mark.asyncio
 async def test_grep_supports_case_insensitive_search(tmp_path: Path) -> None:
     (tmp_path / "memory").mkdir()
     (tmp_path / "memory" / "HISTORY.md").write_text(
@@ -591,7 +568,6 @@ async def test_grep_supports_case_insensitive_search(tmp_path: Path) -> None:
     assert "OAuth token rotated" in result
 
 
-@pytest.mark.asyncio
 async def test_grep_type_filter_limits_files(tmp_path: Path) -> None:
     (tmp_path / "src").mkdir()
     (tmp_path / "src" / "a.py").write_text("needle\n", encoding="utf-8")
@@ -608,7 +584,6 @@ async def test_grep_type_filter_limits_files(tmp_path: Path) -> None:
     assert result.splitlines() == ["src/a.py"]
 
 
-@pytest.mark.asyncio
 async def test_grep_fixed_strings_treats_regex_chars_literally(tmp_path: Path) -> None:
     (tmp_path / "memory").mkdir()
     (tmp_path / "memory" / "HISTORY.md").write_text(
@@ -628,7 +603,6 @@ async def test_grep_fixed_strings_treats_regex_chars_literally(tmp_path: Path) -
     assert "[2026-04-02 10:00] OAuth token rotated" in result
 
 
-@pytest.mark.asyncio
 async def test_grep_files_with_matches_mode_returns_unique_paths(tmp_path: Path) -> None:
     (tmp_path / "src").mkdir()
     a = tmp_path / "src" / "a.py"
@@ -648,7 +622,6 @@ async def test_grep_files_with_matches_mode_returns_unique_paths(tmp_path: Path)
     assert result.splitlines() == ["src/b.py", "src/a.py"]
 
 
-@pytest.mark.asyncio
 async def test_grep_files_with_matches_supports_head_limit_and_offset(tmp_path: Path) -> None:
     (tmp_path / "src").mkdir()
     for name in ("a.py", "b.py", "c.py"):
@@ -672,7 +645,6 @@ async def test_grep_files_with_matches_supports_head_limit_and_offset(tmp_path: 
     assert len(file_lines) == 1
 
 
-@pytest.mark.asyncio
 async def test_grep_count_mode_reports_counts_per_file(tmp_path: Path) -> None:
     (tmp_path / "logs").mkdir()
     (tmp_path / "logs" / "one.log").write_text("warn\nok\nwarn\n", encoding="utf-8")
@@ -690,7 +662,6 @@ async def test_grep_count_mode_reports_counts_per_file(tmp_path: Path) -> None:
     assert "total matches: 3 in 2 files" in result
 
 
-@pytest.mark.asyncio
 async def test_grep_files_with_matches_mode_respects_max_results(tmp_path: Path) -> None:
     (tmp_path / "src").mkdir()
     files = []
@@ -712,7 +683,6 @@ async def test_grep_files_with_matches_mode_respects_max_results(tmp_path: Path)
     assert "pagination: limit=2, offset=0" in result
 
 
-@pytest.mark.asyncio
 async def test_grep_reports_skipped_binary_and_large_files(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -729,7 +699,6 @@ async def test_grep_reports_skipped_binary_and_large_files(
     assert "skipped 1 large files" in result
 
 
-@pytest.mark.asyncio
 async def test_grep_uses_a_larger_bounded_limit_for_an_explicit_file(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -764,7 +733,6 @@ def test_grep_schema_is_concise_and_hides_internal_limits(tmp_path: Path) -> Non
     assert "max_results" not in properties
 
 
-@pytest.mark.asyncio
 async def test_search_tools_reject_paths_outside_workspace(tmp_path: Path) -> None:
     outside = tmp_path.parent / "outside-search.txt"
     outside.write_text("secret\n", encoding="utf-8")
@@ -790,7 +758,6 @@ def test_agent_loop_registers_search_backend(tmp_path: Path, monkeypatch, use_rg
     assert ("grep" in loop.tools.tool_names) == (not use_rg)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("use_rg", [True, False])
 async def test_subagent_registers_search_backend(tmp_path: Path, monkeypatch, use_rg) -> None:
     monkeypatch.setattr("nanobot.agent.tools.rg.RgTool.enabled", lambda ctx: use_rg)

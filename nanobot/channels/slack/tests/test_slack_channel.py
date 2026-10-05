@@ -117,7 +117,6 @@ class _FakeAsyncWebClient:
         return self._open_dm_response
 
 
-@pytest.mark.asyncio
 async def test_send_uses_thread_for_channel_messages() -> None:
     channel = SlackChannel(SlackConfig(enabled=True), MessageBus())
     fake_web = _FakeAsyncWebClient()
@@ -140,7 +139,6 @@ async def test_send_uses_thread_for_channel_messages() -> None:
     assert fake_web.file_upload_calls[0]["thread_ts"] == "1700000000.000100"
 
 
-@pytest.mark.asyncio
 async def test_send_omits_thread_for_dm_root_messages() -> None:
     """DM root replies should not be threaded; metadata carries thread_ts=None."""
     channel = SlackChannel(SlackConfig(enabled=True), MessageBus())
@@ -164,7 +162,6 @@ async def test_send_omits_thread_for_dm_root_messages() -> None:
     assert fake_web.file_upload_calls[0]["thread_ts"] is None
 
 
-@pytest.mark.asyncio
 async def test_send_keeps_thread_for_dm_thread_messages() -> None:
     """When the user replies inside a DM thread, bot replies stay in the same thread."""
     channel = SlackChannel(SlackConfig(enabled=True), MessageBus())
@@ -193,7 +190,6 @@ async def test_send_keeps_thread_for_dm_thread_messages() -> None:
     assert fake_web.file_upload_calls[0]["thread_ts"] == "1700000000.000100"
 
 
-@pytest.mark.asyncio
 async def test_send_splits_long_messages() -> None:
     channel = SlackChannel(SlackConfig(enabled=True), MessageBus())
     fake_web = _FakeAsyncWebClient()
@@ -211,7 +207,6 @@ async def test_send_splits_long_messages() -> None:
     assert all(len(str(call["text"])) <= SLACK_MAX_MESSAGE_LEN for call in fake_web.chat_post_calls)
 
 
-@pytest.mark.asyncio
 async def test_send_renders_buttons_on_last_message_chunk() -> None:
     channel = SlackChannel(SlackConfig(enabled=True), MessageBus())
     fake_web = _FakeAsyncWebClient()
@@ -248,7 +243,6 @@ async def test_send_renders_buttons_on_last_message_chunk() -> None:
     }
 
 
-@pytest.mark.asyncio
 async def test_send_with_buttons_keeps_text_beyond_section_limit() -> None:
     """Button messages render via blocks, so every char must land in a section."""
     channel = SlackChannel(SlackConfig(enabled=True), MessageBus())
@@ -276,7 +270,6 @@ async def test_send_with_buttons_keeps_text_beyond_section_limit() -> None:
     assert blocks[-1]["type"] == "actions"
 
 
-@pytest.mark.asyncio
 async def test_send_updates_reaction_when_final_response_sent() -> None:
     channel = SlackChannel(SlackConfig(enabled=True, react_emoji="eyes"), MessageBus())
     fake_web = _FakeAsyncWebClient()
@@ -301,7 +294,6 @@ async def test_send_updates_reaction_when_final_response_sent() -> None:
     ]
 
 
-@pytest.mark.asyncio
 async def test_send_resolves_channel_name_to_channel_id() -> None:
     channel = SlackChannel(SlackConfig(enabled=True), MessageBus())
     fake_web = _FakeAsyncWebClient()
@@ -327,7 +319,6 @@ async def test_send_resolves_channel_name_to_channel_id() -> None:
     assert len(fake_web.conversations_list_calls) == 1
 
 
-@pytest.mark.asyncio
 async def test_send_resolves_user_handle_to_dm_channel() -> None:
     channel = SlackChannel(SlackConfig(enabled=True), MessageBus())
     fake_web = _FakeAsyncWebClient()
@@ -360,7 +351,6 @@ async def test_send_resolves_user_handle_to_dm_channel() -> None:
     ]
 
 
-@pytest.mark.asyncio
 async def test_send_updates_reaction_on_origin_channel_for_cross_channel_send() -> None:
     channel = SlackChannel(SlackConfig(enabled=True, react_emoji="eyes"), MessageBus())
     fake_web = _FakeAsyncWebClient()
@@ -397,7 +387,6 @@ async def test_send_updates_reaction_on_origin_channel_for_cross_channel_send() 
     ]
 
 
-@pytest.mark.asyncio
 async def test_send_does_not_reuse_origin_thread_ts_for_cross_channel_send() -> None:
     channel = SlackChannel(SlackConfig(enabled=True), MessageBus())
     fake_web = _FakeAsyncWebClient()
@@ -429,7 +418,6 @@ async def test_send_does_not_reuse_origin_thread_ts_for_cross_channel_send() -> 
     ]
 
 
-@pytest.mark.asyncio
 async def test_send_raises_when_named_target_cannot_be_resolved() -> None:
     channel = SlackChannel(SlackConfig(enabled=True), MessageBus())
     fake_web = _FakeAsyncWebClient()
@@ -445,7 +433,6 @@ async def test_send_raises_when_named_target_cannot_be_resolved() -> None:
         )
 
 
-@pytest.mark.asyncio
 async def test_with_thread_context_fetches_root_once() -> None:
     channel = SlackChannel(SlackConfig(enabled=True), MessageBus())
     channel._bot_user_id = "UBOT"
@@ -491,7 +478,6 @@ async def test_with_thread_context_fetches_root_once() -> None:
     assert len(fake_web.conversations_replies_calls) == 1
 
 
-@pytest.mark.asyncio
 async def test_with_thread_context_fetches_replies_in_dm_thread() -> None:
     """DM threads should also pull thread history (not only channel threads)."""
     channel = SlackChannel(SlackConfig(enabled=True), MessageBus())
@@ -521,7 +507,6 @@ async def test_with_thread_context_fetches_replies_in_dm_thread() -> None:
     assert "- <@UA>: here is the file" in content
 
 
-@pytest.mark.asyncio
 async def test_dm_root_message_has_no_thread_ts_and_no_thread_session() -> None:
     """A top-level DM should not synthesize a thread_ts and uses the default session."""
     channel = SlackChannel(SlackConfig(enabled=True), MessageBus())
@@ -552,7 +537,6 @@ async def test_dm_root_message_has_no_thread_ts_and_no_thread_session() -> None:
     assert kwargs["metadata"]["slack"]["thread_ts"] is None
 
 
-@pytest.mark.asyncio
 async def test_dm_thread_message_keeps_thread_ts_and_threaded_session() -> None:
     """A DM message inside a real thread should preserve thread_ts and isolate the session."""
     channel = SlackChannel(SlackConfig(enabled=True), MessageBus())
@@ -601,7 +585,6 @@ def _channel_mention_request(envelope_id: str, ts: str) -> SimpleNamespace:
     )
 
 
-@pytest.mark.asyncio
 async def test_channel_root_message_uses_thread_scoped_session() -> None:
     """A channel mention that opens a thread belongs to that thread's session."""
     channel = SlackChannel(SlackConfig(enabled=True), MessageBus())
@@ -620,7 +603,6 @@ async def test_channel_root_message_uses_thread_scoped_session() -> None:
     assert kwargs["metadata"]["slack"]["thread_ts"] == "1700000000.000100"
 
 
-@pytest.mark.asyncio
 async def test_channel_root_messages_do_not_share_one_session() -> None:
     """Two threads opened in the same channel must not collapse into one session."""
     channel = SlackChannel(SlackConfig(enabled=True), MessageBus())
@@ -642,7 +624,6 @@ async def test_channel_root_messages_do_not_share_one_session() -> None:
     ]
 
 
-@pytest.mark.asyncio
 async def test_channel_root_message_without_reply_in_thread_uses_channel_session() -> None:
     """With reply_in_thread disabled no thread is opened, so the channel session is used."""
     channel = SlackChannel(SlackConfig(enabled=True, reply_in_thread=False), MessageBus())
@@ -661,7 +642,6 @@ async def test_channel_root_message_without_reply_in_thread_uses_channel_session
     assert kwargs["metadata"]["slack"]["thread_ts"] is None
 
 
-@pytest.mark.asyncio
 async def test_channel_thread_reply_keeps_thread_session() -> None:
     """A reply inside a channel thread stays in the session opened by the root message."""
     channel = SlackChannel(SlackConfig(enabled=True), MessageBus())
@@ -692,7 +672,6 @@ async def test_channel_thread_reply_keeps_thread_session() -> None:
     assert kwargs["session_key"] == "slack:C123:1700000000.000100"
 
 
-@pytest.mark.asyncio
 async def test_slack_slash_command_skips_thread_context() -> None:
     channel = SlackChannel(SlackConfig(enabled=True, allow_from=[]), MessageBus())
     channel._bot_user_id = "UBOT"
@@ -721,7 +700,6 @@ async def test_slack_slash_command_skips_thread_context() -> None:
     assert channel._handle_message.await_args.kwargs["content"] == "/restart"
 
 
-@pytest.mark.asyncio
 async def test_slack_file_share_downloads_media_and_reaches_agent() -> None:
     channel = SlackChannel(SlackConfig(enabled=True, bot_token="xoxb-test"), MessageBus())
     channel._bot_user_id = "UBOT"
@@ -896,7 +874,6 @@ def _patch_download_validation(
     monkeypatch.setattr("nanobot.channels.slack.runtime.validate_url_target", validate)
 
 
-@pytest.mark.asyncio
 async def test_download_blocks_ssrf_target(monkeypatch: pytest.MonkeyPatch) -> None:
     """An internal file URL is rejected before the transport sees it."""
     requests: list[httpx.Request] = []
@@ -920,7 +897,6 @@ async def test_download_blocks_ssrf_target(monkeypatch: pytest.MonkeyPatch) -> N
     assert validated == [url]
 
 
-@pytest.mark.asyncio
 async def test_download_blocks_unsafe_redirect(monkeypatch: pytest.MonkeyPatch) -> None:
     """Redirect targets are validated before the redirected request is sent."""
     requests: list[httpx.Request] = []
@@ -947,7 +923,6 @@ async def test_download_blocks_unsafe_redirect(monkeypatch: pytest.MonkeyPatch) 
     assert validated == [url, "http://169.254.169.254/latest/meta-data/"]
 
 
-@pytest.mark.asyncio
 async def test_download_follows_safe_redirect(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

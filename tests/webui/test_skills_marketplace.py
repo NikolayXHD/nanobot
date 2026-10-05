@@ -18,7 +18,6 @@ from nanobot.webui.skills_marketplace import (
 )
 
 
-@pytest.mark.asyncio
 async def test_search_marketplace_skills_filters_and_marks_installed(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -96,7 +95,6 @@ async def test_search_marketplace_skills_filters_and_marks_installed(
     }
 
 
-@pytest.mark.asyncio
 async def test_search_skillhub_skills_normalizes_provider_metadata(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -171,7 +169,6 @@ async def test_search_skillhub_skills_normalizes_provider_metadata(
     ]
 
 
-@pytest.mark.asyncio
 async def test_trending_marketplace_skills_diversifies_sources_and_keeps_rank(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -228,7 +225,6 @@ async def test_trending_marketplace_skills_diversifies_sources_and_keeps_rank(
     ]
 
 
-@pytest.mark.asyncio
 async def test_marketplace_skill_trends_returns_history_separately(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -277,7 +273,6 @@ async def test_marketplace_skill_trends_returns_history_separately(
     }
 
 
-@pytest.mark.asyncio
 async def test_search_marketplace_skills_returns_safe_upstream_error(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -304,7 +299,6 @@ async def test_search_marketplace_skills_returns_safe_upstream_error(
     assert exc_info.value.message == "skills.sh search is temporarily unavailable"
 
 
-@pytest.mark.asyncio
 async def test_install_marketplace_skill_uses_official_cli_and_workspace(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -367,7 +361,6 @@ async def test_install_marketplace_skill_uses_official_cli_and_workspace(
     assert seen["env"]["DISABLE_TELEMETRY"] == "1"
 
 
-@pytest.mark.asyncio
 async def test_install_skillhub_skill_checks_fingerprint_and_extracts_safely(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -512,7 +505,6 @@ def test_skillhub_archive_rejects_path_traversal() -> None:
             _validated_skillhub_entries(archive)
 
 
-@pytest.mark.asyncio
 async def test_install_marketplace_skill_is_idempotent(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -535,7 +527,6 @@ async def test_install_marketplace_skill_is_idempotent(
     }
 
 
-@pytest.mark.asyncio
 async def test_install_marketplace_skill_rejects_symlinked_skills_root(
     tmp_path: Path,
 ) -> None:

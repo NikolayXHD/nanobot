@@ -340,7 +340,6 @@ async def test_successful_authorization_survives_repeated_polls(
         await store.cancel(session_id)
 
 
-@pytest.mark.asyncio
 async def test_connect_store_lists_and_disconnects_workspaces(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -379,7 +378,6 @@ async def test_connect_store_lists_and_disconnects_workspaces(
     assert outdated["installations"][0]["missing_scopes"] == ["app:assignable"]
 
 
-@pytest.mark.asyncio
 async def test_disconnect_keeps_local_installation_when_revocation_fails(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -408,7 +406,6 @@ async def test_disconnect_keeps_local_installation_when_revocation_fails(
     client.close.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_oauth_exchange_saves_workspace_app_identity_and_required_scopes(
     tmp_path: Path,
 ) -> None:
@@ -448,7 +445,6 @@ async def test_oauth_exchange_saves_workspace_app_identity_and_required_scopes(
     assert state.installation("org-1") == installation
 
 
-@pytest.mark.asyncio
 async def test_oauth_exchange_rejects_missing_mention_scope(tmp_path: Path) -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         if request.url.path == "/oauth/token":
@@ -485,7 +481,6 @@ async def test_oauth_exchange_rejects_missing_mention_scope(tmp_path: Path) -> N
     assert state.has_installations() is False
 
 
-@pytest.mark.asyncio
 async def test_graphql_non_json_server_error_is_retryable(tmp_path: Path) -> None:
     def handler(_request: httpx.Request) -> httpx.Response:
         return httpx.Response(503, text="temporarily unavailable")
@@ -503,7 +498,6 @@ async def test_graphql_non_json_server_error_is_retryable(tmp_path: Path) -> Non
     assert error.value.retryable is True
 
 
-@pytest.mark.asyncio
 async def test_graphql_rate_limit_error_is_retryable(tmp_path: Path) -> None:
     reset_at = int((time.time() + 60) * 1000)
 
@@ -534,7 +528,6 @@ async def test_graphql_rate_limit_error_is_retryable(tmp_path: Path) -> None:
     assert 50 <= error.value.retry_after <= 60
 
 
-@pytest.mark.asyncio
 async def test_expired_workspace_token_is_refreshed_and_rotated(tmp_path: Path) -> None:
     seen_refresh_form: dict[str, list[str]] = {}
 
@@ -571,7 +564,6 @@ async def test_expired_workspace_token_is_refreshed_and_rotated(tmp_path: Path) 
     assert refreshed.refresh_token == "rotated-refresh"
 
 
-@pytest.mark.asyncio
 async def test_client_uploads_attachment_with_linear_presigned_headers(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -612,7 +604,6 @@ async def test_client_uploads_attachment_with_linear_presigned_headers(
     assert asset_url == "https://uploads.linear.app/assets/report.txt"
 
 
-@pytest.mark.asyncio
 async def test_client_downloads_private_linear_attachment_with_workspace_token(
     tmp_path: Path,
 ) -> None:
@@ -636,7 +627,6 @@ async def test_client_downloads_private_linear_attachment_with_workspace_token(
     assert content_type == "image/png"
 
 
-@pytest.mark.asyncio
 async def test_client_revokes_access_and_refresh_tokens_before_disconnect(
     tmp_path: Path,
 ) -> None:
@@ -720,7 +710,6 @@ def _runtime(tmp_path: Path) -> tuple[LinearChannel, _FakeLinearClient]:
     return channel, fake
 
 
-@pytest.mark.asyncio
 async def test_created_agent_session_publishes_only_the_mention_prompt(tmp_path: Path) -> None:
     channel, client = _runtime(tmp_path)
     await channel._process_webhook("delivery-1", _agent_webhook())  # pyright: ignore[reportPrivateUsage]
@@ -734,7 +723,6 @@ async def test_created_agent_session_publishes_only_the_mention_prompt(tmp_path:
     assert client.activities[0]["content"] == {"type": "thought", "body": "Starting…"}
 
 
-@pytest.mark.asyncio
 async def test_followup_after_pairing_includes_current_issue(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -763,7 +751,6 @@ async def test_followup_after_pairing_includes_current_issue(
     assert inbound.metadata["linear"]["issue_id"] == "issue-1"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("action", ["created", "prompted"])
 async def test_issue_id_remains_visible_without_structured_details(
     tmp_path: Path, action: str,
@@ -776,7 +763,6 @@ async def test_issue_id_remains_visible_without_structured_details(
     assert '"id": "issue-1"' in inbound.content
 
 
-@pytest.mark.asyncio
 async def test_followups_only_repeat_issue_context_when_it_changes(tmp_path: Path) -> None:
     channel, _ = _runtime(tmp_path)
     payload = _agent_webhook(action="prompted")
@@ -797,7 +783,6 @@ async def test_followups_only_repeat_issue_context_when_it_changes(tmp_path: Pat
     assert "Updated title" in (await channel.bus.consume_inbound()).content
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("notify", [False, True])
 @pytest.mark.parametrize("idle", [True, False])
 @pytest.mark.parametrize("phase", ["succeeded", "failed", "cancelled"])
@@ -826,7 +811,6 @@ async def test_compaction_restores_issue_context_on_next_message(
         assert content.endswith("Continue")
 
 
-@pytest.mark.asyncio
 async def test_followup_slash_command_is_not_wrapped_in_issue_context(tmp_path: Path) -> None:
     channel, _ = _runtime(tmp_path)
     payload = _agent_webhook(action="prompted")
@@ -838,7 +822,6 @@ async def test_followup_slash_command_is_not_wrapped_in_issue_context(tmp_path: 
     assert "Current Linear issue:" in (await channel.bus.consume_inbound()).content
 
 
-@pytest.mark.asyncio
 async def test_created_session_downloads_private_linear_attachments(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -861,7 +844,6 @@ async def test_created_session_downloads_private_linear_attachments(
     assert Path(inbound.media[0]).read_bytes() == b"image"
 
 
-@pytest.mark.asyncio
 async def test_same_named_attachments_keep_distinct_contents(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -883,7 +865,6 @@ async def test_same_named_attachments_keep_distinct_contents(
     assert [Path(path).read_bytes() for path in inbound.media] == [b"first image", b"second image"]
 
 
-@pytest.mark.asyncio
 async def test_start_activity_precedes_blocked_attachment_download(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -914,7 +895,6 @@ async def test_start_activity_precedes_blocked_attachment_download(
     assert len((await channel.bus.consume_inbound()).media) == 1
 
 
-@pytest.mark.asyncio
 async def test_unpaired_session_does_not_download_private_attachments(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -936,7 +916,6 @@ async def test_unpaired_session_does_not_download_private_attachments(
     assert "pairing" in client.activities[0]["content"]["body"].lower()
 
 
-@pytest.mark.asyncio
 async def test_inbound_attachments_share_one_total_download_budget(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -963,7 +942,6 @@ async def test_inbound_attachments_share_one_total_download_budget(
     assert "[Attachment unavailable: two]" in inbound.content
 
 
-@pytest.mark.asyncio
 async def test_inbound_attachments_enforce_the_count_limit(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -986,7 +964,6 @@ async def test_inbound_attachments_enforce_the_count_limit(
     assert "[Only the first 1 attachments were accepted.]" in inbound.content
 
 
-@pytest.mark.asyncio
 async def test_prompted_stop_signal_becomes_priority_stop_command(tmp_path: Path) -> None:
     channel, client = _runtime(tmp_path)
     await channel._process_webhook(  # pyright: ignore[reportPrivateUsage]
@@ -1000,7 +977,6 @@ async def test_prompted_stop_signal_becomes_priority_stop_command(tmp_path: Path
     assert client.activities == []
 
 
-@pytest.mark.asyncio
 async def test_app_authored_activity_is_not_echoed_back(tmp_path: Path) -> None:
     channel, _ = _runtime(tmp_path)
     payload = _agent_webhook(action="prompted")
@@ -1011,7 +987,6 @@ async def test_app_authored_activity_is_not_echoed_back(tmp_path: Path) -> None:
     assert channel.bus.inbound.empty()
 
 
-@pytest.mark.asyncio
 async def test_outbound_response_and_tool_progress_use_native_activity_shapes(
     tmp_path: Path,
 ) -> None:
@@ -1055,7 +1030,6 @@ async def test_outbound_response_and_tool_progress_use_native_activity_shapes(
     assert client.activities[2]["content"]["action"] == "Linear Get Issue"
 
 
-@pytest.mark.asyncio
 async def test_outbound_buttons_keep_media_in_linear_select_elicitation(tmp_path: Path) -> None:
     channel, client = _runtime(tmp_path)
     attachment = tmp_path / "choice.png"
@@ -1087,7 +1061,6 @@ async def test_outbound_buttons_keep_media_in_linear_select_elicitation(tmp_path
     }
 
 
-@pytest.mark.asyncio
 async def test_outbound_local_media_is_uploaded_and_linked(tmp_path: Path) -> None:
     channel, client = _runtime(tmp_path)
     attachment = tmp_path / "diagram.png"
@@ -1111,7 +1084,6 @@ async def test_outbound_local_media_is_uploaded_and_linked(tmp_path: Path) -> No
     }
 
 
-@pytest.mark.asyncio
 async def test_tool_activities_redact_credentials_and_make_start_ephemeral(
     tmp_path: Path,
 ) -> None:
@@ -1183,7 +1155,6 @@ def test_tool_result_text_redacts_common_credential_assignments(value: str) -> N
     assert "[redacted]" in result
 
 
-@pytest.mark.asyncio
 async def test_reasoning_can_be_hidden_for_linear(tmp_path: Path) -> None:
     channel, client = _runtime(tmp_path)
     channel.config.show_reasoning = False

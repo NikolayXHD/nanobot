@@ -5,8 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from nanobot.agent.loop import AgentLoop
 from nanobot.bus.events import InboundMessage
 from nanobot.bus.queue import MessageBus
@@ -65,7 +63,6 @@ def test_explicit_message_limit_still_starts_at_user_turn() -> None:
     assert history[0]["role"] == "user"
 
 
-@pytest.mark.asyncio
 async def test_process_message_hands_complete_replay_to_runner(tmp_path: Path) -> None:
     loop = _make_loop(tmp_path, context_window_tokens=32_768)
     loop.provider.chat_stream_with_retry = AsyncMock(
@@ -83,7 +80,6 @@ async def test_process_message_hands_complete_replay_to_runner(tmp_path: Path) -
     assert get_history.call_args.kwargs == {"extend_to_user": False}
 
 
-@pytest.mark.asyncio
 async def test_runner_checkpoint_keeps_current_user_as_replay_boundary(tmp_path: Path) -> None:
     loop = _make_loop(tmp_path, context_window_tokens=8_000)
     loop.provider.estimate_prompt_tokens.side_effect = (

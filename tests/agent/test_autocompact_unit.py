@@ -220,7 +220,6 @@ class TestCheckExpired:
         assert len(scheduled) == 1
         assert ac._archiving == {"cli:old"}
 
-    @pytest.mark.asyncio
     async def test_runtime_is_captured_before_background_starts(self):
         ac = _make_autocompact(ttl=15)
         old_dt = datetime.now() - timedelta(minutes=20)
@@ -405,7 +404,6 @@ class TestCheckExpired:
 class TestArchiveDelegates:
     """_archive should delegate all session mutation to Consolidator."""
 
-    @pytest.mark.asyncio
     async def test_calls_compact_idle_session(self):
         ac = _make_autocompact()
         mock_sm = MagicMock(spec=SessionManager)
@@ -421,7 +419,6 @@ class TestArchiveDelegates:
             events=NO_EVENTS,
         )
 
-    @pytest.mark.asyncio
     async def test_forwards_timeout_compaction_events_with_session_key(self):
         sessions = MagicMock(spec=SessionManager)
         consolidator = MagicMock()
@@ -451,7 +448,6 @@ class TestArchiveDelegates:
         assert observed[0][0] == "cli:test"
         assert observed[0][1].phase == "started"
 
-    @pytest.mark.asyncio
     async def test_dream_session_is_ignored(self):
         ac = _make_autocompact()
         ac.consolidator.compact_idle_session = AsyncMock(return_value="Summary.")
@@ -462,7 +458,6 @@ class TestArchiveDelegates:
         ac.consolidator.compact_idle_session.assert_not_awaited()
         assert "dream:20260602-155256" not in ac._archiving
 
-    @pytest.mark.asyncio
     async def test_populates_summaries_from_metadata(self):
         ac = _make_autocompact()
         mock_sm = MagicMock(spec=SessionManager)
@@ -479,7 +474,6 @@ class TestArchiveDelegates:
         assert entry is not None
         assert entry["text"] == "Hello."
 
-    @pytest.mark.asyncio
     async def test_no_summary_when_compact_returns_empty(self):
         ac = _make_autocompact()
         mock_sm = MagicMock(spec=SessionManager)
@@ -490,7 +484,6 @@ class TestArchiveDelegates:
 
         assert "cli:test" not in ac._summaries
 
-    @pytest.mark.asyncio
     async def test_no_summary_when_compact_returns_nothing(self):
         ac = _make_autocompact()
         mock_sm = MagicMock(spec=SessionManager)
@@ -501,7 +494,6 @@ class TestArchiveDelegates:
 
         assert "cli:test" not in ac._summaries
 
-    @pytest.mark.asyncio
     async def test_exception_still_removes_from_archiving(self):
         ac = _make_autocompact()
         mock_sm = MagicMock(spec=SessionManager)

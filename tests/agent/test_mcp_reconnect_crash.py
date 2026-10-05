@@ -164,7 +164,6 @@ def allow_loopback_mcp_urls(monkeypatch: pytest.MonkeyPatch):
     )
 
 
-@pytest.mark.asyncio
 async def test_mcp_reconnect_after_session_timeout(tmp_path, mcp_server_url):
     """Reconnect to a real MCP server after its idle timeout kills the session."""
     cfg = MCPServerConfig(
@@ -194,7 +193,6 @@ async def test_mcp_reconnect_after_session_timeout(tmp_path, mcp_server_url):
     await asyncio.create_task(provider.aclose())
 
 
-@pytest.mark.asyncio
 async def test_mcp_reconnect_during_shutdown_does_not_crash(
     tmp_path,
     mcp_server_url,

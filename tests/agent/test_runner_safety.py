@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 from agent.runner_helpers import make_run_spec
 from nanobot.agent.runner import AgentRunner
 from nanobot.agent.tools import ToolResult
@@ -85,7 +83,6 @@ def test_is_ssrf_violation_recognizes_private_url_blocks():
     ) is False
 
 
-@pytest.mark.asyncio
 async def test_runner_returns_non_retryable_hint_on_ssrf_violation():
     """SSRF stays blocked, but the runtime gives the LLM a final chance to recover."""
     provider = MagicMock()
@@ -130,7 +127,6 @@ async def test_runner_returns_non_retryable_hint_on_ssrf_violation():
     assert "tools.ssrfWhitelist" in tool_messages[0]["content"]
 
 
-@pytest.mark.asyncio
 async def test_runner_lets_llm_recover_from_shell_guard_path_outside():
     """Reporter scenario for #3599 / #3605 -- guard hit, agent recovers.
 
@@ -184,7 +180,6 @@ async def test_runner_lets_llm_recover_from_shell_guard_path_outside():
     assert "workspace_violation" in result.tool_events[0]["detail"]
 
 
-@pytest.mark.asyncio
 async def test_runner_throttles_repeated_workspace_bypass_attempts():
     """#3493 motivation: stop the LLM bypass loop without aborting the turn.
 

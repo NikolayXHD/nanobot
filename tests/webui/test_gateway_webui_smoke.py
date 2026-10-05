@@ -204,7 +204,6 @@ async def _recv_until(ws: websockets.WebSocketClientProtocol, event: str) -> dic
     raise AssertionError(f"websocket event {event!r} was not received")
 
 
-@pytest.mark.asyncio
 async def test_gateway_webui_bootstrap_message_and_thread_hydration(tmp_path: Path) -> None:
     ws_port = _free_port()
     gateway_port = _free_port()
@@ -282,7 +281,6 @@ async def test_gateway_webui_bootstrap_message_and_thread_hydration(tmp_path: Pa
         _stop_gateway(process)
 
 
-@pytest.mark.asyncio
 async def test_gateway_recovers_private_children_and_deletes_them_with_parent(tmp_path: Path) -> None:
     workspace = tmp_path / "workspace"
     workspace.mkdir()
@@ -336,7 +334,6 @@ async def test_gateway_recovers_private_children_and_deletes_them_with_parent(tm
         _stop_gateway(process)
 
 
-@pytest.mark.asyncio
 async def test_desktop_terminal_identity_and_independent_client_lifetime(tmp_path: Path) -> None:
     """Two terminal clients exercise real authentication, framing and gateway lifetime."""
     ws_port, gateway_port = _free_port(), _free_port()

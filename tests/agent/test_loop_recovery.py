@@ -15,7 +15,6 @@ from nanobot.session.recovery import RECOVERY_METADATA_KEY, RecoveryCoordinator
 from nanobot.session.turn_continuation import INTERNAL_CONTINUATION_META
 
 
-@pytest.mark.asyncio
 async def test_recovery_continuation_runs_without_a_sustained_goal(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

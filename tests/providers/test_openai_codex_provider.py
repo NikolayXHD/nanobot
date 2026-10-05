@@ -48,7 +48,6 @@ def test_codex_default_model_matches_curated_flagship() -> None:
     assert OpenAICodexProvider().get_default_model() == spec.builtin_models[0].id
 
 
-@pytest.mark.asyncio
 async def test_codex_provider_reuses_tls_context_for_concurrent_requests(monkeypatch) -> None:
     _mock_codex_token(monkeypatch)
     proxy = "http://127.0.0.1:23458"
@@ -140,7 +139,6 @@ def test_codex_error_details_do_not_retain_arbitrary_messages(raw: str) -> None:
     assert param in {None, "input[0].content", "reasoning.effort"}
 
 
-@pytest.mark.asyncio
 async def test_codex_title_omits_effort_even_with_high_chat_reasoning(monkeypatch, tmp_path) -> None:
     from nanobot.session.manager import SessionManager
     from nanobot.session.webui_turns import maybe_generate_webui_title
@@ -170,7 +168,6 @@ async def test_codex_title_omits_effort_even_with_high_chat_reasoning(monkeypatc
     assert provider.generation.reasoning_effort == "high"
 
 
-@pytest.mark.asyncio
 async def test_codex_title_failure_logs_request_purpose_and_safe_upstream_details(
     monkeypatch, tmp_path,
 ) -> None:
@@ -236,7 +233,6 @@ async def test_codex_title_failure_logs_request_purpose_and_safe_upstream_detail
     assert "PRIVATE" not in log
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("failed_stage", ["codex_compaction", "codex_request"])
 async def test_codex_diagnostics_distinguish_compaction_from_following_request(
     monkeypatch, failed_stage,
@@ -282,7 +278,6 @@ async def test_codex_diagnostics_distinguish_compaction_from_following_request(
     assert "PRIVATE STATE" not in log
 
 
-@pytest.mark.asyncio
 async def test_codex_request_non_200_populates_http_metadata(monkeypatch) -> None:
     original_client = httpx.AsyncClient
 
@@ -318,7 +313,6 @@ async def test_codex_request_non_200_populates_http_metadata(monkeypatch) -> Non
     assert error.should_retry is True
 
 
-@pytest.mark.asyncio
 async def test_codex_request_marks_rejected_compaction_without_retaining_raw_body(
     monkeypatch,
 ) -> None:
@@ -360,7 +354,6 @@ async def test_codex_request_marks_rejected_compaction_without_retaining_raw_bod
     assert not hasattr(error, "body")
 
 
-@pytest.mark.asyncio
 async def test_codex_request_honors_stream_idle_timeout_env(monkeypatch) -> None:
     """NANOBOT_STREAM_IDLE_TIMEOUT_S overrides the default Codex stream timeout."""
     monkeypatch.setenv("NANOBOT_STREAM_IDLE_TIMEOUT_S", "5")
@@ -389,7 +382,6 @@ async def test_codex_request_honors_stream_idle_timeout_env(monkeypatch) -> None
     assert seen["timeout"] == 5
 
 
-@pytest.mark.asyncio
 async def test_codex_request_uses_configured_proxy(monkeypatch) -> None:
     original_client = httpx.AsyncClient
     seen: dict[str, object] = {}
@@ -425,7 +417,6 @@ async def test_codex_request_uses_configured_proxy(monkeypatch) -> None:
     assert seen == {"proxy": proxy, "trust_env": False}
 
 
-@pytest.mark.asyncio
 async def test_codex_omits_prompt_cache_key_without_session_id(monkeypatch) -> None:
     bodies: list[dict[str, Any]] = []
     headers_seen: list[dict[str, str]] = []
@@ -463,7 +454,6 @@ async def test_codex_omits_prompt_cache_key_without_session_id(monkeypatch) -> N
     assert "service_tier" not in bodies[0]
 
 
-@pytest.mark.asyncio
 async def test_codex_prompt_cache_key_prefers_stable_session_id(monkeypatch) -> None:
     bodies: list[dict[str, Any]] = []
     headers_seen: list[dict[str, str]] = []
@@ -501,7 +491,6 @@ async def test_codex_prompt_cache_key_prefers_stable_session_id(monkeypatch) -> 
     assert headers_seen[2]["session-id"] == bodies[2]["prompt_cache_key"]
 
 
-@pytest.mark.asyncio
 async def test_codex_provider_applies_extra_body_from_config(monkeypatch) -> None:
     bodies: list[dict[str, Any]] = []
     headers_seen: list[dict[str, str]] = []
@@ -539,7 +528,6 @@ async def test_codex_provider_applies_extra_body_from_config(monkeypatch) -> Non
     assert headers_seen[0]["session-id"] == "explicit-cache-key"
 
 
-@pytest.mark.asyncio
 async def test_codex_timeout_error_is_typed_and_retryable(monkeypatch) -> None:
     _mock_codex_token(monkeypatch)
 
@@ -559,7 +547,6 @@ async def test_codex_timeout_error_is_typed_and_retryable(monkeypatch) -> None:
     assert response.error_should_retry is True
 
 
-@pytest.mark.asyncio
 async def test_codex_mid_stream_server_error_is_treated_as_transient(monkeypatch) -> None:
     _mock_codex_token(monkeypatch)
 
@@ -578,7 +565,6 @@ async def test_codex_mid_stream_server_error_is_treated_as_transient(monkeypatch
     assert provider_base.LLMProvider.is_transient_response(response) is True
 
 
-@pytest.mark.asyncio
 async def test_codex_provider_passes_proxy_to_oauth_and_response_request(monkeypatch) -> None:
     proxy = "http://127.0.0.1:23458"
     seen: dict[str, object] = {}
@@ -612,7 +598,6 @@ async def test_codex_provider_passes_proxy_to_oauth_and_response_request(monkeyp
     assert seen["request_proxy"] == proxy
 
 
-@pytest.mark.asyncio
 async def test_codex_timeout_error_writes_diagnostic_log(monkeypatch) -> None:
     log_capture = _capture_codex_warnings(monkeypatch)
     _mock_codex_token(monkeypatch)
@@ -656,7 +641,6 @@ async def test_codex_timeout_error_writes_diagnostic_log(monkeypatch) -> None:
     ]
 
 
-@pytest.mark.asyncio
 async def test_codex_diagnostic_log_omits_prompt_content(monkeypatch) -> None:
     sink = io.StringIO()
     logger.enable("nanobot")
@@ -683,7 +667,6 @@ async def test_codex_diagnostic_log_omits_prompt_content(monkeypatch) -> None:
     assert "PRIVATE PROMPT MUST NOT APPEAR" not in log_text
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("error", [httpx.ReadTimeout(""), ConnectionError("stream ended early")])
 async def test_codex_retry_uses_structured_transient_error_metadata(monkeypatch, error) -> None:
     calls = 0
@@ -712,7 +695,6 @@ async def test_codex_retry_uses_structured_transient_error_metadata(monkeypatch,
     assert delays == [1]
 
 
-@pytest.mark.asyncio
 async def test_codex_http_error_preserves_status_and_retry_after(monkeypatch) -> None:
     _mock_codex_token(monkeypatch)
 
@@ -740,7 +722,6 @@ async def test_codex_http_error_preserves_status_and_retry_after(monkeypatch) ->
     assert response.error_should_retry is True
 
 
-@pytest.mark.asyncio
 async def test_codex_http_diagnostic_log_omits_raw_body(monkeypatch) -> None:
     log_capture = _capture_codex_warnings(monkeypatch)
     _mock_codex_token(monkeypatch)
@@ -787,7 +768,6 @@ async def test_codex_http_diagnostic_log_omits_raw_body(monkeypatch) -> None:
     ]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("error_type", "error_code", "expected_retry"),
     [
@@ -854,7 +834,6 @@ def test_codex_reasoning_options_request_summary_without_forcing_effort() -> Non
     assert _build_reasoning_options("none") == {"effort": "none"}
 
 
-@pytest.mark.asyncio
 async def test_codex_replayed_tool_turn_omits_server_item_ids(monkeypatch) -> None:
     _mock_codex_token(monkeypatch)
     provider = OpenAICodexProvider(default_model="openai-codex/gpt-5.6-sol")
@@ -930,7 +909,6 @@ async def test_codex_replayed_tool_turn_omits_server_item_ids(monkeypatch) -> No
     assert input_items[3]["call_id"] == "call_read"
 
 
-@pytest.mark.asyncio
 async def test_codex_compacts_state_at_ninety_percent_before_next_request(
     monkeypatch,
 ) -> None:
@@ -1051,7 +1029,6 @@ async def test_codex_compacts_state_at_ninety_percent_before_next_request(
     )
 
 
-@pytest.mark.asyncio
 async def test_codex_disables_unsupported_native_compaction_and_continues(
     monkeypatch,
 ) -> None:
@@ -1118,7 +1095,6 @@ async def test_codex_disables_unsupported_native_compaction_and_continues(
     assert provider.supports_native_compaction() is False
 
 
-@pytest.mark.asyncio
 async def test_codex_stream_surfaces_reasoning_summary(monkeypatch) -> None:
     def fake_token(**_kwargs):
         return SimpleNamespace(account_id="acct", access="token")

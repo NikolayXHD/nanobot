@@ -94,7 +94,6 @@ def test_max_message_bytes_default_supports_multi_image_frame() -> None:
 # -- _dispatch_envelope message branch + media --------------------------------
 
 
-@pytest.mark.asyncio
 async def test_message_without_media_backward_compatible() -> None:
     """Existing clients that don't send ``media`` keep working unchanged."""
     channel = _make_channel()
@@ -111,7 +110,6 @@ async def test_message_without_media_backward_compatible() -> None:
     assert call.kwargs["media"] is None
 
 
-@pytest.mark.asyncio
 async def test_webui_message_acceptance_echoes_turn_id() -> None:
     channel = _make_channel()
     mock_conn = AsyncMock()
@@ -136,7 +134,6 @@ async def test_webui_message_acceptance_echoes_turn_id() -> None:
     }
 
 
-@pytest.mark.asyncio
 async def test_webui_message_projects_attachments_to_other_clients(tmp_path: Path) -> None:
     channel = _make_channel()
     origin = AsyncMock()
@@ -171,7 +168,6 @@ async def test_webui_message_projects_attachments_to_other_clients(tmp_path: Pat
     assert json.loads(origin.send.await_args.args[0])["event"] == "message_accepted"
 
 
-@pytest.mark.asyncio
 async def test_message_text_policy_is_independent_from_transport_limit() -> None:
     channel = _make_channel()
     mock_conn = AsyncMock()
@@ -195,7 +191,6 @@ async def test_message_text_policy_is_independent_from_transport_limit() -> None
     }
 
 
-@pytest.mark.asyncio
 async def test_message_forwards_normalized_cli_app_attachments() -> None:
     channel = _make_channel()
     mock_conn = AsyncMock()
@@ -232,7 +227,6 @@ async def test_message_forwards_normalized_cli_app_attachments() -> None:
     }]
 
 
-@pytest.mark.asyncio
 async def test_webui_message_forwards_verified_session_mentions(tmp_path) -> None:
     manager = SessionManager(tmp_path)
     target = manager.get_or_create("websocket:pricing")
@@ -270,7 +264,6 @@ async def test_webui_message_forwards_verified_session_mentions(tmp_path) -> Non
     assert "websocket:pricing" in block.content
 
 
-@pytest.mark.asyncio
 async def test_message_with_single_image_forwards_saved_path(tmp_path) -> None:
     channel = _make_channel()
     mock_conn = AsyncMock()
@@ -295,7 +288,6 @@ async def test_message_with_single_image_forwards_saved_path(tmp_path) -> None:
     assert saved.is_relative_to(tmp_path)
 
 
-@pytest.mark.asyncio
 async def test_message_with_multiple_images(tmp_path) -> None:
     channel = _make_channel()
     mock_conn = AsyncMock()
@@ -321,7 +313,6 @@ async def test_message_with_multiple_images(tmp_path) -> None:
     assert len({Path(p).name for p in paths}) == 3
 
 
-@pytest.mark.asyncio
 async def test_image_only_message_allows_empty_text(tmp_path) -> None:
     """When media is attached, empty text is acceptable."""
     channel = _make_channel()
@@ -343,7 +334,6 @@ async def test_image_only_message_allows_empty_text(tmp_path) -> None:
     mock_conn.send.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_message_rejected_when_more_than_four_images(tmp_path) -> None:
     channel = _make_channel()
     mock_conn = AsyncMock()
@@ -370,7 +360,6 @@ async def test_message_rejected_when_more_than_four_images(tmp_path) -> None:
     assert err["turn_id"] == "turn-attachments"
 
 
-@pytest.mark.asyncio
 async def test_message_rejected_when_too_many_total_attachments(tmp_path) -> None:
     channel = _make_channel()
     mock_conn = AsyncMock()
@@ -398,7 +387,6 @@ async def test_message_rejected_when_too_many_total_attachments(tmp_path) -> Non
     assert err["reason"] == "too_many_attachments"
 
 
-@pytest.mark.asyncio
 async def test_message_rejected_on_oversize_payload(tmp_path) -> None:
     channel = _make_channel()
     mock_conn = AsyncMock()
@@ -421,7 +409,6 @@ async def test_message_rejected_on_oversize_payload(tmp_path) -> None:
     assert err["reason"] == "size"
 
 
-@pytest.mark.asyncio
 async def test_message_with_pdf_forwards_saved_path(tmp_path) -> None:
     channel = _make_channel()
     mock_conn = AsyncMock()
@@ -447,7 +434,6 @@ async def test_message_with_pdf_forwards_saved_path(tmp_path) -> None:
     assert saved.read_bytes() == b"%PDF-1.4"
 
 
-@pytest.mark.asyncio
 async def test_message_with_csv_forwards_saved_path(tmp_path) -> None:
     channel = _make_channel()
     mock_conn = AsyncMock()
@@ -473,7 +459,6 @@ async def test_message_with_csv_forwards_saved_path(tmp_path) -> None:
     assert saved.read_bytes() == b"name,value\nnanobot,1"
 
 
-@pytest.mark.asyncio
 async def test_message_rejected_on_unsupported_file_mime(tmp_path) -> None:
     channel = _make_channel()
     mock_conn = AsyncMock()
@@ -495,7 +480,6 @@ async def test_message_rejected_on_unsupported_file_mime(tmp_path) -> None:
     assert err["reason"] == "mime"
 
 
-@pytest.mark.asyncio
 async def test_message_rejected_on_svg_mime(tmp_path) -> None:
     """SVG is explicitly rejected — XSS surface inside embedded scripts."""
     channel = _make_channel()
@@ -517,7 +501,6 @@ async def test_message_rejected_on_svg_mime(tmp_path) -> None:
     assert err["reason"] == "mime"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "data_url",
     [
@@ -545,7 +528,6 @@ async def test_message_rejects_invalid_media_data_url(tmp_path, data_url) -> Non
     assert err["reason"] == "decode"
 
 
-@pytest.mark.asyncio
 async def test_message_rejected_when_media_item_shape_wrong(tmp_path) -> None:
     channel = _make_channel()
     mock_conn = AsyncMock()
@@ -567,7 +549,6 @@ async def test_message_rejected_when_media_item_shape_wrong(tmp_path) -> None:
     assert err["reason"] == "malformed"
 
 
-@pytest.mark.asyncio
 async def test_message_rejected_when_media_field_is_not_list() -> None:
     channel = _make_channel()
     mock_conn = AsyncMock()
@@ -586,7 +567,6 @@ async def test_message_rejected_when_media_field_is_not_list() -> None:
     assert err["reason"] == "malformed"
 
 
-@pytest.mark.asyncio
 async def test_failed_media_does_not_partially_persist(tmp_path) -> None:
     """If the second attachment is invalid, the first must not be forwarded.
 
@@ -618,7 +598,6 @@ async def test_failed_media_does_not_partially_persist(tmp_path) -> None:
     assert leftover == [], f"orphan media after rejected batch: {leftover}"
 
 
-@pytest.mark.asyncio
 async def test_rejects_empty_text_without_media() -> None:
     """When no media is attached, whitespace-only content is still rejected
     (matches the existing behavior for backward compat)."""
@@ -637,7 +616,6 @@ async def test_rejects_empty_text_without_media() -> None:
     assert err["detail"] == "missing content"
 
 
-@pytest.mark.asyncio
 async def test_non_string_content_still_rejected() -> None:
     channel = _make_channel()
     mock_conn = AsyncMock()

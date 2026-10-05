@@ -1,13 +1,10 @@
 from pathlib import Path
 from types import SimpleNamespace
 
-import pytest
-
 from nanobot.channels.feishu import runtime as feishu_module
 from nanobot.channels.feishu.runtime import FeishuChannel
 
 
-@pytest.mark.asyncio
 async def test_feishu_downloaded_media_filename_cannot_escape_media_dir(monkeypatch, tmp_path):
     media_dir = tmp_path / "media"
     media_dir.mkdir()

@@ -67,7 +67,6 @@ def test_turn_hook_context_preserves_legacy_positional_arguments(tmp_path) -> No
     assert context.attributes == {}
 
 
-@pytest.mark.asyncio
 async def test_turn_hook_builder_runs_registered_hooks_before_turn_hooks() -> None:
     events: list[str] = []
 
@@ -81,7 +80,6 @@ async def test_turn_hook_builder_runs_registered_hooks_before_turn_hooks() -> No
     assert events == ["registered:2", "turn:2"]
 
 
-@pytest.mark.asyncio
 async def test_turn_hook_builder_runs_factories_with_matching_registration_order(
     tmp_path,
 ) -> None:
@@ -135,7 +133,6 @@ async def test_turn_hook_builder_runs_factories_with_matching_registration_order
     ]
 
 
-@pytest.mark.asyncio
 async def test_turn_hook_builder_skips_extra_hooks_for_ephemeral_turns_by_default() -> None:
     events: list[str] = []
     factory_calls: list[str] = []
@@ -156,7 +153,6 @@ async def test_turn_hook_builder_skips_extra_hooks_for_ephemeral_turns_by_defaul
     assert factory_calls == []
 
 
-@pytest.mark.asyncio
 async def test_turn_hook_builder_can_include_extra_hooks_for_ephemeral_turns() -> None:
     events: list[str] = []
 

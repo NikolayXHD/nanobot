@@ -96,7 +96,6 @@ class _BlockingReasoningEndHook(_LifecycleRecordingHook):
         await super().emit_reasoning_end()
 
 
-@pytest.mark.asyncio
 async def test_runner_preserves_reasoning_fields_in_assistant_history():
     """Reasoning fields ride along on the persisted assistant message so
     follow-up provider calls retain the model's prior thinking context."""
@@ -146,7 +145,6 @@ async def test_runner_preserves_reasoning_fields_in_assistant_history():
     assert assistant_messages[0]["thinking_blocks"] == [{"type": "thinking", "thinking": "step"}]
 
 
-@pytest.mark.asyncio
 async def test_runner_emits_anthropic_thinking_blocks():
     from nanobot.agent.runner import AgentRunner
 
@@ -184,7 +182,6 @@ async def test_runner_emits_anthropic_thinking_blocks():
     assert "After careful consideration" in hook.emitted[0]
 
 
-@pytest.mark.asyncio
 async def test_runner_emits_inline_think_content_as_reasoning():
     """Models embedding reasoning in <think>...</think> blocks should have
     that content extracted and emitted, and stripped from the answer."""
@@ -219,7 +216,6 @@ async def test_runner_emits_inline_think_content_as_reasoning():
     assert "Let me think about this" in hook.emitted[0]
 
 
-@pytest.mark.asyncio
 async def test_runner_prefers_reasoning_content_over_inline_think():
     """Fallback priority: dedicated reasoning_content wins; inline <think>
     is still scrubbed from the answer content."""
@@ -254,7 +250,6 @@ async def test_runner_prefers_reasoning_content_over_inline_think():
     assert hook.emitted == ["dedicated reasoning field"]
 
 
-@pytest.mark.asyncio
 async def test_runner_emits_reasoning_content_even_when_answer_was_streamed():
     """`reasoning_content` arrives only on the final response; streaming the
     answer must not suppress it (the answer stream and the reasoning channel
@@ -294,7 +289,6 @@ async def test_runner_emits_reasoning_content_even_when_answer_was_streamed():
     assert hook.emitted == ["step-by-step deduction"]
 
 
-@pytest.mark.asyncio
 async def test_runner_does_not_double_emit_when_inline_think_already_streamed():
     """Inline `<think>` blocks streamed incrementally during the answer
     stream must not be re-emitted from the final response."""
@@ -340,7 +334,6 @@ async def test_runner_does_not_double_emit_when_inline_think_already_streamed():
     assert reasoning_events == ["working..."]
 
 
-@pytest.mark.asyncio
 async def test_runner_closes_reasoning_stream_after_one_shot_response():
     """A non-streaming response carrying ``reasoning_content`` must emit
     both a reasoning delta and an end marker so channels can finalize the
@@ -377,7 +370,6 @@ async def test_runner_closes_reasoning_stream_after_one_shot_response():
     assert hook.end_calls == 1
 
 
-@pytest.mark.asyncio
 async def test_runner_streams_native_thinking_deltas_without_post_hoc_dup():
     """Anthropic-style ``on_thinking_delta`` should fan out to ``emit_reasoning``;
     final ``thinking_blocks`` must not emit again when already streamed."""
@@ -419,7 +411,6 @@ async def test_runner_streams_native_thinking_deltas_without_post_hoc_dup():
     assert hook.emitted == ["part1", "part2"]
 
 
-@pytest.mark.asyncio
 async def test_runner_closes_native_reasoning_before_streaming_answer():
     from nanobot.agent.runner import AgentRunner
 
@@ -458,7 +449,6 @@ async def test_runner_closes_native_reasoning_before_streaming_answer():
     ]
 
 
-@pytest.mark.asyncio
 async def test_runner_closes_native_reasoning_before_local_tool_execution():
     from nanobot.agent.runner import AgentRunner
 
@@ -511,7 +501,6 @@ async def test_runner_closes_native_reasoning_before_local_tool_execution():
     ]
 
 
-@pytest.mark.asyncio
 async def test_runner_closes_native_reasoning_before_hosted_tool_event():
     from nanobot.agent.runner import AgentRunner
 
@@ -568,7 +557,6 @@ async def test_runner_closes_native_reasoning_before_hosted_tool_event():
     ]
 
 
-@pytest.mark.asyncio
 async def test_runner_closes_native_reasoning_when_stream_is_cancelled():
     from nanobot.agent.runner import AgentRunner
 
@@ -608,7 +596,6 @@ async def test_runner_closes_native_reasoning_when_stream_is_cancelled():
     assert hook.events == ["reasoning:inspect", "reasoning_end"]
 
 
-@pytest.mark.asyncio
 async def test_runner_settles_native_reasoning_end_before_propagating_cancellation():
     from nanobot.agent.runner import AgentRunner
 
@@ -648,7 +635,6 @@ async def test_runner_settles_native_reasoning_end_before_propagating_cancellati
     assert hook.events == ["reasoning:inspect", "reasoning_end"]
 
 
-@pytest.mark.asyncio
 async def test_runner_strips_thinking_tags_from_native_thinking_deltas():
     from nanobot.agent.runner import AgentRunner
 
@@ -684,7 +670,6 @@ async def test_runner_strips_thinking_tags_from_native_thinking_deltas():
     assert hook.emitted == ["Preparing final response"]
 
 
-@pytest.mark.asyncio
 async def test_runner_ignores_empty_thinking_marker_before_final_reasoning():
     from nanobot.agent.runner import AgentRunner
 

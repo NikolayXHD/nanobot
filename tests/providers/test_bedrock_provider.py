@@ -240,7 +240,6 @@ def test_parse_response_maps_text_tools_reasoning_usage_and_stop_reason() -> Non
     assert result.tool_calls[0].arguments == {"q": "x"}
 
 
-@pytest.mark.asyncio
 async def test_chat_stream_retries_eof_without_stop_reason() -> None:
     client = FakeClient(stream_events=[
         {"contentBlockDelta": {"contentBlockIndex": 0, "delta": {"text": "partial summary"}}},
@@ -255,7 +254,6 @@ async def test_chat_stream_retries_eof_without_stop_reason() -> None:
     assert len(client.stream_calls) == 2
 
 
-@pytest.mark.asyncio
 async def test_chat_stream_aggregates_text_tool_use_and_usage() -> None:
     client = FakeClient(stream_events=[
         {"contentBlockDelta": {"contentBlockIndex": 0, "delta": {"text": "he"}}},
@@ -348,7 +346,6 @@ def test_bedrock_usage_preserves_cache_reporting_and_logical_input(
     assert usage.input_tokens == expected_input
 
 
-@pytest.mark.asyncio
 async def test_chat_error_maps_retry_metadata() -> None:
     provider = BedrockProvider(region="us-east-1", client=FakeClient(error=FakeBedrockError()))
 

@@ -74,7 +74,6 @@ def test_reply_progress_opt_in_enables_progress_transport() -> None:
     assert config.send_tool_hints is True
 
 
-@pytest.mark.asyncio
 async def test_start_suppresses_httpx_polling_logs(monkeypatch) -> None:
     channel = _channel(token="bot-token")
     redirect = Mock()
@@ -113,7 +112,6 @@ def test_channel_manager_preserves_weixin_quota_defaults(
     assert channel.send_tool_hints is send_tool_hints
 
 
-@pytest.mark.asyncio
 async def test_channel_manager_does_not_retry_permanent_weixin_error(monkeypatch) -> None:
     manager = ChannelManager.__new__(ChannelManager)
     manager.config = Config.model_validate({"channels": {"sendMaxRetries": 3}})
@@ -139,7 +137,6 @@ async def test_channel_manager_does_not_retry_permanent_weixin_error(monkeypatch
     sleep.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_weixin_http_clients_ignore_system_proxy(tmp_path, monkeypatch) -> None:
     captured: list[dict[str, object]] = []
 
@@ -194,7 +191,6 @@ def test_markdown_split_balances_fences_and_stays_within_limit() -> None:
     assert all(chunk.count("```") % 2 == 0 for chunk in chunks)
 
 
-@pytest.mark.asyncio
 async def test_qr_fetch_posts_known_local_tokens(tmp_path) -> None:
     state_dir = tmp_path / "weixin"
     state_dir.mkdir()
@@ -216,7 +212,6 @@ async def test_qr_fetch_posts_known_local_tokens(tmp_path) -> None:
     )
 
 
-@pytest.mark.asyncio
 async def test_qr_fetch_retries_without_rejected_local_tokens(tmp_path) -> None:
     state_dir = tmp_path / "weixin"
     state_dir.mkdir()
@@ -239,7 +234,6 @@ async def test_qr_fetch_retries_without_rejected_local_tokens(tmp_path) -> None:
     ]
 
 
-@pytest.mark.asyncio
 async def test_qr_fetch_does_not_retry_invalid_request_without_local_tokens(tmp_path) -> None:
     channel = _channel(stateDir=str(tmp_path / "weixin"))
     channel._api_post = AsyncMock(return_value={"ret": -3})
@@ -250,7 +244,6 @@ async def test_qr_fetch_does_not_retry_invalid_request_without_local_tokens(tmp_
     channel._api_post.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_lifecycle_notifications_are_best_effort() -> None:
     channel = _ready_channel()
     channel._api_post = AsyncMock(return_value={"ret": 0})
@@ -313,7 +306,6 @@ def test_error_classification_checks_ret_and_errcode_independently() -> None:
         )
 
 
-@pytest.mark.asyncio
 async def test_stop_cancels_inflight_long_poll() -> None:
     channel = _channel(token="configured-token")
     poll_started = asyncio.Event()
@@ -344,7 +336,6 @@ async def test_stop_cancels_inflight_long_poll() -> None:
     assert channel._poll_task is None
 
 
-@pytest.mark.asyncio
 async def test_retry_reuses_client_id_and_skips_completed_chunks() -> None:
     channel = _ready_channel()
     request = httpx.Request("POST", "https://ilinkai.weixin.qq.com/ilink/bot/sendmessage")
@@ -372,7 +363,6 @@ async def test_retry_reuses_client_id_and_skips_completed_chunks() -> None:
     assert channel._context_send_counts["ctx-1"] == 2
 
 
-@pytest.mark.asyncio
 async def test_quota_rejection_defers_final_until_fresh_context() -> None:
     channel = _ready_channel()
     channel._api_post = AsyncMock(side_effect=[{"ret": -2}, {"ret": 0}])
@@ -396,7 +386,6 @@ async def test_quota_rejection_defers_final_until_fresh_context() -> None:
     assert "wx-user" not in channel._deferred_outbound
 
 
-@pytest.mark.asyncio
 async def test_local_context_budget_stops_before_extra_api_call() -> None:
     channel = _ready_channel(contextMessageBudget=1)
     channel._api_post = AsyncMock(return_value={"ret": 0})
@@ -408,7 +397,6 @@ async def test_local_context_budget_stops_before_extra_api_call() -> None:
     channel._api_post.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_bounded_block_streaming_reserves_one_final_message() -> None:
     channel = _ready_channel(
         blockStreaming=True,
@@ -427,7 +415,6 @@ async def test_bounded_block_streaming_reserves_one_final_message() -> None:
     assert "stream-1" not in channel._stream_sent_counts
 
 
-@pytest.mark.asyncio
 async def test_structured_progress_is_capped_and_uses_one_run_id() -> None:
     channel = _ready_channel(
         replyProgressMessages=True,

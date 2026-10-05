@@ -26,7 +26,6 @@ class TestDeleteLineCleanup:
     def tool(self, tmp_path):
         return EditFileTool(workspace=tmp_path)
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("newline", ["\n", "\r\n"], ids=["lf", "crlf"])
     @pytest.mark.parametrize("prefix", ["", "line1\n"], ids=["first-line", "later-line"])
     @pytest.mark.parametrize("indent", ["", "    "], ids=["unindented", "indented"])
@@ -41,7 +40,6 @@ class TestDeleteLineCleanup:
         # Should not leave a blank line where line2 was
         assert f.read_bytes() == f"{prefix}line3\n".replace("\n", newline).encode("utf-8")
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("newline", ["\n", "\r\n"], ids=["lf", "crlf"])
     @pytest.mark.parametrize("prefix", ["", "header = 0\n"], ids=["first-line", "later-line"])
     @pytest.mark.parametrize("old_text", ["  # obsolete", "  # obsolete\n# extra comment"])
@@ -56,7 +54,6 @@ class TestDeleteLineCleanup:
         expected = f"{prefix}x = 1\ny = 2\n"
         assert f.read_bytes() == expected.replace("\n", newline).encode("utf-8")
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("newline", ["\n", "\r\n"], ids=["lf", "crlf"])
     async def test_delete_all_distinguishes_inline_suffixes_from_whole_lines(
         self, tool, tmp_path, newline,
@@ -71,7 +68,6 @@ class TestDeleteLineCleanup:
         expected = "x = 1\ny = 2\nz = 3\n"
         assert f.read_bytes() == expected.replace("\n", newline).encode("utf-8")
 
-    @pytest.mark.asyncio
     async def test_delete_line_with_explicit_newline_in_old_text(self, tool, tmp_path):
         f = tmp_path / "a.py"
         f.write_text("line1\nline2\nline3\n", encoding="utf-8")
@@ -79,7 +75,6 @@ class TestDeleteLineCleanup:
         assert "Patch applied:" in result
         assert f.read_text() == "line1\nline3\n"
 
-    @pytest.mark.asyncio
     async def test_delete_preserves_content_when_not_trailing_newline(self, tool, tmp_path):
         """Deleting a word mid-line should not consume extra characters."""
         f = tmp_path / "a.py"
@@ -101,7 +96,6 @@ class TestQuoteStylePreservation:
     def tool(self, tmp_path):
         return EditFileTool(workspace=tmp_path)
 
-    @pytest.mark.asyncio
     async def test_replacement_preserves_curly_double_quotes(self, tool, tmp_path):
         f = tmp_path / "quotes.txt"
         f.write_text('message = “hello”\n', encoding="utf-8")
@@ -113,7 +107,6 @@ class TestQuoteStylePreservation:
         assert "Patch applied:" in result
         assert f.read_text(encoding="utf-8") == 'message = “goodbye”\n'
 
-    @pytest.mark.asyncio
     async def test_replacement_preserves_curly_apostrophe(self, tool, tmp_path):
         f = tmp_path / "apostrophe.txt"
         f.write_text("it’s fine\n", encoding="utf-8")
@@ -138,7 +131,6 @@ class TestIndentationPreservation:
     def tool(self, tmp_path):
         return EditFileTool(workspace=tmp_path)
 
-    @pytest.mark.asyncio
     async def test_trim_fallback_preserves_outer_indentation(self, tool, tmp_path):
         f = tmp_path / "indent.py"
         f.write_text(
@@ -159,7 +151,6 @@ class TestIndentationPreservation:
             "        return 1\n"
         )
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("newline", ["\n", "\r\n"], ids=["lf", "crlf"])
     @pytest.mark.parametrize("ending", ["", "\n"], ids=["no-request-newline", "request-newline"])
     @pytest.mark.parametrize(
@@ -195,7 +186,6 @@ class TestEditDiagnostics:
     def tool(self, tmp_path):
         return EditFileTool(workspace=tmp_path)
 
-    @pytest.mark.asyncio
     async def test_ambiguous_match_reports_candidate_lines(self, tool, tmp_path):
         f = tmp_path / "dup.py"
         f.write_text("aaa\nbbb\naaa\nbbb\n", encoding="utf-8")
@@ -205,7 +195,6 @@ class TestEditDiagnostics:
         assert "line 3" in result.lower()
         assert "replace_all=true" in result
 
-    @pytest.mark.asyncio
     async def test_not_found_reports_whitespace_hint(self, tool, tmp_path):
         f = tmp_path / "space.py"
         f.write_text("value =  1\n", encoding="utf-8")
@@ -213,7 +202,6 @@ class TestEditDiagnostics:
         assert "Error" in result
         assert "whitespace" in result.lower()
 
-    @pytest.mark.asyncio
     async def test_not_found_reports_case_hint(self, tool, tmp_path):
         f = tmp_path / "case.py"
         f.write_text("HelloWorld\n", encoding="utf-8")
@@ -234,7 +222,6 @@ class TestAdvancedReplaceAll:
     def tool(self, tmp_path):
         return EditFileTool(workspace=tmp_path)
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("ending", ["", "\n"], ids=["no-request-newline", "request-newline"])
     async def test_replace_all_preserves_each_match_indentation(self, tool, tmp_path, ending):
         f = tmp_path / "indent_multi.py"
@@ -263,7 +250,6 @@ class TestAdvancedReplaceAll:
             "            return 1\n"
         )
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("ending", ["", "\n"], ids=["no-request-newline", "request-newline"])
     async def test_trim_and_quote_fallback_match_succeeds(self, tool, tmp_path, ending):
         f = tmp_path / "quote_indent.py"
@@ -289,7 +275,6 @@ class TestTrailingWhitespaceStrip:
     def tool(self, tmp_path):
         return EditFileTool(workspace=tmp_path)
 
-    @pytest.mark.asyncio
     async def test_strips_trailing_whitespace_from_new_text(self, tool, tmp_path):
         f = tmp_path / "a.py"
         f.write_text("x = 1\n", encoding="utf-8")
@@ -300,7 +285,6 @@ class TestTrailingWhitespaceStrip:
         content = f.read_text()
         assert "x = 2\ny = 3\n" == content
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("newline", ["\n", "\r\n"], ids=["lf", "crlf"])
     @pytest.mark.parametrize(
         "before,old_text,new_text,expected",
@@ -327,7 +311,6 @@ class TestTrailingWhitespaceStrip:
         assert "Patch applied:" in result
         assert f.read_bytes() == expected.replace("\n", newline).encode("utf-8")
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("newline", ["\n", "\r\n"], ids=["lf", "crlf"])
     async def test_replace_all_cleans_only_actual_line_endings(self, tool, tmp_path, newline):
         f = tmp_path / "mixed.txt"
@@ -340,7 +323,6 @@ class TestTrailingWhitespaceStrip:
         expected = "new value\nnew\nnew   \nnew"
         assert f.read_bytes() == expected.replace("\n", newline).encode("utf-8")
 
-    @pytest.mark.asyncio
     async def test_preserves_trailing_whitespace_in_markdown(self, tool, tmp_path):
         f = tmp_path / "doc.md"
         f.write_text("# Title\n", encoding="utf-8")
@@ -367,7 +349,6 @@ class TestFileSizeProtection:
     def tool(self, tmp_path):
         return EditFileTool(workspace=tmp_path)
 
-    @pytest.mark.asyncio
     async def test_rejects_file_over_size_limit(self, tool, tmp_path):
         f = tmp_path / "huge.txt"
         f.write_text("x", encoding="utf-8")
@@ -406,7 +387,6 @@ class TestStaleDetectionContentFallback:
     def edit_tool(self, tmp_path):
         return EditFileTool(workspace=tmp_path)
 
-    @pytest.mark.asyncio
     async def test_mtime_bump_same_content_no_warning(self, read_tool, edit_tool, tmp_path):
         f = tmp_path / "a.py"
         f.write_text("hello world", encoding="utf-8")

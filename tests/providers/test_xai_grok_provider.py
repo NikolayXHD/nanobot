@@ -91,7 +91,6 @@ def test_reasoning_options_omit_disabled_effort() -> None:
     assert _build_reasoning_options("none") == {"summary": "concise"}
 
 
-@pytest.mark.asyncio
 async def test_provider_retries_stream_eof_before_returning_content(monkeypatch) -> None:
     _mock_token(monkeypatch)
     _mock_model_capabilities(monkeypatch, supports_backend_search=False)
@@ -115,7 +114,6 @@ async def test_provider_retries_stream_eof_before_returning_content(monkeypatch)
     assert calls == 2
 
 
-@pytest.mark.asyncio
 async def test_provider_injects_hosted_x_search_and_required_proxy_headers(monkeypatch) -> None:
     _mock_token(monkeypatch)
     _mock_model_capabilities(monkeypatch, supports_backend_search=True)
@@ -182,7 +180,6 @@ async def test_provider_injects_hosted_x_search_and_required_proxy_headers(monke
     assert headers["x-grok-model-override"] == "grok-4.6"
 
 
-@pytest.mark.asyncio
 async def test_explicit_parameterized_x_search_is_preserved_without_catalog_lookup(
     monkeypatch,
 ) -> None:
@@ -250,7 +247,6 @@ async def test_explicit_parameterized_x_search_is_preserved_without_catalog_look
     ]
 
 
-@pytest.mark.asyncio
 async def test_explicit_empty_tools_disables_catalog_lookup_and_hosted_tool(monkeypatch) -> None:
     _mock_token(monkeypatch)
     bodies: list[dict[str, Any]] = []
@@ -296,7 +292,6 @@ async def test_explicit_empty_tools_disables_catalog_lookup_and_hosted_tool(monk
     assert "max_turns" not in bodies[0]
 
 
-@pytest.mark.asyncio
 async def test_provider_keeps_local_x_search_when_model_does_not_support_hosted_search(
     monkeypatch,
 ) -> None:
@@ -337,7 +332,6 @@ async def test_provider_keeps_local_x_search_when_model_does_not_support_hosted_
     assert bodies[0]["instructions"] == ""
 
 
-@pytest.mark.asyncio
 async def test_provider_refreshes_and_retries_exactly_once_after_401(monkeypatch) -> None:
     _mock_model_capabilities(monkeypatch, supports_backend_search=False)
     token_calls: list[tuple[str | None, bool]] = []
@@ -371,7 +365,6 @@ async def test_provider_refreshes_and_retries_exactly_once_after_401(monkeypatch
     assert request_tokens == ["Bearer stale-token", "Bearer fresh-token"]
 
 
-@pytest.mark.asyncio
 async def test_second_401_is_non_retryable_and_prompts_reauthentication(monkeypatch) -> None:
     _mock_token(monkeypatch)
     _mock_model_capabilities(monkeypatch, supports_backend_search=False)
@@ -398,7 +391,6 @@ async def test_second_401_is_non_retryable_and_prompts_reauthentication(monkeypa
     assert "nanobot provider login xai-grok" in (response.content or "")
 
 
-@pytest.mark.asyncio
 async def test_factory_builds_xai_provider_and_applies_explicit_body_overrides(monkeypatch) -> None:
     _mock_token(monkeypatch)
     _mock_model_capabilities(monkeypatch, supports_backend_search=True)
@@ -440,7 +432,6 @@ async def test_factory_builds_xai_provider_and_applies_explicit_body_overrides(m
     assert {"type": "x_search"} in bodies[0]["tools"]
 
 
-@pytest.mark.asyncio
 async def test_raw_response_request_streams_text_usage_and_inline_citations(monkeypatch) -> None:
     original_client = httpx.AsyncClient
     captured: dict[str, Any] = {}
@@ -489,7 +480,6 @@ async def test_raw_response_request_streams_text_usage_and_inline_citations(monk
     assert captured["json"]["tools"] == [{"type": "x_search"}]
 
 
-@pytest.mark.asyncio
 async def test_raw_response_request_streams_hosted_x_search_lifecycle(monkeypatch) -> None:
     original_client = httpx.AsyncClient
     events = [
@@ -556,7 +546,6 @@ async def test_raw_response_request_streams_hosted_x_search_lifecycle(monkeypatc
     assert "large hosted result" not in json.dumps(tool_events)
 
 
-@pytest.mark.asyncio
 async def test_raw_response_request_streams_official_x_search_lifecycle(monkeypatch) -> None:
     original_client = httpx.AsyncClient
     events = [
@@ -611,7 +600,6 @@ async def test_raw_response_request_streams_official_x_search_lifecycle(monkeypa
     assert tool_events[-1]["result"] == {"status": "completed"}
 
 
-@pytest.mark.asyncio
 async def test_raw_response_rejects_unfinished_hosted_tool_and_closes_progress(
     monkeypatch,
 ) -> None:
@@ -658,7 +646,6 @@ async def test_raw_response_rejects_unfinished_hosted_tool_and_closes_progress(
     assert "before this hosted tool completed" in tool_events[-1]["error"]
 
 
-@pytest.mark.asyncio
 async def test_provider_recovers_unfinished_hosted_tool_once_and_preserves_usage(
     monkeypatch,
 ) -> None:
@@ -705,7 +692,6 @@ async def test_provider_recovers_unfinished_hosted_tool_once_and_preserves_usage
     assert response.usage == first_usage + second_usage
 
 
-@pytest.mark.asyncio
 async def test_provider_preserves_usage_when_hosted_tool_recovery_also_fails(
     monkeypatch,
 ) -> None:
@@ -735,7 +721,6 @@ async def test_provider_preserves_usage_when_hosted_tool_recovery_also_fails(
     assert response.usage == usage + usage
 
 
-@pytest.mark.asyncio
 async def test_raw_response_error_preserves_bounded_redacted_body(monkeypatch) -> None:
     original_client = httpx.AsyncClient
     raw = json.dumps(

@@ -1043,7 +1043,6 @@ class _SseResponse:
 
 
 class TestConsumeSse:
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("event_type", ["response.output_text.delta", "response.refusal.delta"])
     async def test_eof_without_terminal_event_is_a_connection_error(self, event_type):
         response = _SseResponse([{"type": event_type, "delta": "partial"}])
@@ -1051,7 +1050,6 @@ class TestConsumeSse:
         with pytest.raises(ConnectionError, match="terminal response event"):
             await consume_sse_with_reasoning(response)
 
-    @pytest.mark.asyncio
     async def test_legacy_consume_sse_returns_three_tuple(self):
         response = _SseResponse([
             {"type": "response.output_text.delta", "delta": "hi"},
@@ -1064,7 +1062,6 @@ class TestConsumeSse:
         assert tool_calls == []
         assert finish_reason == "stop"
 
-    @pytest.mark.asyncio
     async def test_refusal_events_reconcile_parts_and_terminal_output(self):
         refusal = "First and second sentence. Done-only. Terminal suffix."
         terminal_response = {
@@ -1140,7 +1137,6 @@ class TestConsumeSse:
         assert capture.completed is True
         assert is_replayable_finish_reason(finish_reason) is False
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("source", ["events", "terminal"])
     async def test_refusal_without_deltas_has_non_replayable_finish(self, source: str):
         refusal = "I can’t help with that request."
@@ -1180,7 +1176,6 @@ class TestConsumeSse:
         assert capture.completed is True
         assert is_replayable_finish_reason(finish_reason) is False
 
-    @pytest.mark.asyncio
     async def test_reasoning_summary_delta_extracted(self):
         response = _SseResponse([
             {
@@ -1221,7 +1216,6 @@ class TestConsumeSse:
         assert reasoning == "thinking briefly\nChecking result"
         assert deltas == ["thinking ", "briefly", "\nChecking result"]
 
-    @pytest.mark.asyncio
     async def test_reasoning_summary_from_completed_response(self):
         response = _SseResponse([
             {
@@ -1242,7 +1236,6 @@ class TestConsumeSse:
 
         assert reasoning == "cached\nsummary"
 
-    @pytest.mark.asyncio
     async def test_capture_commits_exact_items_only_after_completed_event(self):
         output = [
             {
@@ -1275,7 +1268,6 @@ class TestConsumeSse:
         assert capture.completed is True
         assert capture.output_items == output
 
-    @pytest.mark.asyncio
     async def test_capture_keeps_done_items_when_completed_output_is_empty(self):
         output = [
             {
@@ -1310,7 +1302,6 @@ class TestConsumeSse:
         assert capture.completed is True
         assert capture.output_items == output
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize(
         ("reason", "expected_finish_reason"),
         [
@@ -1356,7 +1347,6 @@ class TestConsumeSse:
         assert capture.response == terminal_response
         assert capture.output_items == output
 
-    @pytest.mark.asyncio
     async def test_capture_does_not_commit_interrupted_stream(self):
         capture = ResponsesStreamCapture()
         response = _SseResponse([
@@ -1376,7 +1366,6 @@ class TestConsumeSse:
 
         assert capture.completed is False
 
-    @pytest.mark.asyncio
     async def test_reasoning_summary_from_done_item(self):
         response = _SseResponse([
             {
@@ -1401,7 +1390,6 @@ class TestConsumeSse:
         assert reasoning == "done summary"
         assert deltas == ["done summary"]
 
-    @pytest.mark.asyncio
     async def test_reasoning_summary_part_done_extracted(self):
         response = _SseResponse([
             {
@@ -1415,7 +1403,6 @@ class TestConsumeSse:
 
         assert reasoning == "part summary"
 
-    @pytest.mark.asyncio
     async def test_raw_sse_usage_extracted(self):
         response = _SseResponse([
             {
@@ -1444,7 +1431,6 @@ class TestConsumeSse:
             cache_write_tokens=0,
         )
 
-    @pytest.mark.asyncio
     async def test_stream_and_non_stream_share_usage_normalization(self):
         terminal = {
             "status": "completed",
@@ -1500,7 +1486,6 @@ class TestConsumeSse:
         assert missing.usage is None
         assert explicit_zero.usage == LLMUsage.reported(input_tokens=0, output_tokens=0)
 
-    @pytest.mark.asyncio
     async def test_tool_call_done_arguments_callback(self):
         response = _SseResponse([
             {
@@ -1546,7 +1531,6 @@ class TestConsumeSse:
             },
         ]
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("arguments", [[], False, 0])
     async def test_falsy_non_object_tool_arguments_preserved(self, arguments):
         response = _SseResponse([
@@ -1585,7 +1569,6 @@ class TestConsumeSse:
 
 
 class TestConsumeSdkStream:
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("event_type", ["response.output_text.delta", "response.refusal.delta"])
     async def test_eof_without_terminal_event_is_a_connection_error(self, event_type):
         async def stream():
@@ -1594,7 +1577,6 @@ class TestConsumeSdkStream:
         with pytest.raises(ConnectionError, match="terminal response event"):
             await consume_sdk_stream(stream())
 
-    @pytest.mark.asyncio
     async def test_text_stream(self):
         ev1 = MagicMock(type="response.output_text.delta", delta="Hello")
         ev2 = MagicMock(type="response.output_text.delta", delta=" world")
@@ -1610,7 +1592,6 @@ class TestConsumeSdkStream:
         assert tool_calls == []
         assert finish_reason == "stop"
 
-    @pytest.mark.asyncio
     async def test_hosted_web_search_lifecycle_is_streamed_as_tool_progress(self):
         search_added = SimpleNamespace(
             type="web_search_call",
@@ -1695,7 +1676,6 @@ class TestConsumeSdkStream:
             },
         ]
 
-    @pytest.mark.asyncio
     async def test_refusal_events_reconcile_parts_and_terminal_output(self):
         refusal = "First and second sentence. Done-only. Terminal suffix."
         terminal_response = {
@@ -1777,7 +1757,6 @@ class TestConsumeSdkStream:
         assert capture.completed is True
         assert is_replayable_finish_reason(finish_reason) is False
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("source", ["events", "terminal"])
     async def test_refusal_without_deltas_has_non_replayable_finish(self, source: str):
         refusal = "I can’t help with that request."
@@ -1820,7 +1799,6 @@ class TestConsumeSdkStream:
         assert capture.completed is True
         assert is_replayable_finish_reason(finish_reason) is False
 
-    @pytest.mark.asyncio
     async def test_on_content_delta_called(self):
         ev1 = MagicMock(type="response.output_text.delta", delta="hi")
         resp_obj = MagicMock(status="completed", usage=None, output=[])
@@ -1837,7 +1815,6 @@ class TestConsumeSdkStream:
         await consume_sdk_stream(stream(), on_content_delta=cb)
         assert deltas == ["hi"]
 
-    @pytest.mark.asyncio
     async def test_tool_call_stream(self):
         item_added = MagicMock(type="function_call", call_id="c1", id="fc1", arguments="")
         item_added.name = "get_weather"
@@ -1860,7 +1837,6 @@ class TestConsumeSdkStream:
         assert tool_calls[0].name == "get_weather"
         assert tool_calls[0].arguments == {"city": "SF"}
 
-    @pytest.mark.asyncio
     async def test_tool_call_argument_delta_callback(self):
         item_added = MagicMock(type="function_call", call_id="c1", id="fc1", arguments="")
         item_added.name = "write_file"
@@ -1915,7 +1891,6 @@ class TestConsumeSdkStream:
             },
         ]
 
-    @pytest.mark.asyncio
     async def test_tool_call_done_item_arguments_callback_without_delta(self):
         item_added = MagicMock(type="function_call", call_id="c1", id="fc1", arguments="")
         item_added.name = "write_file"
@@ -1950,7 +1925,6 @@ class TestConsumeSdkStream:
             },
         ]
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("arguments", [[], False, 0])
     async def test_falsy_non_object_tool_arguments_preserved(self, arguments):
         item_added = MagicMock(type="function_call", call_id="c1", id="fc1", arguments="")
@@ -1972,7 +1946,6 @@ class TestConsumeSdkStream:
         assert tool_calls[0].arguments == arguments
         assert type(tool_calls[0].arguments) is type(arguments)
 
-    @pytest.mark.asyncio
     async def test_usage_extracted(self):
         usage_obj = SimpleNamespace(
             input_tokens=10,
@@ -1993,7 +1966,6 @@ class TestConsumeSdkStream:
             cache_read_tokens=8,
         )
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize(
         ("reason", "expected_finish_reason"),
         [
@@ -2051,7 +2023,6 @@ class TestConsumeSdkStream:
         assert capture.response == terminal_response
         assert capture.output_items == output
 
-    @pytest.mark.asyncio
     async def test_reasoning_extracted(self):
         summary_item = MagicMock(type="summary_text", text="thinking...")
         reasoning_item = MagicMock(type="reasoning", summary=[summary_item])
@@ -2064,7 +2035,6 @@ class TestConsumeSdkStream:
         _, _, _, _, reasoning = await consume_sdk_stream(stream())
         assert reasoning == "thinking..."
 
-    @pytest.mark.asyncio
     async def test_deepseek_reasoning_text_streamed(self):
         events = [
             MagicMock(type="response.reasoning_text.delta", delta="step 1 "),
@@ -2092,7 +2062,6 @@ class TestConsumeSdkStream:
         assert reasoning == "step 1 step 2"
         assert emitted == ["step 1 ", "step 2"]
 
-    @pytest.mark.asyncio
     async def test_error_event_raises(self):
         ev = MagicMock(type="error", error="rate_limit_exceeded")
 
@@ -2102,7 +2071,6 @@ class TestConsumeSdkStream:
         with pytest.raises(RuntimeError, match="Response failed.*rate_limit_exceeded"):
             await consume_sdk_stream(stream())
 
-    @pytest.mark.asyncio
     async def test_failed_event_raises(self):
         ev = MagicMock(type="response.failed", error="server_error")
 
@@ -2112,7 +2080,6 @@ class TestConsumeSdkStream:
         with pytest.raises(RuntimeError, match="Response failed.*server_error"):
             await consume_sdk_stream(stream())
 
-    @pytest.mark.asyncio
     async def test_malformed_tool_args_logged(self):
         """Malformed JSON in streaming tool args should log a warning and remain non-object."""
         item_added = MagicMock(type="function_call", call_id="c1", id="fc1", arguments="")

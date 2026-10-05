@@ -159,7 +159,6 @@ def _make_wrapper(session: object, *, timeout: float = 0.1) -> MCPToolWrapper:
     return MCPToolWrapper(session, "test", tool_def, tool_timeout=timeout)
 
 
-@pytest.mark.asyncio
 async def test_mcp_provider_connect_propagates_external_cancellation(monkeypatch) -> None:
     started = asyncio.Event()
 
@@ -185,7 +184,6 @@ async def test_mcp_provider_connect_propagates_external_cancellation(monkeypatch
     assert provider.runtime_status() == {"test": "failed"}
 
 
-@pytest.mark.asyncio
 async def test_saved_oauth_http_403_projects_failed_runtime_without_details(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -583,7 +581,6 @@ def test_normalize_windows_stdio_command_skips_existing_shells(
     assert env is None
 
 
-@pytest.mark.asyncio
 async def test_execute_returns_text_blocks() -> None:
     async def call_tool(_name: str, arguments: dict) -> object:
         assert arguments == {"value": 1}
@@ -596,7 +593,6 @@ async def test_execute_returns_text_blocks() -> None:
     assert result == "hello\n42"
 
 
-@pytest.mark.asyncio
 async def test_execute_wraps_mcp_is_error_result() -> None:
     async def call_tool(_name: str, arguments: dict) -> object:
         return SimpleNamespace(
@@ -612,7 +608,6 @@ async def test_execute_wraps_mcp_is_error_result() -> None:
     assert is_tool_error_result(result)
 
 
-@pytest.mark.asyncio
 async def test_execute_contains_malformed_success_result() -> None:
     async def call_tool(_name: str, arguments: dict) -> object:
         return SimpleNamespace(content=None)
@@ -625,7 +620,6 @@ async def test_execute_contains_malformed_success_result() -> None:
     assert is_tool_error_result(result)
 
 
-@pytest.mark.asyncio
 async def test_registry_adds_retry_hint_to_malformed_mcp_result() -> None:
     async def call_tool(_name: str, arguments: dict) -> object:
         return SimpleNamespace(content=None)
@@ -641,7 +635,6 @@ async def test_registry_adds_retry_hint_to_malformed_mcp_result() -> None:
     assert "Analyze the error above and try a different approach" in result
 
 
-@pytest.mark.asyncio
 async def test_execute_preserves_success_text_that_starts_with_error() -> None:
     async def call_tool(_name: str, arguments: dict) -> object:
         return SimpleNamespace(
@@ -664,7 +657,6 @@ _PNG_B64 = (
 )
 
 
-@pytest.mark.asyncio
 async def test_execute_persists_image_block_as_artifact(tmp_path: Path) -> None:
     from nanobot.config.loader import set_config_path
 
@@ -695,7 +687,6 @@ async def test_execute_persists_image_block_as_artifact(tmp_path: Path) -> None:
     assert "message tool" in payload["next_step"]
 
 
-@pytest.mark.asyncio
 async def test_execute_notes_unstorable_image_block(tmp_path: Path) -> None:
     from nanobot.config.loader import set_config_path
 
@@ -711,7 +702,6 @@ async def test_execute_notes_unstorable_image_block(tmp_path: Path) -> None:
     assert result == "(MCP tool returned an image that could not be stored)"
 
 
-@pytest.mark.asyncio
 async def test_execute_returns_timeout_message() -> None:
     async def call_tool(_name: str, arguments: dict) -> object:
         await asyncio.sleep(1)
@@ -725,7 +715,6 @@ async def test_execute_returns_timeout_message() -> None:
     assert is_tool_error_result(result)
 
 
-@pytest.mark.asyncio
 async def test_execute_handles_server_cancelled_error() -> None:
     async def call_tool(_name: str, arguments: dict) -> object:
         raise asyncio.CancelledError()
@@ -738,7 +727,6 @@ async def test_execute_handles_server_cancelled_error() -> None:
     assert is_tool_error_result(result)
 
 
-@pytest.mark.asyncio
 async def test_execute_re_raises_external_cancellation() -> None:
     started = asyncio.Event()
 
@@ -757,7 +745,6 @@ async def test_execute_re_raises_external_cancellation() -> None:
         await task
 
 
-@pytest.mark.asyncio
 async def test_execute_handles_generic_exception() -> None:
     async def call_tool(_name: str, arguments: dict) -> object:
         raise RuntimeError("boom")
@@ -788,7 +775,6 @@ def _make_fake_session(tool_names: list[str]) -> SimpleNamespace:
     return SimpleNamespace(initialize=initialize, list_tools=list_tools)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("enabled_tools", "expected_names"),
     [
@@ -841,7 +827,6 @@ async def test_connect_mcp_servers_loads_all_tool_pages(
             await stack.aclose()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("failure", ["request-error", "repeated-cursor"])
 async def test_connect_mcp_servers_pagination_failure_registers_no_tools(
     fake_mcp_runtime: dict[str, object | None], failure: str,
@@ -876,7 +861,6 @@ async def test_connect_mcp_servers_pagination_failure_registers_no_tools(
             await stack.aclose()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "enabled_tool",
     [
@@ -901,7 +885,6 @@ async def test_connect_mcp_servers_enabled_tools_accepts_raw_and_wrapped_names(
     assert registry.tool_names == ["mcp_test_demo"]
 
 
-@pytest.mark.asyncio
 async def test_connect_mcp_servers_enabled_tools_defaults_to_all(
     fake_mcp_runtime: dict[str, object | None],
 ) -> None:
@@ -917,7 +900,6 @@ async def test_connect_mcp_servers_enabled_tools_defaults_to_all(
     assert registry.tool_names == ["mcp_test_demo", "mcp_test_other"]
 
 
-@pytest.mark.asyncio
 async def test_connect_mcp_servers_enabled_tools_supports_limited_wrapped_names(
     fake_mcp_runtime: dict[str, object | None],
 ) -> None:
@@ -937,7 +919,6 @@ async def test_connect_mcp_servers_enabled_tools_supports_limited_wrapped_names(
     assert registry.tool_names == [wrapped_name]
 
 
-@pytest.mark.asyncio
 async def test_connect_mcp_servers_enabled_tools_empty_list_registers_none(
     fake_mcp_runtime: dict[str, object | None],
 ) -> None:
@@ -953,7 +934,6 @@ async def test_connect_mcp_servers_enabled_tools_empty_list_registers_none(
     assert registry.tool_names == []
 
 
-@pytest.mark.asyncio
 async def test_connect_mcp_servers_enabled_tools_empty_list_blocks_resources_and_prompts(
     fake_mcp_runtime: dict[str, object | None],
 ) -> None:
@@ -977,7 +957,6 @@ async def test_connect_mcp_servers_enabled_tools_empty_list_blocks_resources_and
     assert not any("admin_prompt" in name for name in registry.tool_names)
 
 
-@pytest.mark.asyncio
 async def test_connect_mcp_servers_enabled_tools_specific_list_blocks_resources_and_prompts(
     fake_mcp_runtime: dict[str, object | None],
 ) -> None:
@@ -1003,7 +982,6 @@ async def test_connect_mcp_servers_enabled_tools_specific_list_blocks_resources_
     assert not any("admin_prompt" in name for name in registry.tool_names)
 
 
-@pytest.mark.asyncio
 async def test_connect_mcp_servers_enabled_tools_wildcard_allows_resources_and_prompts(
     fake_mcp_runtime: dict[str, object | None],
 ) -> None:
@@ -1026,7 +1004,6 @@ async def test_connect_mcp_servers_enabled_tools_wildcard_allows_resources_and_p
     assert any("help_prompt" in name for name in registry.tool_names)
 
 
-@pytest.mark.asyncio
 async def test_connect_mcp_servers_enabled_tools_warns_on_unknown_entries(
     fake_mcp_runtime: dict[str, object | None], monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -1053,7 +1030,6 @@ async def test_connect_mcp_servers_enabled_tools_warns_on_unknown_entries(
     assert "Available wrapped names: mcp_test_demo" in warnings[-1]
 
 
-@pytest.mark.asyncio
 async def test_connect_mcp_servers_logs_stdio_pollution_hint(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1114,7 +1090,6 @@ def test_unexpected_connection_failure_keeps_error_trace() -> None:
     assert not any(record["level"].name == "WARNING" for record in records)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "config",
     [
@@ -1150,7 +1125,6 @@ async def test_connect_mcp_servers_rejects_unsafe_http_urls_before_probe(
     assert any("blocked unsafe URL" in warning for warning in warnings)
 
 
-@pytest.mark.asyncio
 async def test_validate_mcp_request_url_rejects_loopback_without_whitelist() -> None:
     from nanobot.security.network import configure_ssrf_whitelist
 
@@ -1161,7 +1135,6 @@ async def test_validate_mcp_request_url_rejects_loopback_without_whitelist() -> 
         await mcp_mod._validate_mcp_request_url(request)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "config",
     [
@@ -1259,7 +1232,6 @@ def test_mcp_http_clients_no_proxy_env_keeps_pinned_direct_route(monkeypatch):
     assert any(transport is None for transport in kwargs["mounts"].values())
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("config", "expected_transport"),
     [
@@ -1348,7 +1320,6 @@ async def test_connect_mcp_servers_http_clients_reject_unsafe_redirect_targets(
     assert sent_urls == ["https://example.com/start"]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("failure_mode", ["exception", "cancellation"])
 async def test_connect_mcp_servers_one_failure_does_not_block_others(
     monkeypatch: pytest.MonkeyPatch,
@@ -1400,7 +1371,6 @@ async def test_connect_mcp_servers_one_failure_does_not_block_others(
     assert set(stacks) == {"good"}
 
 
-@pytest.mark.asyncio
 async def test_connect_mcp_servers_propagates_external_cancellation(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1430,7 +1400,6 @@ async def test_connect_mcp_servers_propagates_external_cancellation(
     await asyncio.wait_for(closed.wait(), timeout=1.0)
 
 
-@pytest.mark.asyncio
 async def test_connect_mcp_servers_rolls_back_completed_batch_on_cancellation(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1483,7 +1452,6 @@ async def test_connect_mcp_servers_rolls_back_completed_batch_on_cancellation(
     assert sorted(closed) == ["fast", "slow"]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("tool_timeout", "expected_read"),
     [
@@ -1544,7 +1512,6 @@ async def test_connect_mcp_servers_streamable_http_uses_finite_timeout(
 
 
 @pytest.mark.parametrize("transport", ["sse", "streamableHttp"])
-@pytest.mark.asyncio
 async def test_connect_mcp_servers_attaches_oauth_to_remote_http_client(
     transport: str,
     fake_mcp_runtime: dict[str, object | None],
@@ -1626,7 +1593,6 @@ async def test_connect_mcp_servers_attaches_oauth_to_remote_http_client(
         assert client_kwargs["event_hooks"] == {"request": [mcp_mod._validate_mcp_request_url]}
 
 
-@pytest.mark.asyncio
 async def test_connect_mcp_servers_skips_background_oauth_without_credentials(
     fake_mcp_runtime: dict[str, object | None],
     monkeypatch: pytest.MonkeyPatch,
@@ -1666,7 +1632,6 @@ async def test_connect_mcp_servers_skips_background_oauth_without_credentials(
     assert not probe_called
 
 
-@pytest.mark.asyncio
 async def test_connect_mcp_servers_wraps_windows_stdio_launchers(
     fake_mcp_runtime: dict[str, object | None],
     monkeypatch: pytest.MonkeyPatch,
@@ -1708,7 +1673,6 @@ async def test_connect_mcp_servers_wraps_windows_stdio_launchers(
     assert captured["env"] is None
 
 
-@pytest.mark.asyncio
 async def test_connect_mcp_servers_passes_stdio_cwd(
     fake_mcp_runtime: dict[str, object | None],
     monkeypatch: pytest.MonkeyPatch,
@@ -1761,7 +1725,6 @@ def test_resource_wrapper_properties() -> None:
     assert wrapper.read_only is True
 
 
-@pytest.mark.asyncio
 async def test_resource_wrapper_execute_returns_text() -> None:
     async def read_resource(uri: str) -> object:
         assert uri == "file:///tmp/data.txt"
@@ -1774,7 +1737,6 @@ async def test_resource_wrapper_execute_returns_text() -> None:
     assert result == "line1\nline2"
 
 
-@pytest.mark.asyncio
 async def test_resource_wrapper_execute_handles_blob() -> None:
     async def read_resource(uri: str) -> object:
         return SimpleNamespace(contents=[_FakeBlobResourceContents(b"\x00\x01\x02")])
@@ -1784,7 +1746,6 @@ async def test_resource_wrapper_execute_handles_blob() -> None:
     assert "[Binary resource: 3 bytes]" in result
 
 
-@pytest.mark.asyncio
 async def test_resource_wrapper_execute_handles_timeout() -> None:
     async def read_resource(uri: str) -> object:
         await asyncio.sleep(1)
@@ -1795,7 +1756,6 @@ async def test_resource_wrapper_execute_handles_timeout() -> None:
     assert result == "(MCP resource read timed out after 0.01s)"
 
 
-@pytest.mark.asyncio
 async def test_resource_wrapper_execute_handles_error() -> None:
     async def read_resource(uri: str) -> object:
         raise RuntimeError("boom")
@@ -1850,7 +1810,6 @@ def test_prompt_wrapper_preserves_argument_descriptions() -> None:
     }
 
 
-@pytest.mark.asyncio
 async def test_prompt_wrapper_execute_returns_text() -> None:
     async def get_prompt(name: str, arguments: dict | None = None) -> object:
         assert name == "myprompt"
@@ -1870,7 +1829,6 @@ async def test_prompt_wrapper_execute_returns_text() -> None:
     assert "Understood. Ask me anything." in result
 
 
-@pytest.mark.asyncio
 async def test_prompt_wrapper_execute_handles_timeout() -> None:
     async def get_prompt(name: str, arguments: dict | None = None) -> object:
         await asyncio.sleep(1)
@@ -1881,7 +1839,6 @@ async def test_prompt_wrapper_execute_handles_timeout() -> None:
     assert result == "(MCP prompt call timed out after 0.01s)"
 
 
-@pytest.mark.asyncio
 async def test_prompt_wrapper_execute_handles_mcp_error() -> None:
     from mcp.shared.exceptions import McpError
 
@@ -1894,7 +1851,6 @@ async def test_prompt_wrapper_execute_handles_mcp_error() -> None:
     assert "code 42" in result
 
 
-@pytest.mark.asyncio
 async def test_prompt_wrapper_execute_handles_error() -> None:
     async def get_prompt(name: str, arguments: dict | None = None) -> object:
         raise RuntimeError("boom")
@@ -1952,7 +1908,6 @@ def _make_fake_session_with_capabilities(
     )
 
 
-@pytest.mark.asyncio
 async def test_connect_registers_resources_and_prompts(
     fake_mcp_runtime: dict[str, object | None],
 ) -> None:
@@ -2047,7 +2002,6 @@ def test_tool_wrapper_preserves_original_name_for_mcp_call() -> None:
     assert wrapper._original_name == "My Tool"
 
 
-@pytest.mark.asyncio
 async def test_connect_mcp_servers_sanitizes_resource_names(
     fake_mcp_runtime: dict[str, object | None],
 ) -> None:
@@ -2067,7 +2021,6 @@ async def test_connect_mcp_servers_sanitizes_resource_names(
     assert "mcp_test_resource_PostgreSQL_System_Information" in registry.tool_names
 
 
-@pytest.mark.asyncio
 async def test_connect_mcp_servers_enabled_tools_matches_sanitized_name(
     fake_mcp_runtime: dict[str, object | None],
 ) -> None:

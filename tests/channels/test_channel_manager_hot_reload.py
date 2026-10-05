@@ -109,7 +109,6 @@ def test_descriptor_rejects_runtime_class_owned_by_another_name():
         plugin.load_channel_class()
 
 
-@pytest.mark.asyncio
 async def test_apply_channel_feature_action_starts_and_stops_channel(monkeypatch):
     disabled = Config.model_validate({
         "channels": {
@@ -147,7 +146,6 @@ async def test_apply_channel_feature_action_starts_and_stops_channel(monkeypatch
     assert channel.is_running is False
 
 
-@pytest.mark.asyncio
 async def test_apply_channel_feature_action_keeps_running_channel_when_rebuild_fails(monkeypatch):
     enabled = Config.model_validate({
         "channels": {
@@ -177,7 +175,6 @@ async def test_apply_channel_feature_action_keeps_running_channel_when_rebuild_f
     assert not old_channel.stopped.is_set()
 
 
-@pytest.mark.asyncio
 async def test_apply_channel_feature_action_uses_channel_runtime_name(monkeypatch):
     config = Config.model_validate({
         "channels": {
@@ -207,7 +204,6 @@ async def test_apply_channel_feature_action_uses_channel_runtime_name(monkeypatc
     assert product.is_running is False
 
 
-@pytest.mark.asyncio
 async def test_default_multi_channel_action_reconciles_only_default_runtime(monkeypatch):
     initial = Config.model_validate({
         "channels": {

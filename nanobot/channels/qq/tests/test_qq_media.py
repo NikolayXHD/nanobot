@@ -112,7 +112,6 @@ def test_guess_send_file_type_by_mime() -> None:
 # ── send() exception handling ───────────────────────────────────────
 
 
-@pytest.mark.asyncio
 async def test_send_exception_propagates_for_manager_retry() -> None:
     """Delivery failures must propagate to the channel manager."""
     channel = QQChannel(QQConfig(app_id="app", secret="secret", allow_from=["*"]), MessageBus())
@@ -128,7 +127,6 @@ async def test_send_exception_propagates_for_manager_retry() -> None:
     send_text.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_send_media_then_text() -> None:
     """Media is sent before text when both are present."""
     import tempfile
@@ -162,7 +160,6 @@ async def test_send_media_then_text() -> None:
         os.unlink(tmp)
 
 
-@pytest.mark.asyncio
 async def test_send_media_failure_falls_back_to_text() -> None:
     """When _send_media returns False, a failure notice is appended."""
     channel = QQChannel(QQConfig(app_id="app", secret="secret", allow_from=["*"]), MessageBus())
@@ -185,7 +182,6 @@ async def test_send_media_failure_falls_back_to_text() -> None:
     assert "bad.png" in failure_calls[0]["content"]
 
 
-@pytest.mark.asyncio
 async def test_on_message_unauthorized_c2c_pairs_before_attachments_and_ack() -> None:
     channel = QQChannel(
         QQConfig(
@@ -219,7 +215,6 @@ async def test_on_message_unauthorized_c2c_pairs_before_attachments_and_ack() ->
     assert channel._client.api.c2c_calls == []
 
 
-@pytest.mark.asyncio
 async def test_on_message_ignores_unauthorized_group_before_attachments_and_ack() -> None:
     channel = QQChannel(
         QQConfig(
@@ -253,7 +248,6 @@ async def test_on_message_ignores_unauthorized_group_before_attachments_and_ack(
 # ── _on_message() exception handling ────────────────────────────────
 
 
-@pytest.mark.asyncio
 async def test_on_message_exception_caught_not_raised() -> None:
     """Missing required attributes should not crash _on_message."""
     channel = QQChannel(QQConfig(app_id="app", secret="secret", allow_from=["*"]), MessageBus())
@@ -267,7 +261,6 @@ async def test_on_message_exception_caught_not_raised() -> None:
     assert channel._client.api.group_calls == []
 
 
-@pytest.mark.asyncio
 async def test_on_message_with_attachments() -> None:
     """Messages with attachments produce media_paths and formatted content."""
     import tempfile
@@ -309,7 +302,6 @@ async def test_on_message_with_attachments() -> None:
 # ── _post_base64file() ─────────────────────────────────────────────
 
 
-@pytest.mark.asyncio
 async def test_post_base64file_omits_file_name_for_images() -> None:
     """file_type=1 (image) → payload must not contain file_name."""
     channel = QQChannel(QQConfig(app_id="app", secret="secret"), MessageBus())
@@ -330,7 +322,6 @@ async def test_post_base64file_omits_file_name_for_images() -> None:
     assert payload["file_type"] == QQ_FILE_TYPE_IMAGE
 
 
-@pytest.mark.asyncio
 async def test_post_base64file_includes_file_name_for_files() -> None:
     """file_type=4 (file) → payload must contain file_name."""
     channel = QQChannel(QQConfig(app_id="app", secret="secret"), MessageBus())
@@ -351,7 +342,6 @@ async def test_post_base64file_includes_file_name_for_files() -> None:
     assert payload["file_type"] == QQ_FILE_TYPE_FILE
 
 
-@pytest.mark.asyncio
 async def test_post_base64file_filters_response_to_file_info() -> None:
     """Response with file_info + extra fields must be filtered to only file_info."""
     channel = QQChannel(QQConfig(app_id="app", secret="secret"), MessageBus())

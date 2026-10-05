@@ -43,7 +43,6 @@ async def loop(tmp_path):
         await loop.aclose()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("command", ["/compact", " /COMPACT@nanobot "])
 async def test_compact_emits_one_lifecycle_and_keeps_the_session(loop, command) -> None:
     bus = loop.bus
@@ -90,7 +89,6 @@ async def test_compact_emits_one_lifecycle_and_keeps_the_session(loop, command) 
     loop.provider.chat_stream_with_retry.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("trigger", "summary"),
     [
@@ -149,7 +147,6 @@ async def test_compacted_session_waits_for_new_input_without_continuation(
     ]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("legacy_commands", [False, True])
 async def test_empty_compact_finishes_silently_and_does_not_schedule_idle_archive(
     loop, legacy_commands,
@@ -188,7 +185,6 @@ async def test_empty_compact_finishes_silently_and_does_not_schedule_idle_archiv
     schedule.assert_not_called()
 
 
-@pytest.mark.asyncio
 async def test_compact_during_active_turn_waits_for_the_session_lock(loop) -> None:
     key = "websocket:test"
     msg = InboundMessage(
@@ -213,7 +209,6 @@ async def test_compact_during_active_turn_waits_for_the_session_lock(loop) -> No
     loop.provider.chat_stream_with_retry.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_stop_completes_a_compact_command_waiting_for_the_session_lock(loop) -> None:
     key = "websocket:test"
     msg = InboundMessage(
@@ -232,7 +227,6 @@ async def test_stop_completes_a_compact_command_waiting_for_the_session_lock(loo
     assert completions[0].context.metadata["webui_turn_id"] == "queued-compact"
 
 
-@pytest.mark.asyncio
 async def test_compact_is_a_fifo_barrier_during_an_active_turn(loop) -> None:
     key = "cli:test"
     started = asyncio.Event()
@@ -289,7 +283,6 @@ async def test_compact_is_a_fifo_barrier_during_an_active_turn(loop) -> None:
     ]
 
 
-@pytest.mark.asyncio
 async def test_stop_completes_compact_queued_behind_an_active_turn(loop) -> None:
     key = "websocket:test"
     started = asyncio.Event()
@@ -320,7 +313,6 @@ async def test_stop_completes_compact_queued_behind_an_active_turn(loop) -> None
     assert key not in loop._pending_queues
 
 
-@pytest.mark.asyncio
 async def test_stop_finishes_inflight_compaction_as_cancelled(loop) -> None:
     key = "websocket:test"
     session = loop.sessions.get_or_create(key)
@@ -363,7 +355,6 @@ async def test_stop_finishes_inflight_compaction_as_cancelled(loop) -> None:
     assert reloaded.get_history() == session.get_history()
 
 
-@pytest.mark.asyncio
 async def test_idle_and_manual_compact_share_persisted_checkpoint(loop) -> None:
     loop.provider.estimate_prompt_tokens.return_value = (100, "test")
     key = "cli:test"

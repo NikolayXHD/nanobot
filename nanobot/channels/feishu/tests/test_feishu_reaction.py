@@ -70,14 +70,12 @@ class TestAddReactionSync:
 
 
 class TestAddReactionAsync:
-    @pytest.mark.asyncio
     async def test_returns_reaction_id(self):
         ch = _make_channel()
         ch._add_reaction_sync = MagicMock(return_value="rx_99")
         result = await ch._add_reaction("om_001", "EYES")
         assert result == "rx_99"
 
-    @pytest.mark.asyncio
     async def test_returns_none_when_no_client(self):
         ch = _make_channel()
         ch._client = None
@@ -124,7 +122,6 @@ class TestRemoveReactionSync:
 
 
 class TestRemoveReactionAsync:
-    @pytest.mark.asyncio
     async def test_calls_sync_helper(self):
         ch = _make_channel()
         ch._remove_reaction_sync = MagicMock()
@@ -133,7 +130,6 @@ class TestRemoveReactionAsync:
 
         ch._remove_reaction_sync.assert_called_once_with("om_001", "rx_42")
 
-    @pytest.mark.asyncio
     async def test_noop_when_no_client(self):
         ch = _make_channel()
         ch._client = None
@@ -143,7 +139,6 @@ class TestRemoveReactionAsync:
 
         ch._remove_reaction_sync.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_noop_when_reaction_id_is_empty(self):
         ch = _make_channel()
         ch._remove_reaction_sync = MagicMock()
@@ -152,7 +147,6 @@ class TestRemoveReactionAsync:
 
         ch._remove_reaction_sync.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_noop_when_reaction_id_is_none(self):
         ch = _make_channel()
         ch._remove_reaction_sync = MagicMock()
@@ -166,7 +160,6 @@ class TestRemoveReactionAsync:
 
 
 class TestStreamEndReactionCleanup:
-    @pytest.mark.asyncio
     async def test_stream_buffers_are_scoped_by_message_id(self):
         ch = _make_channel()
         ch._create_streaming_card_sync = MagicMock(return_value=None)
@@ -184,7 +177,6 @@ class TestStreamEndReactionCleanup:
         assert ch._stream_bufs["om_second"].text == "second"
         assert "oc_chat1" not in ch._stream_bufs
 
-    @pytest.mark.asyncio
     async def test_removes_reaction_on_stream_end(self):
         ch = _make_channel()
         ch._stream_bufs["oc_chat1"] = _FeishuStreamBuf(
@@ -203,7 +195,6 @@ class TestStreamEndReactionCleanup:
 
         ch._remove_reaction.assert_called_once_with("om_001", "rx_42")
 
-    @pytest.mark.asyncio
     async def test_no_removal_when_message_id_missing(self):
         ch = _make_channel()
         ch._stream_bufs["oc_chat1"] = _FeishuStreamBuf(
@@ -220,7 +211,6 @@ class TestStreamEndReactionCleanup:
 
         ch._remove_reaction.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_no_removal_when_reaction_id_missing(self):
         ch = _make_channel()
         ch._stream_bufs["oc_chat1"] = _FeishuStreamBuf(
@@ -238,7 +228,6 @@ class TestStreamEndReactionCleanup:
 
         ch._remove_reaction.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_no_removal_when_not_stream_end(self):
         ch = _make_channel()
         ch._remove_reaction = AsyncMock()
@@ -250,7 +239,6 @@ class TestStreamEndReactionCleanup:
 
         ch._remove_reaction.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_no_removal_when_resuming(self):
         """resuming=True means more tool-call rounds follow; reaction must persist."""
         ch = _make_channel()
@@ -276,7 +264,6 @@ class TestStreamEndReactionCleanup:
         # OnIt reaction id is still tracked for the eventual final stream end
         assert ch._reaction_ids.get("om_001") == "rx_42"
 
-    @pytest.mark.asyncio
     async def test_done_emoji_only_on_final_stream_end(self):
         """Across resuming rounds, done_emoji is added only on the final round."""
         ch = _make_channel()

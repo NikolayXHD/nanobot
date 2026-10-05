@@ -125,7 +125,6 @@ async def test_automatic_compaction_reaches_legacy_websocket_session() -> None:
     assert factory.bus.outbound.get_nowait().event is event
 
 
-@pytest.mark.asyncio
 async def test_retry_event_uses_scoped_channel_delivery() -> None:
     bus = MessageBus()
     msg = InboundMessage(
@@ -153,7 +152,6 @@ async def test_retry_event_uses_scoped_channel_delivery() -> None:
     assert outbound.metadata[WEBUI_TURN_METADATA_KEY] == "turn-1"
 
 
-@pytest.mark.asyncio
 async def test_delivery_maps_model_error_to_failed_turn_completion() -> None:
     bus = MessageBus()
     seen: list[TurnCompleted] = []
@@ -183,7 +181,6 @@ async def test_delivery_maps_model_error_to_failed_turn_completion() -> None:
     assert bus.outbound_size == 0
 
 
-@pytest.mark.asyncio
 async def test_delivery_keeps_model_error_message_for_ordinary_channels() -> None:
     bus = MessageBus()
     msg = InboundMessage(
@@ -354,7 +351,6 @@ def test_internal_user_input_uses_the_persisted_webui_route(tmp_path: Path) -> N
     wth.clear_websocket_turn_if_current("target", owner)
 
 
-@pytest.mark.asyncio
 async def test_same_chat_different_sessions_restore_previous_active_projection(
     tmp_path: Path,
 ) -> None:

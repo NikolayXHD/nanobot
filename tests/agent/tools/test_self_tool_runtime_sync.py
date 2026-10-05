@@ -2,15 +2,12 @@
 
 from unittest.mock import MagicMock
 
-import pytest
-
 from nanobot.agent.loop import AgentLoop
 from nanobot.agent.tools.runtime_control import AgentRuntimeControl
 from nanobot.agent.tools.self import MyTool
 from nanobot.bus.queue import MessageBus
 
 
-@pytest.mark.asyncio
 async def test_my_tool_max_iterations_syncs_subagent_limit(tmp_path) -> None:
     provider = MagicMock()
     provider.get_default_model.return_value = "test-model"

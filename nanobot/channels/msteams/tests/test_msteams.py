@@ -79,7 +79,6 @@ def make_channel(tmp_path, monkeypatch):
     return _make_channel
 
 
-@pytest.mark.asyncio
 async def test_handle_activity_personal_message_publishes_and_stores_ref(make_channel, tmp_path):
     ch = make_channel()
 
@@ -388,7 +387,6 @@ def test_save_uses_atomic_replace_and_keeps_existing_file_on_replace_error(make_
     assert tmp_files == []
 
 
-@pytest.mark.asyncio
 async def test_handle_activity_ignores_group_messages(make_channel):
     ch = make_channel()
 
@@ -418,7 +416,6 @@ async def test_handle_activity_ignores_group_messages(make_channel):
     assert ch._conversation_refs == {}
 
 
-@pytest.mark.asyncio
 async def test_handle_activity_denied_sender_does_not_store_ref(make_channel, tmp_path):
     ch = make_channel(allowFrom=["allowed-user"])
 
@@ -452,7 +449,6 @@ async def test_handle_activity_denied_sender_does_not_store_ref(make_channel, tm
     assert not (tmp_path / "state" / "msteams_conversations.json").exists()
 
 
-@pytest.mark.asyncio
 async def test_handle_activity_rejects_untrusted_service_url(make_channel, tmp_path):
     ch = make_channel(validateInboundAuth=False, allowFrom=["*"])
 
@@ -484,7 +480,6 @@ async def test_handle_activity_rejects_untrusted_service_url(make_channel, tmp_p
     assert not (tmp_path / "state" / "msteams_conversations.json").exists()
 
 
-@pytest.mark.asyncio
 async def test_handle_activity_mention_only_uses_default_response(make_channel):
     ch = make_channel()
 
@@ -515,7 +510,6 @@ async def test_handle_activity_mention_only_uses_default_response(make_channel):
     assert "conv-empty" in ch._conversation_refs
 
 
-@pytest.mark.asyncio
 async def test_handle_activity_mention_only_ignores_when_response_disabled(make_channel):
     ch = make_channel(mentionOnlyResponse="   ")
 
@@ -667,7 +661,6 @@ def test_sanitize_inbound_text_structures_exact_live_crlf_reply_wrapper_shape(ma
     )
 
 
-@pytest.mark.asyncio
 async def test_get_access_token_uses_configured_tenant(make_channel):
     ch = make_channel(tenantId="tenant-123")
     fake_http = FakeHttpClient()
@@ -684,7 +677,6 @@ async def test_get_access_token_uses_configured_tenant(make_channel):
     assert kwargs["data"]["scope"] == "https://api.botframework.com/.default"
 
 
-@pytest.mark.asyncio
 async def test_send_posts_to_conversation_with_reply_to_id_when_reply_in_thread_enabled(make_channel):
     ch = make_channel(replyInThread=True)
     fake_http = FakeHttpClient()
@@ -707,7 +699,6 @@ async def test_send_posts_to_conversation_with_reply_to_id_when_reply_in_thread_
     assert kwargs["json"]["replyToId"] == "activity-1"
 
 
-@pytest.mark.asyncio
 async def test_send_success_refreshes_updated_at_and_persists_meta(make_channel, tmp_path, monkeypatch):
     now = {"value": 1_800_000_000.0}
     monkeypatch.setattr(msteams_module.time, "time", lambda: now["value"])
@@ -734,7 +725,6 @@ async def test_send_success_refreshes_updated_at_and_persists_meta(make_channel,
     assert saved_meta["conv-123"]["updated_at"] == now["value"]
 
 
-@pytest.mark.asyncio
 async def test_send_posts_to_conversation_when_thread_reply_disabled(make_channel):
     ch = make_channel(replyInThread=False)
     fake_http = FakeHttpClient()
@@ -757,7 +747,6 @@ async def test_send_posts_to_conversation_when_thread_reply_disabled(make_channe
     assert "replyToId" not in kwargs["json"]
 
 
-@pytest.mark.asyncio
 async def test_send_posts_to_conversation_when_thread_reply_enabled_but_no_activity_id(make_channel):
     ch = make_channel(replyInThread=True)
     fake_http = FakeHttpClient()
@@ -780,7 +769,6 @@ async def test_send_posts_to_conversation_when_thread_reply_enabled_but_no_activ
     assert "replyToId" not in kwargs["json"]
 
 
-@pytest.mark.asyncio
 async def test_send_raises_when_conversation_ref_missing(make_channel):
     ch = make_channel()
     ch._http = FakeHttpClient()
@@ -789,7 +777,6 @@ async def test_send_raises_when_conversation_ref_missing(make_channel):
         await ch.send(OutboundMessage(channel="msteams", chat_id="missing", content="Reply text"))
 
 
-@pytest.mark.asyncio
 async def test_send_rejects_untrusted_service_url_before_bearer_post(make_channel):
     ch = make_channel()
     fake_http = FakeHttpClient()
@@ -808,7 +795,6 @@ async def test_send_rejects_untrusted_service_url_before_bearer_post(make_channe
     assert fake_http.calls == []
 
 
-@pytest.mark.asyncio
 async def test_send_raises_delivery_failures_for_retry(make_channel):
     ch = make_channel()
     ch._http = FakeHttpClient(should_raise=True)
@@ -835,7 +821,6 @@ def _make_test_rsa_jwk(kid: str = "test-kid"):
     return private_key, jwk
 
 
-@pytest.mark.asyncio
 async def test_validate_inbound_auth_accepts_observed_botframework_shape(make_channel):
     ch = make_channel(validateInboundAuth=True)
 
@@ -864,7 +849,6 @@ async def test_validate_inbound_auth_accepts_observed_botframework_shape(make_ch
     assert result is None
 
 
-@pytest.mark.asyncio
 async def test_validate_inbound_auth_rejects_service_url_mismatch(make_channel):
     ch = make_channel(validateInboundAuth=True)
 
@@ -892,7 +876,6 @@ async def test_validate_inbound_auth_rejects_service_url_mismatch(make_channel):
         )
 
 
-@pytest.mark.asyncio
 async def test_validate_inbound_auth_rejects_missing_bearer_token(make_channel):
     ch = make_channel(validateInboundAuth=True)
 
@@ -900,7 +883,6 @@ async def test_validate_inbound_auth_rejects_missing_bearer_token(make_channel):
         await ch._validate_inbound_auth("", {"serviceUrl": "https://smba.trafficmanager.net/amer/tenant/"})
 
 
-@pytest.mark.asyncio
 async def test_start_logs_install_hint_when_pyjwt_missing(make_channel, monkeypatch):
     ch = make_channel()
     errors = []

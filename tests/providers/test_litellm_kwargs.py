@@ -298,7 +298,6 @@ def _fake_chat_stream_legacy_function_call_chunks():
     return _stream()
 
 
-@pytest.mark.asyncio
 async def test_openai_compat_chat_stream_forwards_reasoning_deltas_deepseek_style() -> None:
     """DeepSeek Chat Completions exposes ``delta.reasoning_content`` while streaming."""
     mock_chat = AsyncMock(return_value=_fake_chat_stream_reasoning_chunks())
@@ -337,7 +336,6 @@ async def test_openai_compat_chat_stream_forwards_reasoning_deltas_deepseek_styl
     mock_chat.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_deepseek_v4_pro_uses_responses_api() -> None:
     mock_chat = AsyncMock(return_value=_fake_chat_response())
     mock_responses = AsyncMock(return_value=_fake_responses_response("from responses"))
@@ -368,7 +366,6 @@ async def test_deepseek_v4_pro_uses_responses_api() -> None:
     assert "include" not in call_kwargs
 
 
-@pytest.mark.asyncio
 async def test_deepseek_vision_uses_responses_api_with_image_input() -> None:
     mock_chat = AsyncMock(return_value=_fake_chat_response())
     mock_responses = AsyncMock(return_value=_fake_responses_response("vision response"))
@@ -408,7 +405,6 @@ async def test_deepseek_vision_uses_responses_api_with_image_input() -> None:
     }]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("provider_name", "model"),
     [
@@ -463,7 +459,6 @@ async def test_openai_compat_stream_forwards_tool_call_argument_deltas(
         assert kwargs.get("extra_body", {}).get("tool_stream") is None
 
 
-@pytest.mark.asyncio
 async def test_openai_compat_stream_forwards_legacy_function_call_argument_deltas() -> None:
     mock_chat = AsyncMock(return_value=_fake_chat_stream_legacy_function_call_chunks())
     deltas: list[dict] = []
@@ -587,7 +582,6 @@ async def test_openrouter_user_headers_override_default_attribution() -> None:
     assert headers["X-Custom-App"] == "enabled"
 
 
-@pytest.mark.asyncio
 async def test_openrouter_keeps_model_name_intact() -> None:
     """OpenRouter gateway keeps the full model name (gateway does its own routing)."""
     mock_create = AsyncMock(return_value=_fake_chat_response())
@@ -612,7 +606,6 @@ async def test_openrouter_keeps_model_name_intact() -> None:
     assert call_kwargs["model"] == "anthropic/claude-sonnet-4-5"
 
 
-@pytest.mark.asyncio
 async def test_aihubmix_strips_model_prefix() -> None:
     """AiHubMix strips the provider prefix (strip_model_prefix=True)."""
     mock_create = AsyncMock(return_value=_fake_chat_response())
@@ -637,7 +630,6 @@ async def test_aihubmix_strips_model_prefix() -> None:
     assert call_kwargs["model"] == "claude-sonnet-4-5"
 
 
-@pytest.mark.asyncio
 async def test_standard_provider_passes_model_through() -> None:
     """Standard provider (e.g. deepseek) passes model name through as-is."""
     mock_create = AsyncMock(return_value=_fake_chat_response())
@@ -661,7 +653,6 @@ async def test_standard_provider_passes_model_through() -> None:
     assert call_kwargs["model"] == "deepseek-chat"
 
 
-@pytest.mark.asyncio
 async def test_openai_compat_preserves_extra_content_on_tool_calls() -> None:
     """Gemini extra_content (thought signatures) must survive parse→serialize round-trip."""
     mock_create = AsyncMock(return_value=_fake_tool_call_response())
@@ -723,7 +714,6 @@ def test_openai_model_passthrough() -> None:
     assert provider.get_default_model() == "gpt-4o"
 
 
-@pytest.mark.asyncio
 async def test_direct_openai_gpt5_uses_responses_api() -> None:
     mock_chat = AsyncMock(return_value=_fake_chat_response())
     mock_responses = AsyncMock(return_value=_fake_responses_response("from responses"))
@@ -755,7 +745,6 @@ async def test_direct_openai_gpt5_uses_responses_api() -> None:
     assert call_kwargs["include"] == ["reasoning.encrypted_content"]
 
 
-@pytest.mark.asyncio
 async def test_direct_openai_reasoning_prefers_responses_api() -> None:
     mock_chat = AsyncMock(return_value=_fake_chat_response())
     mock_responses = AsyncMock(return_value=_fake_responses_response("reasoned"))
@@ -784,7 +773,6 @@ async def test_direct_openai_reasoning_prefers_responses_api() -> None:
     assert call_kwargs["include"] == ["reasoning.encrypted_content"]
 
 
-@pytest.mark.asyncio
 async def test_direct_openai_retries_without_unsupported_server_compaction() -> None:
     mock_chat = AsyncMock(return_value=_fake_chat_response())
     mock_responses = AsyncMock(side_effect=[
@@ -818,7 +806,6 @@ async def test_direct_openai_retries_without_unsupported_server_compaction() -> 
     mock_chat.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_direct_openai_gpt4o_stays_on_chat_completions() -> None:
     mock_chat = AsyncMock(return_value=_fake_chat_response())
     mock_responses = AsyncMock(return_value=_fake_responses_response())
@@ -843,7 +830,6 @@ async def test_direct_openai_gpt4o_stays_on_chat_completions() -> None:
     mock_responses.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_openrouter_gpt5_stays_on_chat_completions() -> None:
     mock_chat = AsyncMock(return_value=_fake_chat_response())
     mock_responses = AsyncMock(return_value=_fake_responses_response())
@@ -869,7 +855,6 @@ async def test_openrouter_gpt5_stays_on_chat_completions() -> None:
     mock_responses.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_direct_openai_streaming_gpt5_uses_responses_api() -> None:
     mock_chat = AsyncMock(return_value=_StalledStream())
     stream = MagicMock()
@@ -899,7 +884,6 @@ async def test_direct_openai_streaming_gpt5_uses_responses_api() -> None:
     mock_chat.assert_not_awaited()
 
 
-@pytest.mark.asyncio
 async def test_direct_openai_responses_404_falls_back_to_chat_completions() -> None:
     mock_chat = AsyncMock(return_value=_fake_chat_response("from chat"))
     mock_responses = AsyncMock(side_effect=_FakeResponsesError(404, "Responses endpoint not supported"))
@@ -925,7 +909,6 @@ async def test_direct_openai_responses_404_falls_back_to_chat_completions() -> N
     mock_chat.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_direct_openai_open_circuit_skips_responses_api() -> None:
     mock_chat = AsyncMock(return_value=_fake_chat_response("from chat"))
     mock_responses = AsyncMock(return_value=_fake_responses_response("from responses"))
@@ -954,7 +937,6 @@ async def test_direct_openai_open_circuit_skips_responses_api() -> None:
     mock_chat.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_direct_openai_stream_responses_unsupported_param_falls_back() -> None:
     mock_chat = AsyncMock(return_value=_fake_chat_stream("fallback stream"))
     mock_responses = AsyncMock(
@@ -982,7 +964,6 @@ async def test_direct_openai_stream_responses_unsupported_param_falls_back() -> 
     mock_chat.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_direct_openai_responses_rate_limit_does_not_fallback() -> None:
     mock_chat = AsyncMock(return_value=_fake_chat_response("from chat"))
     mock_responses = AsyncMock(side_effect=_FakeResponsesError(429, "rate limit"))
@@ -1061,7 +1042,6 @@ def test_compatible_provider_keeps_temperature_when_reasoning_effort_is_set(
         ("gpt-6-sol", "none", True),
     ],
 )
-@pytest.mark.asyncio
 async def test_gpt6_temperature_requires_explicit_none_effort(
     api_type: str, model: str, effort: str | None, supports_temperature: bool,
 ) -> None:
@@ -1445,7 +1425,6 @@ def test_openai_compat_defaults_missing_tool_arguments_to_empty_object() -> None
     assert sanitized[1]["tool_calls"][0]["function"]["arguments"] == "{}"
 
 
-@pytest.mark.asyncio
 async def test_openai_compat_stream_watchdog_returns_error_on_stall(monkeypatch) -> None:
     monkeypatch.setenv("NANOBOT_STREAM_IDLE_TIMEOUT_S", "0.01")
     mock_create = AsyncMock(return_value=_StalledStream())
@@ -2034,7 +2013,6 @@ def test_deepseek_no_backfill_when_reasoning_effort_none_string() -> None:
     assert "reasoning_content" not in assistant
 
 
-@pytest.mark.asyncio
 async def test_responses_request_preserves_optional_tool_fields() -> None:
     mock_responses = AsyncMock(return_value=_fake_responses_response())
     parameters = {

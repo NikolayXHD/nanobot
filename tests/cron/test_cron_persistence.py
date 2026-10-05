@@ -317,7 +317,6 @@ def test_public_apis_raise_clear_error_for_unavailable_corrupt_store(
     _assert_single_corrupt_backup(store_path)
 
 
-@pytest.mark.asyncio
 async def test_run_job_raises_clear_error_and_restores_running_state_for_corrupt_store(
     tmp_path: Path,
 ) -> None:
@@ -331,7 +330,6 @@ async def test_run_job_raises_clear_error_and_restores_running_state_for_corrupt
     _assert_single_corrupt_backup(store_path)
 
 
-@pytest.mark.asyncio
 async def test_run_job_preserves_running_state_when_corrupt_store_unavailable(
     tmp_path: Path,
 ) -> None:

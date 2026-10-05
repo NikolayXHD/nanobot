@@ -282,7 +282,6 @@ def test_resolver_supports_assemblyai_provider_config() -> None:
     assert resolved.api_base == "https://assembly.example/v2"
 
 
-@pytest.mark.asyncio
 async def test_transcribe_audio_file_routes_openrouter_provider(audio_file: Path) -> None:
     captured: dict[str, object] = {}
 
@@ -318,7 +317,6 @@ async def test_transcribe_audio_file_routes_openrouter_provider(audio_file: Path
     }
 
 
-@pytest.mark.asyncio
 async def test_transcribe_audio_file_routes_xiaomi_mimo_provider(audio_file: Path) -> None:
     captured: dict[str, object] = {}
 
@@ -354,7 +352,6 @@ async def test_transcribe_audio_file_routes_xiaomi_mimo_provider(audio_file: Pat
     }
 
 
-@pytest.mark.asyncio
 async def test_transcribe_audio_file_routes_assemblyai_provider(audio_file: Path) -> None:
     captured: dict[str, object] = {}
 
@@ -418,7 +415,6 @@ def test_resolver_keeps_enabled_and_limits_on_effective_config() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_openai_retries_on_5xx_then_succeeds(audio_file: Path) -> None:
     """Transient 503 is retried; a subsequent 200 yields the text."""
     provider = OpenAITranscriptionProvider(api_key="sk-test")
@@ -429,7 +425,6 @@ async def test_openai_retries_on_5xx_then_succeeds(audio_file: Path) -> None:
     assert post.await_count == 2
 
 
-@pytest.mark.asyncio
 async def test_openai_retries_on_429_then_succeeds(audio_file: Path) -> None:
     provider = OpenAITranscriptionProvider(api_key="sk-test")
     post = AsyncMock(side_effect=[_response(429), _response(200, {"text": "rate ok"})])
@@ -439,7 +434,6 @@ async def test_openai_retries_on_429_then_succeeds(audio_file: Path) -> None:
     assert post.await_count == 2
 
 
-@pytest.mark.asyncio
 async def test_openai_retries_on_connect_error(audio_file: Path) -> None:
     """Network-level transient errors are retried."""
     provider = OpenAITranscriptionProvider(api_key="sk-test")
@@ -450,7 +444,6 @@ async def test_openai_retries_on_connect_error(audio_file: Path) -> None:
     assert post.await_count == 2
 
 
-@pytest.mark.asyncio
 async def test_openai_does_not_retry_on_auth_error(audio_file: Path) -> None:
     """401 is the user's misconfiguration — retrying wastes time and rate-limit quota."""
     provider = OpenAITranscriptionProvider(api_key="sk-test")
@@ -461,7 +454,6 @@ async def test_openai_does_not_retry_on_auth_error(audio_file: Path) -> None:
     assert post.await_count == 1
 
 
-@pytest.mark.asyncio
 async def test_openai_gives_up_after_max_attempts(audio_file: Path) -> None:
     """Persistent 503 returns "" after the final retry — never hangs."""
     provider = OpenAITranscriptionProvider(api_key="sk-test")
@@ -475,7 +467,6 @@ async def test_openai_gives_up_after_max_attempts(audio_file: Path) -> None:
     assert sleep.await_count == 3
 
 
-@pytest.mark.asyncio
 async def test_openai_backoff_grows_exponentially(audio_file: Path) -> None:
     """Verify the backoff schedule is exponential (1s, 2s, 4s)."""
     provider = OpenAITranscriptionProvider(api_key="sk-test")
@@ -492,7 +483,6 @@ async def test_openai_backoff_grows_exponentially(audio_file: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_groq_retries_on_5xx_then_succeeds(audio_file: Path) -> None:
     provider = GroqTranscriptionProvider(api_key="gsk-test")
     post = AsyncMock(side_effect=[_response(502), _response(200, {"text": "groq ok"})])
@@ -502,7 +492,6 @@ async def test_groq_retries_on_5xx_then_succeeds(audio_file: Path) -> None:
     assert post.await_count == 2
 
 
-@pytest.mark.asyncio
 async def test_groq_does_not_retry_on_auth_error(audio_file: Path) -> None:
     provider = GroqTranscriptionProvider(api_key="gsk-test")
     post = AsyncMock(return_value=_response(403))
@@ -517,7 +506,6 @@ async def test_groq_does_not_retry_on_auth_error(audio_file: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_openai_missing_api_key_short_circuits(audio_file: Path) -> None:
     """Missing API key short-circuits before any HTTP call, even when the file exists."""
     with patch.dict("os.environ", {}, clear=True):
@@ -528,7 +516,6 @@ async def test_openai_missing_api_key_short_circuits(audio_file: Path) -> None:
         assert post.await_count == 0
 
 
-@pytest.mark.asyncio
 async def test_openai_missing_file_short_circuits() -> None:
     provider = OpenAITranscriptionProvider(api_key="sk-test")
     post = AsyncMock()
@@ -537,7 +524,6 @@ async def test_openai_missing_file_short_circuits() -> None:
     assert post.await_count == 0
 
 
-@pytest.mark.asyncio
 async def test_returns_empty_when_file_unreadable(audio_file: Path) -> None:
     """Existing file that cannot be read (PermissionError/OSError): "" with no HTTP attempt."""
     provider = OpenAITranscriptionProvider(api_key="sk-test")
@@ -560,7 +546,6 @@ async def test_returns_empty_when_file_unreadable(audio_file: Path) -> None:
     [(OpenAITranscriptionProvider, "en"), (GroqTranscriptionProvider, "ko")],
     ids=["openai", "groq"],
 )
-@pytest.mark.asyncio
 async def test_provider_forwards_language_in_multipart(
     audio_file: Path, provider_cls: type, language: str
 ) -> None:
@@ -580,7 +565,6 @@ async def test_provider_forwards_language_in_multipart(
     [OpenAITranscriptionProvider, GroqTranscriptionProvider],
     ids=["openai", "groq"],
 )
-@pytest.mark.asyncio
 async def test_provider_omits_language_when_unset(
     audio_file: Path, provider_cls: type
 ) -> None:
@@ -595,7 +579,6 @@ async def test_provider_omits_language_when_unset(
     assert "language" not in files
 
 
-@pytest.mark.asyncio
 async def test_provider_forwards_custom_model_in_multipart(audio_file: Path) -> None:
     provider = GroqTranscriptionProvider(api_key="k", model="whisper-large-v3-turbo")
     post = AsyncMock(return_value=_response(200, {"text": "ok"}))
@@ -607,7 +590,6 @@ async def test_provider_forwards_custom_model_in_multipart(audio_file: Path) -> 
     assert files["model"] == (None, "whisper-large-v3-turbo")
 
 
-@pytest.mark.asyncio
 async def test_provider_forwards_file_mime_type(tmp_path: Path) -> None:
     audio = tmp_path / "voice.webm"
     audio.write_bytes(b"audio")
@@ -621,7 +603,6 @@ async def test_provider_forwards_file_mime_type(tmp_path: Path) -> None:
     assert files["file"] == ("voice.webm", b"audio", "audio/webm")
 
 
-@pytest.mark.asyncio
 async def test_language_survives_retry(audio_file: Path) -> None:
     """Regression: language must be present on every retry attempt, not just the first."""
     provider = OpenAITranscriptionProvider(api_key="sk-test", language="ja")
@@ -639,7 +620,6 @@ async def test_language_survives_retry(audio_file: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_returns_empty_on_malformed_json_body(audio_file: Path) -> None:
     """200 with invalid JSON: log and return "" immediately (no retry, no exception)."""
     provider = OpenAITranscriptionProvider(api_key="sk-test")
@@ -650,7 +630,6 @@ async def test_returns_empty_on_malformed_json_body(audio_file: Path) -> None:
     assert post.await_count == 1
 
 
-@pytest.mark.asyncio
 async def test_returns_empty_on_non_dict_json_body(audio_file: Path) -> None:
     """200 with a JSON array (not dict): no AttributeError leak; return "" immediately."""
     provider = OpenAITranscriptionProvider(api_key="sk-test")
@@ -686,7 +665,6 @@ def test_multipart_provider_model_defaults_and_override(provider_cls, default_mo
     [OpenAITranscriptionProvider, GroqTranscriptionProvider],
     ids=["openai", "groq"],
 )
-@pytest.mark.asyncio
 async def test_multipart_provider_sends_configured_model(audio_file: Path, provider_cls) -> None:
     provider = provider_cls(api_key="k", model="my-stt-model")
     post = AsyncMock(return_value=_response(200, {"text": "ok"}))
@@ -718,7 +696,6 @@ def test_openrouter_defaults_and_chat_base_normalization() -> None:
     assert chat_base.api_url == "https://openrouter.ai/api/v1/audio/transcriptions"
 
 
-@pytest.mark.asyncio
 async def test_openrouter_sends_json_base64_body(audio_file: Path) -> None:
     """OpenRouter gets a JSON body with base64 audio + format — never multipart."""
     provider = OpenRouterTranscriptionProvider(
@@ -736,7 +713,6 @@ async def test_openrouter_sends_json_base64_body(audio_file: Path) -> None:
     assert base64.b64decode(body["input_audio"]["data"]) == audio_file.read_bytes()
 
 
-@pytest.mark.asyncio
 async def test_openrouter_omits_language_when_unset(audio_file: Path) -> None:
     provider = OpenRouterTranscriptionProvider(api_key="k", model="openai/whisper-1")
     post = AsyncMock(return_value=_response(200, {"text": "ok"}))
@@ -745,7 +721,6 @@ async def test_openrouter_omits_language_when_unset(audio_file: Path) -> None:
     assert "language" not in post.await_args_list[0].kwargs["json"]
 
 
-@pytest.mark.asyncio
 async def test_openrouter_shares_retry_contract(audio_file: Path) -> None:
     """OpenRouter goes through the same retry helper: 503 retried, then 200."""
     provider = OpenRouterTranscriptionProvider(api_key="k", model="openai/whisper-1")
@@ -779,7 +754,6 @@ def test_xiaomi_mimo_defaults_and_base_normalization() -> None:
     assert custom.model == "custom-asr"
 
 
-@pytest.mark.asyncio
 async def test_xiaomi_mimo_sends_chat_completion_audio_payload(audio_file: Path) -> None:
     provider = XiaomiMiMoTranscriptionProvider(api_key="k", language="zh")
     post = AsyncMock(
@@ -802,7 +776,6 @@ async def test_xiaomi_mimo_sends_chat_completion_audio_payload(audio_file: Path)
     assert base64.b64decode(audio.split(",", 1)[1]) == audio_file.read_bytes()
 
 
-@pytest.mark.asyncio
 async def test_xiaomi_mimo_shares_retry_contract(audio_file: Path) -> None:
     provider = XiaomiMiMoTranscriptionProvider(api_key="k")
     post = AsyncMock(
@@ -834,7 +807,6 @@ def test_assemblyai_defaults_and_base_normalization() -> None:
     assert custom.model == "universal-3-pro"
 
 
-@pytest.mark.asyncio
 async def test_assemblyai_uploads_creates_and_polls(audio_file: Path) -> None:
     provider = AssemblyAITranscriptionProvider(
         api_key="aai-test",
@@ -879,7 +851,6 @@ async def test_assemblyai_uploads_creates_and_polls(audio_file: Path) -> None:
     assert get.await_args.args == ("https://assembly.example/v2/transcript/tr_123",)
 
 
-@pytest.mark.asyncio
 async def test_assemblyai_polls_until_completed(audio_file: Path) -> None:
     provider = AssemblyAITranscriptionProvider(api_key="aai-test")
     post = AsyncMock(
@@ -905,7 +876,6 @@ async def test_assemblyai_polls_until_completed(audio_file: Path) -> None:
     assert sleep.await_count == 1
 
 
-@pytest.mark.asyncio
 async def test_assemblyai_returns_empty_on_failed_transcript(audio_file: Path) -> None:
     provider = AssemblyAITranscriptionProvider(api_key="aai-test")
     post = AsyncMock(
@@ -928,7 +898,6 @@ async def test_assemblyai_returns_empty_on_failed_transcript(audio_file: Path) -
         assert await provider.transcribe(audio_file) == ""
 
 
-@pytest.mark.asyncio
 async def test_assemblyai_missing_api_key_short_circuits(audio_file: Path) -> None:
     with patch.dict("os.environ", {}, clear=True):
         provider = AssemblyAITranscriptionProvider(api_key=None)
@@ -939,7 +908,6 @@ async def test_assemblyai_missing_api_key_short_circuits(audio_file: Path) -> No
 
 
 @pytest.mark.parametrize("status", [408, 429, 500, 502, 503, 504])
-@pytest.mark.asyncio
 async def test_retries_on_every_advertised_transient_status(
     audio_file: Path, status: int
 ) -> None:
@@ -962,7 +930,6 @@ async def test_retries_on_every_advertised_transient_status(
     ],
     ids=["timeout", "connect", "read", "write", "remote_protocol"],
 )
-@pytest.mark.asyncio
 async def test_retries_on_every_advertised_transient_exception(
     audio_file: Path, exc: Exception
 ) -> None:

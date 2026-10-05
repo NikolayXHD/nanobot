@@ -1,7 +1,5 @@
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 from agent.runner_helpers import failed_test_consolidator
 from nanobot.agent.runner import AgentRunner, AgentRunSpec
 from nanobot.config.schema import AgentDefaults
@@ -15,7 +13,6 @@ from nanobot.providers.base import (
 from nanobot.utils.llm_runtime import LLMRuntime
 
 
-@pytest.mark.asyncio
 async def test_active_run_keeps_provider_captured_at_admission() -> None:
     first_provider = MagicMock(spec=LLMProvider)
     second_provider = MagicMock(spec=LLMProvider)

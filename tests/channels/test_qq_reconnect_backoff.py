@@ -32,7 +32,6 @@ def _make_bot(channel):
     return bot
 
 
-@pytest.mark.asyncio
 async def test_bot_connect_dns_error_accounts_for_sdk_pacing():
     import asyncio
 
@@ -84,7 +83,6 @@ async def test_bot_connect_dns_error_accounts_for_sdk_pacing():
         assert connection._session_list == [session]
 
 
-@pytest.mark.asyncio
 async def test_bot_connect_dns_error_no_traceback(capsys):
     channel = _make_channel()
     bot = _make_bot(channel)
@@ -112,7 +110,6 @@ async def test_bot_connect_dns_error_no_traceback(capsys):
     assert "Traceback" not in captured.err
 
 
-@pytest.mark.asyncio
 async def test_bot_connect_connector_error_applies_backoff():
     channel = _make_channel()
     bot = _make_bot(channel)
@@ -139,7 +136,6 @@ async def test_bot_connect_connector_error_applies_backoff():
         assert bot._ws_backoff[id(session)] == 10
 
 
-@pytest.mark.asyncio
 async def test_bot_connect_backoff_doubles_and_caps():
     from nanobot.channels.qq.runtime import _RECONNECT_BACKOFF_MAX
 
@@ -171,7 +167,6 @@ async def test_bot_connect_backoff_doubles_and_caps():
             assert bot._ws_backoff[id(session)] == expected_next
 
 
-@pytest.mark.asyncio
 async def test_bot_connect_success_resets_backoff():
     channel = _make_channel()
     bot = _make_bot(channel)
@@ -191,7 +186,6 @@ async def test_bot_connect_success_resets_backoff():
         bot._connection.add.assert_not_called()
 
 
-@pytest.mark.asyncio
 async def test_bot_connect_non_network_error_still_requeues():
     channel = _make_channel()
     channel.logger = MagicMock()
@@ -219,7 +213,6 @@ async def test_bot_connect_non_network_error_still_requeues():
         )
 
 
-@pytest.mark.asyncio
 async def test_bot_connect_per_session_backoff_isolated():
     channel = _make_channel()
     bot = _make_bot(channel)

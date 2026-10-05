@@ -14,7 +14,6 @@ def _default_feishu_instance(data: dict) -> dict:
     return data["channels"]["feishu"]["instances"][0]
 
 
-@pytest.mark.asyncio
 async def test_feishu_login_writes_credentials_to_active_config(monkeypatch, tmp_path):
     config_path = tmp_path / "config.json"
     config = Config()
@@ -424,7 +423,6 @@ def test_sync_saved_identity_boundary_preserves_legacy_flat_config(monkeypatch, 
     assert "instances" not in saved
 
 
-@pytest.mark.asyncio
 async def test_feishu_login_creates_missing_active_config(monkeypatch, tmp_path):
     missing_config = tmp_path / "missing.json"
     monkeypatch.setattr(loader, "_current_config_path", missing_config)

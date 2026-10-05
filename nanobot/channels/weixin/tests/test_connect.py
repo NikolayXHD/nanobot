@@ -12,7 +12,6 @@ from nanobot.config.loader import save_config
 from nanobot.config.schema import Config
 
 
-@pytest.mark.asyncio
 async def test_weixin_connect_store_saves_confirmed_qr_login(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -75,7 +74,6 @@ async def test_weixin_connect_store_saves_confirmed_qr_login(
     assert weixin_cfg.get("stateDir") == str(state_dir)
 
 
-@pytest.mark.asyncio
 async def test_weixin_connect_persists_credentials_without_channels_config(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -124,7 +122,6 @@ async def test_weixin_connect_persists_credentials_without_channels_config(
     assert weixin_cfg.get("baseUrl") == "https://weixin.example"
 
 
-@pytest.mark.asyncio
 async def test_weixin_reconnect_keeps_existing_account_until_scan_succeeds(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -176,7 +173,6 @@ async def test_weixin_reconnect_keeps_existing_account_until_scan_succeeds(
     assert json.loads(state_file.read_text(encoding="utf-8")) == existing
 
 
-@pytest.mark.asyncio
 async def test_weixin_cancel_wins_over_inflight_confirmation(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -227,7 +223,6 @@ async def test_weixin_cancel_wins_over_inflight_confirmation(
     assert not (state_dir / "account.json").exists()
 
 
-@pytest.mark.asyncio
 async def test_weixin_connect_store_handles_verification_code(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -283,7 +278,6 @@ async def test_weixin_connect_store_handles_verification_code(
     assert completed["status"] == "succeeded"
 
 
-@pytest.mark.asyncio
 async def test_weixin_connect_store_rejects_existing_binding_during_forced_login(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -327,7 +321,6 @@ async def test_weixin_connect_store_rejects_existing_binding_during_forced_login
     assert json.loads((state_dir / "account.json").read_text())["token"] == "working-token"
 
 
-@pytest.mark.asyncio
 async def test_weixin_connect_store_rejects_existing_binding_without_local_credentials(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,

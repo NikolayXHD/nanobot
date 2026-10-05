@@ -76,7 +76,6 @@ def _saved_model_preset(loop: AgentLoop, session_key: str = "cli:direct") -> str
     return model_preset_from_metadata(session.metadata)
 
 
-@pytest.mark.asyncio
 async def test_model_command_lists_current_and_available_presets(tmp_path) -> None:
     loop = _make_loop(tmp_path)
 
@@ -89,7 +88,6 @@ async def test_model_command_lists_current_and_available_presets(tmp_path) -> No
     assert out.metadata == {"render_as": "text"}
 
 
-@pytest.mark.asyncio
 async def test_model_command_switches_preset(tmp_path) -> None:
     loop = _make_loop(tmp_path)
 
@@ -108,7 +106,6 @@ async def test_model_command_switches_preset(tmp_path) -> None:
     assert status is not None and "openai/gpt-4.1" in status.content
 
 
-@pytest.mark.asyncio
 async def test_model_command_accepts_canonical_names_with_spaces(tmp_path) -> None:
     loop = _make_loop(
         tmp_path,
@@ -126,7 +123,6 @@ async def test_model_command_accepts_canonical_names_with_spaces(tmp_path) -> No
     assert _saved_model_preset(loop) == "Deep Research"
 
 
-@pytest.mark.asyncio
 async def test_model_command_switches_back_to_default(tmp_path) -> None:
     loop = _make_loop(tmp_path)
     await cmd_model(_ctx(loop, "/model fast", args="fast"))
@@ -140,7 +136,6 @@ async def test_model_command_switches_back_to_default(tmp_path) -> None:
     assert loop.context_window_tokens == 1000
 
 
-@pytest.mark.asyncio
 async def test_model_command_unknown_preset_keeps_old_state(tmp_path) -> None:
     loop = _make_loop(tmp_path)
 
@@ -153,7 +148,6 @@ async def test_model_command_unknown_preset_keeps_old_state(tmp_path) -> None:
     assert loop.model == "base-model"
 
 
-@pytest.mark.asyncio
 async def test_model_command_reports_provider_configuration_errors(tmp_path) -> None:
     def fail_preset(_name: str):
         raise ValueError("No API key configured for provider 'openai'.")
@@ -171,7 +165,6 @@ async def test_model_command_reports_provider_configuration_errors(tmp_path) -> 
     assert "No API key configured for provider 'openai'." in status.content
 
 
-@pytest.mark.asyncio
 async def test_model_command_does_not_depend_on_my_allow_set(tmp_path) -> None:
     loop = _make_loop(tmp_path)
     assert loop.tools_config.my.allow_set is False
@@ -181,7 +174,6 @@ async def test_model_command_does_not_depend_on_my_allow_set(tmp_path) -> None:
     assert _saved_model_preset(loop) == "fast"
 
 
-@pytest.mark.asyncio
 async def test_model_command_registered_as_exact_and_prefix(tmp_path) -> None:
     router = CommandRouter()
     register_builtin_commands(router)
@@ -203,7 +195,6 @@ async def test_model_command_registered_as_exact_and_prefix(tmp_path) -> None:
     assert _saved_model_preset(loop) == "fast"
 
 
-@pytest.mark.asyncio
 async def test_model_command_does_not_change_another_session(tmp_path) -> None:
     loop = _make_loop(tmp_path)
 
@@ -217,7 +208,6 @@ async def test_model_command_does_not_change_another_session(tmp_path) -> None:
     assert _saved_model_preset(loop) == "fast"
 
 
-@pytest.mark.asyncio
 async def test_model_command_reports_and_recovers_removed_session_preset(tmp_path) -> None:
     loop = _make_loop(tmp_path)
     session = loop.sessions.get_or_create("cli:direct")
@@ -246,7 +236,6 @@ def test_model_command_in_help_and_palette() -> None:
     assert "/model [preset]" in build_help_text()
 
 
-@pytest.mark.asyncio
 async def test_goal_command_shows_usage_without_args(tmp_path) -> None:
     loop = _make_loop(tmp_path)
     out = await cmd_goal(_ctx(loop, "/goal"))
@@ -257,7 +246,6 @@ async def test_goal_command_shows_usage_without_args(tmp_path) -> None:
     assert out.content == "Usage: /goal <long-running task description>"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("with_session", [False, True])
 async def test_goal_command_preserves_task_and_visible_command(tmp_path, with_session) -> None:
     loop = _make_loop(tmp_path)
@@ -281,7 +269,6 @@ async def test_goal_command_preserves_task_and_visible_command(tmp_path, with_se
 
 
 
-@pytest.mark.asyncio
 async def test_goal_command_registered_on_router(tmp_path) -> None:
     router = CommandRouter()
     register_builtin_commands(router)
@@ -295,7 +282,6 @@ async def test_goal_command_registered_on_router(tmp_path) -> None:
 
 
 
-@pytest.mark.asyncio
 async def test_goal_command_does_not_allow_internal_turn(tmp_path) -> None:
     loop = _make_loop(tmp_path)
     ctx = CommandContext(

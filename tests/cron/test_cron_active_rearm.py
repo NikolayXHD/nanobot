@@ -9,7 +9,6 @@ from nanobot.cron.service import CronService
 from nanobot.cron.types import CronJob, CronSchedule
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("action", ["add", "update", "remove", "disable"])
 @pytest.mark.parametrize("edit_from_callback", [True, False])
 async def test_edit_during_timer_execution_preserves_turn(
@@ -88,7 +87,6 @@ async def test_edit_during_timer_execution_preserves_turn(
             await asyncio.gather(timer, return_exceptions=True)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("action", ["remove", "disable", "reschedule"])
 async def test_due_job_edited_while_waiting_is_skipped(tmp_path: Path, action: str) -> None:
     entered = asyncio.Event()

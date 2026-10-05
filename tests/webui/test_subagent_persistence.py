@@ -62,7 +62,6 @@ def gateway_for(manager, sessions, workspace):
     return gateway, SimpleNamespace(remote_address=("127.0.0.1", 12345)), Headers({"Authorization": f"Bearer {token}"})
 
 
-@pytest.mark.asyncio
 async def test_child_thread_reads_real_session_through_parent_without_new_persistence(tmp_path):
     workspace, root = tmp_path / "agent", tmp_path / "sessions"
     workspace.mkdir()
@@ -138,7 +137,6 @@ async def test_child_thread_reads_real_session_through_parent_without_new_persis
         await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_new_unsaved_parent_has_an_empty_task_collection(tmp_path):
     workspace = tmp_path / "agent"
     manager, sessions, _ = manager_with_storage(workspace, tmp_path / "sessions")
@@ -156,7 +154,6 @@ async def test_new_unsaved_parent_has_an_empty_task_collection(tmp_path):
         await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_child_activity_replays_real_tool_errors_and_file_diffs(tmp_path):
     workspace, root = tmp_path / "agent", tmp_path / "sessions"
     workspace.mkdir()
@@ -225,7 +222,6 @@ async def test_child_activity_replays_real_tool_errors_and_file_diffs(tmp_path):
         await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_provider_hosted_activity_is_visible_before_response_and_replays_in_order(tmp_path):
     workspace, root = tmp_path / "agent", tmp_path / "sessions"
     workspace.mkdir()
@@ -280,7 +276,6 @@ async def test_provider_hosted_activity_is_visible_before_response_and_replays_i
         await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_task_changes_use_parent_chat_events_and_saved_child_observations(tmp_path):
     manager, sessions, runtime = manager_with_storage(tmp_path / "agent", tmp_path / "sessions")
     gateway, _, _ = gateway_for(manager, sessions, tmp_path / "agent")
@@ -367,7 +362,6 @@ async def test_task_changes_use_parent_chat_events_and_saved_child_observations(
         await channel._cleanup_connection(other_connection)
 
 
-@pytest.mark.asyncio
 async def test_abrupt_process_exit_preserves_terminal_records_and_interrupts_pending_work(tmp_path):
     workspace, sessions_root = tmp_path / "agent", tmp_path / "sessions"
     script = tmp_path / "host.py"
@@ -460,7 +454,6 @@ async def test_abrupt_process_exit_preserves_terminal_records_and_interrupts_pen
         await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_child_preserves_transcript_provider_state_and_summary_in_common_session(tmp_path):
     manager, sessions, runtime = manager_with_storage(tmp_path / "agent", tmp_path / "sessions")
     provider_state = ProviderConversationState(
@@ -505,7 +498,6 @@ async def test_child_preserves_transcript_provider_state_and_summary_in_common_s
         await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_child_is_unavailable_to_public_session_tools(tmp_path):
     manager, sessions, runtime = manager_with_storage(tmp_path / "agent", tmp_path / "sessions")
     sessions.save(sessions.get_or_create("websocket:other"))
@@ -530,7 +522,6 @@ async def test_child_is_unavailable_to_public_session_tools(tmp_path):
         await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_constructing_another_reader_does_not_interrupt_running_work(tmp_path):
     workspace, root = tmp_path / "agent", tmp_path / "sessions"
     manager, sessions, runtime = manager_with_storage(workspace, root)
@@ -561,7 +552,6 @@ async def test_constructing_another_reader_does_not_interrupt_running_work(tmp_p
         await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_webui_deletion_cancels_parent_work_and_removes_child_sessions(tmp_path):
     manager, sessions, runtime = manager_with_storage(tmp_path / "agent", tmp_path / "sessions")
     entered = asyncio.Event()
@@ -597,7 +587,6 @@ async def test_webui_deletion_cancels_parent_work_and_removes_child_sessions(tmp
         await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_history_outlives_the_runtime_cache_and_follows_parent_deletion(tmp_path):
     manager, sessions, runtime = manager_with_storage(tmp_path / "agent", tmp_path / "sessions")
     manager.MAX_TERMINAL = 1
@@ -628,7 +617,6 @@ async def test_history_outlives_the_runtime_cache_and_follows_parent_deletion(tm
         await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_task_progress_does_not_rewrite_parent_history_or_invalidate_checkpoint(tmp_path):
     manager, sessions, runtime = manager_with_storage(tmp_path / "agent", tmp_path / "sessions")
     parent = sessions.get_or_create("websocket:parent")
@@ -659,7 +647,6 @@ async def test_task_progress_does_not_rewrite_parent_history_or_invalidate_check
         await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_temporary_parent_never_persists_task_content(tmp_path):
     manager, sessions, runtime = manager_with_storage(tmp_path / "agent", tmp_path / "sessions")
     parent = sessions.get_or_create_transient("websocket:temporary")
@@ -683,7 +670,6 @@ async def test_temporary_parent_never_persists_task_content(tmp_path):
         await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_child_sessions_use_common_restore_and_migration(tmp_path):
     workspace, root = tmp_path / "agent", tmp_path / "sessions"
     manager, sessions, runtime = manager_with_storage(workspace, root)
@@ -710,7 +696,6 @@ async def test_child_sessions_use_common_restore_and_migration(tmp_path):
         await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_unreadable_task_history_is_not_an_empty_list(tmp_path):
     manager, sessions, runtime = manager_with_storage(tmp_path / "agent", tmp_path / "sessions")
     parent = sessions.get_or_create("websocket:parent")

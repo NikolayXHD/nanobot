@@ -22,7 +22,6 @@ from nanobot.providers.base import LLMProvider, LLMResponse, ToolCallRequest
 _MAX_TOOL_RESULT_CHARS = AgentDefaults().max_tool_result_chars
 
 
-@pytest.mark.asyncio
 async def test_runner_returns_tool_exception_to_model_for_recovery():
     from nanobot.agent.runner import AgentRunner
 
@@ -61,7 +60,6 @@ async def test_runner_returns_tool_exception_to_model_for_recovery():
     assert tool_message["content"].count(retry_hint) == 1
 
 
-@pytest.mark.asyncio
 async def test_tool_execution_does_not_duplicate_existing_retry_hint():
     retry_hint = "\n\n[Analyze the error above and try a different approach.]"
     tools = SimpleNamespace(
@@ -83,7 +81,6 @@ async def test_tool_execution_does_not_duplicate_existing_retry_hint():
     assert events[0]["status"] == "error"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("control_error", [KeyboardInterrupt, SystemExit])
 async def test_tool_execution_propagates_control_flow_exceptions(control_error: type[BaseException]):
     async def execute(_name, _args):
@@ -105,7 +102,6 @@ async def test_tool_execution_propagates_control_flow_exceptions(control_error: 
         )
 
 
-@pytest.mark.asyncio
 async def test_llm_error_not_appended_to_session_messages():
     """When LLM returns finish_reason='error', the error content must NOT be
     appended to the messages list (prevents polluting session history)."""
@@ -138,7 +134,6 @@ async def test_llm_error_not_appended_to_session_messages():
     assert assistant_msgs[-1]["content"] == _PERSISTED_MODEL_ERROR_PLACEHOLDER
 
 
-@pytest.mark.asyncio
 async def test_llm_arrearage_error_surfaces_clear_message():
     """Arrearage errors yield a clear user-facing message, not a raw dump (#3006)."""
     from nanobot.agent.runner import _ARREARAGE_ERROR_MESSAGE, AgentRunner
@@ -164,7 +159,6 @@ async def test_llm_arrearage_error_surfaces_clear_message():
     assert result.failure_error_kind == "billing"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("finish_reason", "expected_stop_reason"),
     [
@@ -206,7 +200,6 @@ async def test_runner_ignores_tool_calls_when_finish_reason_blocks_execution(
     assert not any(msg.get("role") == "tool" for msg in result.messages)
 
 
-@pytest.mark.asyncio
 async def test_runner_returns_structured_tool_error_to_model_for_recovery():
     from nanobot.agent.runner import AgentRunner
 
@@ -241,7 +234,6 @@ async def test_runner_returns_structured_tool_error_to_model_for_recovery():
     ]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("url,ssrf", [
     pytest.param("not-a-url", False, id="invalid-url"),
     pytest.param("http://127.0.0.1/admin", True, id="blocked-loopback"),
@@ -311,7 +303,6 @@ async def test_runner_recognizes_web_fetch_errors(monkeypatch, url, ssrf):
         assert content.count(retry_hint) == 1
 
 
-@pytest.mark.asyncio
 async def test_runner_preserves_successful_exec_output_that_starts_with_error():
     from nanobot.agent.runner import AgentRunner
 
@@ -350,7 +341,6 @@ async def test_runner_preserves_successful_exec_output_that_starts_with_error():
     ]
 
 
-@pytest.mark.asyncio
 async def test_runner_preserves_tool_error_results_in_messages():
     """Tool errors stay paired with their calls so the model can recover (#2943)."""
     from nanobot.agent.runner import AgentRunner
@@ -408,7 +398,6 @@ async def test_runner_preserves_tool_error_results_in_messages():
     assert all(ti > asst_tc_idx for ti in tool_indices)
 
 
-@pytest.mark.asyncio
 async def test_length_finish_with_blank_content_routes_to_length_recovery():
     """Regression test for #5133.
 

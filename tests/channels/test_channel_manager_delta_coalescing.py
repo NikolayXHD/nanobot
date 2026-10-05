@@ -121,7 +121,6 @@ class TestDeltaCoalescing:
         assert merged.metadata == first.metadata
         assert pending == [second]
 
-    @pytest.mark.asyncio
     async def test_single_delta_not_coalesced(self, manager, bus):
         msg = _delta("Hello")
         await bus.publish_outbound(msg)
@@ -158,7 +157,6 @@ class TestDeltaCoalescing:
             merge_next=False,
         )
 
-    @pytest.mark.asyncio
     async def test_multiple_deltas_coalesced(self, manager, bus):
         for text in ["Hello", " ", "world", "!"]:
             await bus.publish_outbound(_delta(text))
@@ -170,7 +168,6 @@ class TestDeltaCoalescing:
         assert isinstance(merged.event, StreamDeltaEvent)
         assert len(pending) == 0
 
-    @pytest.mark.asyncio
     async def test_deltas_different_chats_not_coalesced(self, manager, bus):
         await bus.publish_outbound(_delta("Hello", chat_id="chat1"))
         await bus.publish_outbound(_delta("World", chat_id="chat2"))
@@ -184,7 +181,6 @@ class TestDeltaCoalescing:
         assert pending[0].chat_id == "chat2"
         assert pending[0].content == "World"
 
-    @pytest.mark.asyncio
     async def test_deltas_different_stream_ids_not_coalesced(self, manager, bus):
         await bus.publish_outbound(_delta("A1", stream_id="stream-a"))
         await bus.publish_outbound(_delta("B1", stream_id="stream-b"))
@@ -200,7 +196,6 @@ class TestDeltaCoalescing:
         assert isinstance(pending[0].event, StreamDeltaEvent)
         assert pending[0].event.stream_id == "stream-b"
 
-    @pytest.mark.asyncio
     async def test_stream_end_terminates_coalescing(self, manager, bus):
         await bus.publish_outbound(_delta("Hello"))
         await bus.publish_outbound(_end(
@@ -218,7 +213,6 @@ class TestDeltaCoalescing:
         assert merged.event.merge_next is True
         assert len(pending) == 0
 
-    @pytest.mark.asyncio
     async def test_coalescing_stops_at_first_non_matching_boundary(self, manager, bus):
         await bus.publish_outbound(_delta("Hello", stream_id="seg-1"))
         await bus.publish_outbound(_end(stream_id="seg-1"))
@@ -238,7 +232,6 @@ class TestDeltaCoalescing:
         assert isinstance(remaining.event, StreamDeltaEvent)
         assert remaining.event.stream_id == "seg-2"
 
-    @pytest.mark.asyncio
     async def test_non_delta_message_preserved(self, manager, bus):
         await bus.publish_outbound(_delta("Delta"))
         await bus.publish_outbound(OutboundMessage(
@@ -255,7 +248,6 @@ class TestDeltaCoalescing:
         assert pending[0].content == "Final message"
         assert pending[0].event is None
 
-    @pytest.mark.asyncio
     async def test_empty_queue_stops_coalescing(self, manager, bus):
         await bus.publish_outbound(_delta("Only message"))
 
@@ -269,7 +261,6 @@ class TestDeltaCoalescing:
 class TestDispatchOutboundWithCoalescing:
     """Tests for the full _dispatch_outbound flow with coalescing."""
 
-    @pytest.mark.asyncio
     async def test_dispatch_coalesces_and_processes_pending(self, manager, bus):
         await bus.publish_outbound(_delta("A"))
         await bus.publish_outbound(_delta("B"))
@@ -372,7 +363,6 @@ class TestProgressFiltering:
         assert manager._resolve_bool_override(FakeSection(), "send_tool_hints", False) is True
         assert manager._resolve_bool_override(FakeSection(), "unknown_key", True) is True
 
-    @pytest.mark.asyncio
     async def test_channel_override_can_drop_progress_message(self, manager, bus):
         manager.channels["mock"].send_progress = False
         await bus.publish_outbound(outbound_message_for_event(
@@ -403,7 +393,6 @@ class TestProgressFiltering:
         assert send_mock.await_count == 1
         assert send_mock.await_args_list[0].args[0].content == "final answer"
 
-    @pytest.mark.asyncio
     async def test_channel_override_can_enable_tool_hints(self, manager, bus):
         manager.channels["mock"].send_tool_hints = True
         await bus.publish_outbound(outbound_message_for_event(
@@ -433,7 +422,6 @@ class TestProgressFiltering:
 class TestRetryWaitFiltering:
     """Internal provider retry heartbeats must never reach channels."""
 
-    @pytest.mark.asyncio
     async def test_retry_wait_message_dropped(self, manager, bus):
         retry_msg = outbound_message_for_event(
             channel="mock",

@@ -53,7 +53,6 @@ def _channel(config: NapcatConfig | None = None) -> NapcatChannel:
     return NapcatChannel(config or NapcatConfig(allow_from=["*"]), MessageBus())
 
 
-@pytest.mark.asyncio
 async def test_send_raises_while_websocket_is_not_connected() -> None:
     channel = _channel()
 
@@ -63,7 +62,6 @@ async def test_send_raises_while_websocket_is_not_connected() -> None:
         )
 
 
-@pytest.mark.asyncio
 async def test_group_message_requires_mention_by_default() -> None:
     channel = _channel(NapcatConfig(allow_from=["user1"], group_policy="mention"))
     channel._self_id = 42
@@ -82,7 +80,6 @@ async def test_group_message_requires_mention_by_default() -> None:
     assert channel.bus.inbound_size == 0
 
 
-@pytest.mark.asyncio
 async def test_group_mention_routes_with_sender_label() -> None:
     channel = _channel(NapcatConfig(allow_from=["user1"], group_policy="mention"))
     channel._self_id = 42
@@ -108,7 +105,6 @@ async def test_group_mention_routes_with_sender_label() -> None:
     assert msg.metadata["message_id"] == 1
 
 
-@pytest.mark.asyncio
 async def test_call_action_raises_on_onebot_failure_and_clears_pending() -> None:
     channel = _channel()
     channel._ws = _FakeWs()
@@ -124,7 +120,6 @@ async def test_call_action_raises_on_onebot_failure_and_clears_pending() -> None
     assert channel._pending == {}
 
 
-@pytest.mark.asyncio
 async def test_notice_with_invalid_ids_is_ignored(monkeypatch) -> None:
     channel = _channel()
 
@@ -144,7 +139,6 @@ async def test_notice_with_invalid_ids_is_ignored(monkeypatch) -> None:
     assert channel.bus.inbound_size == 0
 
 
-@pytest.mark.asyncio
 async def test_download_image_rejects_redirects(tmp_path, monkeypatch) -> None:
     channel = _channel()
     channel._media_root = tmp_path
@@ -163,7 +157,6 @@ async def test_download_image_rejects_redirects(tmp_path, monkeypatch) -> None:
     assert list(tmp_path.iterdir()) == []
 
 
-@pytest.mark.asyncio
 async def test_dispatch_tracks_and_discards_background_tasks() -> None:
     channel = _channel()
     seen = asyncio.Event()

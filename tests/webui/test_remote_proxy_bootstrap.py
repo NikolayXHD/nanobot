@@ -11,7 +11,6 @@ from nanobot.webui.remote_proxy import RemoteProxy
 from nanobot.webui.remote_ssh import Tunnel
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("capabilities", [
     ["webui.core.v1"],
     ["webui.core.v1", "webui.subagents.v1"],

@@ -12,7 +12,6 @@ from nanobot.session.manager import SessionManager
 from nanobot.webui.transcript import append_transcript_object
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("compacted", [False, True])
 @pytest.mark.parametrize("tool_name", ["search", "read"])
 async def test_session_tools_find_old_matches_in_full_session(
@@ -55,7 +54,6 @@ async def test_session_tools_find_old_matches_in_full_session(
     assert [item["message_index"] for item in matches] == [i * 2 for i in expected]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("state", ["canonical", "transcript", "mixed"])
 async def test_session_tools_use_canonical_records_after_restart(tmp_path, monkeypatch, state):
     webui_dir = tmp_path / "webui"

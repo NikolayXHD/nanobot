@@ -37,7 +37,6 @@ def _make_loop():
 
 class TestRestartCommand:
 
-    @pytest.mark.asyncio
     async def test_restart_sends_message_and_calls_execv(self):
         from nanobot.command.builtin import cmd_restart
         from nanobot.command.router import CommandContext
@@ -80,7 +79,6 @@ class TestRestartCommand:
             await scheduled[0]
             mock_execv.assert_called_once()
 
-    @pytest.mark.asyncio
     async def test_restart_windows_auto_spawns_and_exits(self):
         from nanobot.command.builtin import cmd_restart
         from nanobot.command.router import CommandContext
@@ -114,7 +112,6 @@ class TestRestartCommand:
         mock_exit.assert_called_once_with(0)
         mock_execv.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_restart_exit_mode_does_not_spawn(self):
         from nanobot.command.builtin import cmd_restart
         from nanobot.command.router import CommandContext
@@ -144,7 +141,6 @@ class TestRestartCommand:
         mock_popen.assert_not_called()
         mock_execv.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_restart_intercepted_in_run_loop(self):
         """Verify /restart is handled at the run-loop level, without starting a session worker."""
         loop, bus = _make_loop()
@@ -186,7 +182,6 @@ class TestRestartCommand:
             assert scheduled
             await scheduled[0]
 
-    @pytest.mark.asyncio
     async def test_status_intercepted_in_run_loop(self):
         """Verify /status is handled at the run-loop level for immediate replies."""
         loop, bus = _make_loop()
@@ -208,7 +203,6 @@ class TestRestartCommand:
             mock_dispatch.assert_not_called()
             assert "nanobot" in out.content.lower() or "Model" in out.content
 
-    @pytest.mark.asyncio
     async def test_run_propagates_external_cancellation(self):
         """External task cancellation should not be swallowed by the inbound wait loop."""
         loop, _bus = _make_loop()
@@ -220,7 +214,6 @@ class TestRestartCommand:
         with pytest.raises(asyncio.CancelledError):
             await asyncio.wait_for(run_task, timeout=1.0)
 
-    @pytest.mark.asyncio
     async def test_help_includes_restart(self):
         loop, bus = _make_loop()
         msg = InboundMessage(channel="telegram", sender_id="u1", chat_id="c1", content="/help")
@@ -232,7 +225,6 @@ class TestRestartCommand:
         assert "/status" in response.content
         assert response.metadata == {"render_as": "text"}
 
-    @pytest.mark.asyncio
     async def test_status_reports_runtime_info(self):
         loop, _bus = _make_loop()
         session = MagicMock()
@@ -272,7 +264,6 @@ class TestRestartCommand:
             runtime=runtime,
         )
 
-    @pytest.mark.asyncio
     async def test_status_counts_running_dispatch_and_subagent_tasks(self):
         loop, _bus = _make_loop()
         session = MagicMock()
@@ -296,7 +287,6 @@ class TestRestartCommand:
         assert response is not None
         assert "Tasks: 3 active" in response.content
 
-    @pytest.mark.asyncio
     async def test_run_agent_loop_estimates_usage_when_provider_omits_it(self, monkeypatch):
         loop, _bus = _make_loop()
         monkeypatch.setattr(
@@ -324,7 +314,6 @@ class TestRestartCommand:
         )
         assert second.usage == LLMUsage.estimated(input_tokens=123, output_tokens=7)
 
-    @pytest.mark.asyncio
     async def test_status_falls_back_to_session_usage_when_context_estimate_missing(self):
         loop, _bus = _make_loop()
         session = MagicMock()
@@ -347,7 +336,6 @@ class TestRestartCommand:
         assert "Context: 1k/200k (0% of input budget)" in response.content
         assert "Tasks: 0 active" in response.content
 
-    @pytest.mark.asyncio
     async def test_history_shows_recent_messages(self):
         loop, _bus = _make_loop()
         session = MagicMock()
@@ -369,7 +357,6 @@ class TestRestartCommand:
         assert "tool result" not in response.content  # tool messages filtered
         assert response.metadata == {"render_as": "text"}
 
-    @pytest.mark.asyncio
     async def test_history_respects_count_argument(self):
         loop, _bus = _make_loop()
         session = MagicMock()
@@ -386,7 +373,6 @@ class TestRestartCommand:
         assert "message 19" in response.content  # most recent
         assert "message 0" not in response.content  # too old
 
-    @pytest.mark.asyncio
     async def test_history_clamps_count_and_extracts_text_blocks(self):
         loop, _bus = _make_loop()
         session = MagicMock()
@@ -411,7 +397,6 @@ class TestRestartCommand:
         assert "reply 59" in response.content
         assert "reply 9" not in response.content
 
-    @pytest.mark.asyncio
     async def test_history_invalid_count_returns_usage(self):
         loop, _bus = _make_loop()
 
@@ -421,7 +406,6 @@ class TestRestartCommand:
         assert response is not None
         assert response.content.startswith("Usage: /history [count]")
 
-    @pytest.mark.asyncio
     async def test_history_empty_session(self):
         loop, _bus = _make_loop()
         session = MagicMock()
@@ -434,7 +418,6 @@ class TestRestartCommand:
         assert response is not None
         assert "No conversation history yet." in response.content
 
-    @pytest.mark.asyncio
     async def test_process_direct_preserves_render_metadata(self):
         loop, _bus = _make_loop()
         session = MagicMock()

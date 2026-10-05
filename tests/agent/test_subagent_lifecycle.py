@@ -67,7 +67,6 @@ async def _drain_subagent_tasks(sm: SubagentManager) -> None:
     await asyncio.sleep(0)
 
 
-@pytest.mark.asyncio
 async def test_close_cancels_tasks_before_closing_exec_sessions(tmp_path):
     sm = _manager(tmp_path)
     entered = asyncio.Event()
@@ -131,7 +130,6 @@ class TestLegacyCompatibility:
         assert sm.workspace == tmp_path
         assert sm.max_tool_result_chars == 16_000
 
-    @pytest.mark.asyncio
     async def test_legacy_spawn_captures_runtime_at_admission(self, tmp_path):
         provider = MagicMock(spec=LLMProvider)
         provider.generation = GenerationSettings(temperature=0.2, max_tokens=2048)
@@ -158,7 +156,6 @@ class TestLegacyCompatibility:
         assert runtime.model == "legacy-model"
         assert runtime.generation == GenerationSettings(0.8, 512, None)
 
-    @pytest.mark.asyncio
     async def test_set_provider_supports_future_legacy_spawns(self, tmp_path):
         sm = _manager(tmp_path)
         provider = MagicMock(spec=LLMProvider)
@@ -177,7 +174,6 @@ class TestLegacyCompatibility:
         assert runtime.provider is provider
         assert runtime.model == "replacement-model"
 
-    @pytest.mark.asyncio
     async def test_new_constructor_still_requires_explicit_spawn_runtime(self, tmp_path):
         sm = _manager(tmp_path)
 
@@ -191,7 +187,6 @@ class TestLegacyCompatibility:
 
 
 class TestSpawn:
-    @pytest.mark.asyncio
     async def test_returns_string_with_task_id(self, tmp_path):
         sm = _manager(tmp_path)
         sm.runner.run = AsyncMock(return_value=AgentRunResult(
@@ -201,7 +196,6 @@ class TestSpawn:
         assert "started" in result
         assert "id:" in result
 
-    @pytest.mark.asyncio
     async def test_creates_task_in_running_tasks(self, tmp_path):
         sm = _manager(tmp_path)
         block = asyncio.Event()
@@ -217,7 +211,6 @@ class TestSpawn:
         await _drain_subagent_tasks(sm)
         assert len(sm._running_tasks) == 0
 
-    @pytest.mark.asyncio
     async def test_creates_status(self, tmp_path):
         sm = _manager(tmp_path)
         sm.runner.run = AsyncMock(return_value=AgentRunResult(
@@ -231,7 +224,6 @@ class TestSpawn:
         await _drain_subagent_tasks(sm)
         assert [s.state for s in sm.statuses_for_session("cli:direct").values()] == ["done"]
 
-    @pytest.mark.asyncio
     async def test_registers_in_session_tasks(self, tmp_path):
         sm = _manager(tmp_path)
         block = asyncio.Event()
@@ -247,7 +239,6 @@ class TestSpawn:
         await _drain_subagent_tasks(sm)
         assert [s.state for s in sm.statuses_for_session("s1").values()] == ["done"]
 
-    @pytest.mark.asyncio
     async def test_no_session_key_registers_channel_chat_owner(self, tmp_path):
         sm = _manager(tmp_path)
         block = asyncio.Event()
@@ -262,7 +253,6 @@ class TestSpawn:
         block.set()
         await _drain_subagent_tasks(sm)
 
-    @pytest.mark.asyncio
     async def test_label_defaults_to_truncated_task(self, tmp_path):
         sm = _manager(tmp_path)
         block = asyncio.Event()
@@ -279,7 +269,6 @@ class TestSpawn:
         block.set()
         await _drain_subagent_tasks(sm)
 
-    @pytest.mark.asyncio
     async def test_custom_label(self, tmp_path):
         sm = _manager(tmp_path)
         block = asyncio.Event()
@@ -297,7 +286,6 @@ class TestSpawn:
         block.set()
         await _drain_subagent_tasks(sm)
 
-    @pytest.mark.asyncio
     async def test_cleanup_callback_retains_terminal_status(self, tmp_path):
         sm = _manager(tmp_path)
         sm.runner.run = AsyncMock(return_value=AgentRunResult(
@@ -308,7 +296,6 @@ class TestSpawn:
         assert len(sm._running_tasks) == 0
         assert [s.state for s in sm.statuses_for_session("s1").values()] == ["done"]
 
-    @pytest.mark.asyncio
     async def test_runtime_is_captured_before_background_task_starts(self, tmp_path):
         sm = _manager(tmp_path)
         runtime = _runtime(temperature=0.2)
@@ -350,7 +337,6 @@ class TestSpawn:
 
 
 class TestRunSubagent:
-    @pytest.mark.asyncio
     async def test_successful_run(self, tmp_path):
         sm = _manager(tmp_path)
         sm.runner.run = AsyncMock(return_value=AgentRunResult(
@@ -368,7 +354,6 @@ class TestRunSubagent:
             mock_announce.assert_called_once()
             assert mock_announce.call_args.args[-2] == "ok"
 
-    @pytest.mark.asyncio
     async def test_exception_run(self, tmp_path):
         sm = _manager(tmp_path)
         sm.runner.run = AsyncMock(side_effect=RuntimeError("LLM down"))
@@ -386,7 +371,6 @@ class TestRunSubagent:
             assert "LLM down" in status.error
             assert mock_announce.call_args.args[-2] == "error"
 
-    @pytest.mark.asyncio
     async def test_status_updated_on_success(self, tmp_path):
         sm = _manager(tmp_path)
         sm.runner.run = AsyncMock(return_value=AgentRunResult(
@@ -412,7 +396,6 @@ class TestRunSubagent:
 
 
 class TestAnnounceResult:
-    @pytest.mark.asyncio
     async def test_publishes_inbound_message(self, tmp_path):
         sm = _manager(tmp_path)
         published = []
@@ -430,7 +413,6 @@ class TestAnnounceResult:
         assert msg.metadata["injected_event"] == "subagent_result"
         assert msg.metadata["subagent_task_id"] == "t1"
 
-    @pytest.mark.asyncio
     async def test_session_key_override(self, tmp_path):
         sm = _manager(tmp_path)
         published = []
@@ -443,7 +425,6 @@ class TestAnnounceResult:
 
         assert published[0].session_key_override == "s1"
 
-    @pytest.mark.asyncio
     async def test_session_key_override_fallback(self, tmp_path):
         sm = _manager(tmp_path)
         published = []
@@ -456,7 +437,6 @@ class TestAnnounceResult:
 
         assert published[0].session_key_override == "telegram:123"
 
-    @pytest.mark.asyncio
     async def test_ok_status_text(self, tmp_path):
         sm = _manager(tmp_path)
         published = []
@@ -469,7 +449,6 @@ class TestAnnounceResult:
 
         assert "completed successfully" in published[0].content
 
-    @pytest.mark.asyncio
     async def test_error_status_text(self, tmp_path):
         sm = _manager(tmp_path)
         published = []
@@ -482,7 +461,6 @@ class TestAnnounceResult:
 
         assert "failed" in published[0].content
 
-    @pytest.mark.asyncio
     async def test_origin_message_id_in_metadata(self, tmp_path):
         sm = _manager(tmp_path)
         published = []
@@ -503,7 +481,6 @@ class TestAnnounceResult:
 
 
 class TestCancelBySession:
-    @pytest.mark.asyncio
     async def test_cancels_running_tasks(self, tmp_path):
         sm = _manager(tmp_path)
         block = asyncio.Event()
@@ -522,13 +499,11 @@ class TestCancelBySession:
         block.set()
         await _drain_subagent_tasks(sm)
 
-    @pytest.mark.asyncio
     async def test_no_tasks_returns_zero(self, tmp_path):
         sm = _manager(tmp_path)
         count = await sm.cancel_by_session("nonexistent")
         assert count == 0
 
-    @pytest.mark.asyncio
     async def test_cancels_active_and_queued_tasks(self, tmp_path):
         sm = _manager(tmp_path, max_concurrent_subagents=1)
         active_entered = asyncio.Event()
@@ -557,7 +532,6 @@ class TestCancelBySession:
         assert sm._running_tasks == {}
         assert [s.state for s in sm.statuses_for_session("s1").values()] == ["cancelled", "cancelled"]
 
-    @pytest.mark.asyncio
     async def test_already_done_not_counted(self, tmp_path):
         sm = _manager(tmp_path)
         sm.runner.run = AsyncMock(return_value=AgentRunResult(
@@ -576,12 +550,10 @@ class TestCancelBySession:
 
 
 class TestRunningCounts:
-    @pytest.mark.asyncio
     async def test_running_count_zero(self, tmp_path):
         sm = _manager(tmp_path)
         assert sm.get_running_count() == 0
 
-    @pytest.mark.asyncio
     async def test_running_count_tracks_tasks(self, tmp_path):
         sm = _manager(tmp_path)
         block = asyncio.Event()
@@ -600,7 +572,6 @@ class TestRunningCounts:
         await _drain_subagent_tasks(sm)
         assert sm.get_running_count() == 0
 
-    @pytest.mark.asyncio
     async def test_running_count_by_session_nonexistent(self, tmp_path):
         sm = _manager(tmp_path)
         assert sm.get_running_count_by_session("nonexistent") == 0
@@ -612,7 +583,6 @@ class TestRunningCounts:
 
 
 class TestSubagentHook:
-    @pytest.mark.asyncio
     async def test_before_execute_tools_without_status_preserves_calls(self):
         hook = _SubagentHook()
         tool_call = MagicMock()
@@ -623,7 +593,6 @@ class TestSubagentHook:
         assert result is None
         assert ctx.tool_calls == [tool_call]
 
-    @pytest.mark.asyncio
     async def test_after_iteration_updates_status(self):
         status = SubagentStatus(
             task_id="t1", label="test", task_description="do", started_at=time.monotonic(),
@@ -639,7 +608,6 @@ class TestSubagentHook:
         assert len(status.tool_events) == 1
         assert status.usage == LLMUsage.reported(input_tokens=100, output_tokens=0)
 
-    @pytest.mark.asyncio
     async def test_after_iteration_no_status_noop(self):
         hook = _SubagentHook()
         ctx = _make_hook_context(iteration=5)
@@ -647,7 +615,6 @@ class TestSubagentHook:
         assert result is None
         assert ctx.iteration == 5
 
-    @pytest.mark.asyncio
     async def test_after_iteration_sets_error(self):
         status = SubagentStatus(
             task_id="t1", label="test", task_description="do", started_at=time.monotonic(),

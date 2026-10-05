@@ -28,7 +28,6 @@ def _fake_resolve_public(hostname, port, family=0, type_=0):
     return [(socket.AF_INET, socket.SOCK_STREAM, 0, "", ("93.184.216.34", 0))]
 
 
-@pytest.mark.asyncio
 async def test_exec_blocks_curl_metadata():
     tool = ExecTool(restrict_to_workspace=True)
     with patch("nanobot.security.network.socket.getaddrinfo", _fake_resolve_private):
@@ -39,7 +38,6 @@ async def test_exec_blocks_curl_metadata():
     assert "internal" in result.lower() or "private" in result.lower()
 
 
-@pytest.mark.asyncio
 async def test_exec_blocks_wget_localhost():
     tool = ExecTool(restrict_to_workspace=True)
     with patch("nanobot.security.network.socket.getaddrinfo", _fake_resolve_localhost):
@@ -145,7 +143,6 @@ async def test_exec_full_workspace_scope_skips_command_guard(tmp_path):
     assert "Command blocked" not in result
 
 
-@pytest.mark.asyncio
 async def test_exec_allows_normal_commands():
     tool = ExecTool(timeout=5)
     result = await tool.execute(command="echo hello")
@@ -153,7 +150,6 @@ async def test_exec_allows_normal_commands():
     assert "Error" not in result.split("\n")[0]
 
 
-@pytest.mark.asyncio
 async def test_exec_allows_curl_to_public_url():
     """Commands with public URLs should not be blocked by the internal URL check."""
     tool = ExecTool()
@@ -162,7 +158,6 @@ async def test_exec_allows_curl_to_public_url():
     assert guard_result is None
 
 
-@pytest.mark.asyncio
 async def test_exec_blocks_chained_internal_url():
     """Internal URLs buried in chained commands should still be caught."""
     tool = ExecTool(restrict_to_workspace=True)
@@ -225,7 +220,6 @@ def test_exec_allows_reads_of_history_jsonl(command):
 # --- #2826: working_dir must not escape the configured workspace ---------
 
 
-@pytest.mark.asyncio
 async def test_exec_blocks_working_dir_outside_workspace(tmp_path):
     """An LLM-supplied working_dir outside the workspace must be rejected."""
     workspace = tmp_path / "workspace"
@@ -235,7 +229,6 @@ async def test_exec_blocks_working_dir_outside_workspace(tmp_path):
     assert "outside the configured workspace" in result
 
 
-@pytest.mark.asyncio
 async def test_exec_blocks_relative_working_dir_outside_workspace(tmp_path):
     """A relative working_dir that escapes the workspace must be rejected."""
     workspace = tmp_path / "workspace"
@@ -257,7 +250,6 @@ async def test_exec_blocks_relative_working_dir_outside_workspace(tmp_path):
     assert "outside the configured workspace" in result
 
 
-@pytest.mark.asyncio
 async def test_exec_blocks_absolute_rm_via_hijacked_working_dir(tmp_path):
     """Regression for #2826: `rm /abs/path` via working_dir hijack."""
     workspace = tmp_path / "workspace"
@@ -276,7 +268,6 @@ async def test_exec_blocks_absolute_rm_via_hijacked_working_dir(tmp_path):
     assert victim.exists(), "victim file must not have been deleted"
 
 
-@pytest.mark.asyncio
 async def test_exec_allows_working_dir_within_workspace(tmp_path):
     """A working_dir that is a subdirectory of the workspace is fine."""
     workspace = tmp_path / "workspace"
@@ -288,7 +279,6 @@ async def test_exec_allows_working_dir_within_workspace(tmp_path):
     assert "outside the configured workspace" not in result
 
 
-@pytest.mark.asyncio
 async def test_exec_allows_working_dir_equal_to_workspace(tmp_path):
     """Passing working_dir equal to the workspace root must be allowed."""
     workspace = tmp_path / "workspace"
@@ -299,7 +289,6 @@ async def test_exec_allows_working_dir_equal_to_workspace(tmp_path):
     assert "outside the configured workspace" not in result
 
 
-@pytest.mark.asyncio
 async def test_exec_ignores_workspace_check_when_not_restricted(tmp_path):
     """Without restrict_to_workspace, the LLM may still choose any working_dir."""
     workspace = tmp_path / "workspace"
@@ -340,7 +329,6 @@ def test_exec_allows_benign_device_targets_inside_workspace(tmp_path, command):
     assert tool._guard_command(command, str(workspace)) is None
 
 
-@pytest.mark.asyncio
 @pytest.mark.skipif(sys.platform == "win32", reason="POSIX rm and /dev/null syntax")
 async def test_exec_3599_regression_rm_with_dev_null_redirect(tmp_path):
     """#3599: ``rm <ws-path> 2>/dev/null`` must succeed against the workspace guard."""

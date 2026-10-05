@@ -10,7 +10,6 @@ from nanobot.channels.feishu import runtime as feishu
 from nanobot.channels.feishu.connect import FeishuConnectStore
 
 
-@pytest.mark.asyncio
 async def test_feishu_cancel_wins_over_inflight_confirmation(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -65,7 +64,6 @@ async def test_feishu_cancel_wins_over_inflight_confirmation(
     assert saved_results == []
 
 
-@pytest.mark.asyncio
 async def test_feishu_cancel_does_not_interleave_with_registration_save(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

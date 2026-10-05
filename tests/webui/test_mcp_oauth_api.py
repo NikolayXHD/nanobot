@@ -41,7 +41,6 @@ def _config() -> MCPServerConfig:
     )
 
 
-@pytest.mark.asyncio
 async def test_browser_flow_retries_current_server_and_ignores_unrelated_reload_failure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -119,7 +118,6 @@ async def test_browser_flow_retries_current_server_and_ignores_unrelated_reload_
     assert connection.closed is True
 
 
-@pytest.mark.asyncio
 async def test_browser_flow_activates_tools_before_probe_cleanup_completes(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -175,7 +173,6 @@ async def test_browser_flow_activates_tools_before_probe_cleanup_completes(
     assert connection.closed is True
 
 
-@pytest.mark.asyncio
 async def test_remote_http_flow_accepts_a_pasted_loopback_callback(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -250,7 +247,6 @@ async def test_remote_http_flow_accepts_a_pasted_loopback_callback(
     assert connection.closed is True
 
 
-@pytest.mark.asyncio
 async def test_browser_flow_surfaces_provider_denial_without_callback_description(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -293,7 +289,6 @@ async def test_browser_flow_surfaces_provider_denial_without_callback_descriptio
         ("http://accounts.example.com/authorize?state=http-state", True, "http-state"),
     ],
 )
-@pytest.mark.asyncio
 async def test_browser_flow_blocks_unsafe_authorization_url(
     monkeypatch: pytest.MonkeyPatch,
     authorization_url: str,

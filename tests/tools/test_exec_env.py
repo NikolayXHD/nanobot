@@ -10,7 +10,6 @@ _UNIX_ONLY = pytest.mark.skipif(sys.platform == "win32", reason="Unix shell comm
 
 
 @_UNIX_ONLY
-@pytest.mark.asyncio
 async def test_exec_does_not_leak_parent_env(monkeypatch):
     """Env vars from the parent process must not be visible to commands."""
     monkeypatch.setenv("NANOBOT_SECRET_TOKEN", "super-secret-value")
@@ -19,7 +18,6 @@ async def test_exec_does_not_leak_parent_env(monkeypatch):
     assert "super-secret-value" not in result
 
 
-@pytest.mark.asyncio
 async def test_exec_has_working_path():
     """Basic commands should be available via the login shell's PATH."""
     tool = ExecTool()
@@ -28,7 +26,6 @@ async def test_exec_has_working_path():
 
 
 @_UNIX_ONLY
-@pytest.mark.asyncio
 async def test_exec_path_append():
     """The pathAppend config should be available in the command's PATH."""
     tool = ExecTool(path_append="/opt/custom/bin")
@@ -37,7 +34,6 @@ async def test_exec_path_append():
 
 
 @_UNIX_ONLY
-@pytest.mark.asyncio
 async def test_exec_path_append_preserves_system_path():
     """pathAppend must not clobber standard system paths."""
     tool = ExecTool(path_append="/opt/custom/bin")
@@ -46,7 +42,6 @@ async def test_exec_path_append_preserves_system_path():
 
 
 @_UNIX_ONLY
-@pytest.mark.asyncio
 async def test_exec_path_prepend_takes_lookup_precedence(tmp_path):
     """pathPrepend should win over pathAppend for executable lookup."""
     preferred = tmp_path / "preferred"
@@ -68,7 +63,6 @@ async def test_exec_path_prepend_takes_lookup_precedence(tmp_path):
 
 
 @_UNIX_ONLY
-@pytest.mark.asyncio
 async def test_exec_allowed_env_keys_passthrough(monkeypatch):
     """Env vars listed in allowed_env_keys should be visible to commands."""
     monkeypatch.setenv("MY_CUSTOM_VAR", "hello-from-config")
@@ -78,7 +72,6 @@ async def test_exec_allowed_env_keys_passthrough(monkeypatch):
 
 
 @_UNIX_ONLY
-@pytest.mark.asyncio
 async def test_exec_allowed_env_keys_does_not_leak_others(monkeypatch):
     """Env vars NOT in allowed_env_keys should still be blocked."""
     monkeypatch.setenv("MY_CUSTOM_VAR", "hello-from-config")
@@ -89,7 +82,6 @@ async def test_exec_allowed_env_keys_does_not_leak_others(monkeypatch):
 
 
 @_UNIX_ONLY
-@pytest.mark.asyncio
 async def test_exec_allowed_env_keys_missing_var_ignored(monkeypatch):
     """If an allowed key is not set in the parent process, it should be silently skipped."""
     monkeypatch.delenv("NONEXISTENT_VAR_12345", raising=False)
@@ -102,7 +94,6 @@ async def test_exec_allowed_env_keys_missing_var_ignored(monkeypatch):
 
 
 @_UNIX_ONLY
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "malicious_path",
     [
@@ -142,7 +133,6 @@ async def test_exec_path_append_shell_metacharacters_not_executed(malicious_path
 
 
 @_UNIX_ONLY
-@pytest.mark.asyncio
 async def test_exec_path_append_command_substitution_does_not_execute(tmp_path):
     """$() in path_append must not trigger command substitution.
 

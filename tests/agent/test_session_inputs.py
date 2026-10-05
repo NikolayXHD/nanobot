@@ -48,7 +48,6 @@ def _message(content: str = "Please review") -> InboundMessage:
     )
 
 
-@pytest.mark.asyncio
 async def test_session_message_runs_as_user_input_and_replies_on_target_route(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -80,7 +79,6 @@ async def test_session_message_runs_as_user_input_and_replies_on_target_route(
     assert SESSION_MESSAGE_METADATA_KEY not in user_row
 
 
-@pytest.mark.asyncio
 async def test_session_message_text_is_not_dispatched_as_a_slash_command(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

@@ -19,7 +19,6 @@ def mock_prompt_session():
         yield mock_session
 
 
-@pytest.mark.asyncio
 async def test_read_interactive_input_async_returns_input(mock_prompt_session):
     """Test that _read_interactive_input_async returns the user input from prompt_session."""
     mock_prompt_session.prompt_async.return_value = "hello world"
@@ -32,7 +31,6 @@ async def test_read_interactive_input_async_returns_input(mock_prompt_session):
     assert isinstance(args[0], HTML)  # Verify HTML prompt is used
 
 
-@pytest.mark.asyncio
 async def test_read_interactive_input_async_handles_eof(mock_prompt_session):
     """Test that EOFError converts to KeyboardInterrupt."""
     mock_prompt_session.prompt_async.side_effect = EOFError()
@@ -89,7 +87,6 @@ def test_cli_key_bindings_enter_submits_and_alt_enter_newlines():
     buf.insert_text.assert_called_once_with("\n")
 
 
-@pytest.mark.asyncio
 async def test_raw_lf_enter_still_submits_like_wsl_terminals():
     """A raw LF byte (\\x0a) is what some terminals -- e.g. WSL -- send for a
     plain Enter keypress. It must submit the buffer, not insert a newline;
@@ -110,7 +107,6 @@ async def test_raw_lf_enter_still_submits_like_wsl_terminals():
     assert result == "hello"
 
 
-@pytest.mark.asyncio
 async def test_alt_enter_inserts_newline_on_lf_terminals():
     """LF-as-Enter terminals send Alt+Enter as ESC + LF, which needs its own binding."""
     from prompt_toolkit.application import create_app_session
@@ -127,7 +123,6 @@ async def test_alt_enter_inserts_newline_on_lf_terminals():
     assert result == "foo\nbar"
 
 
-@pytest.mark.asyncio
 async def test_csi_u_shift_enter_inserts_newline_not_raw_escape():
     """CSI-u Shift+Enter inserts a newline instead of raw escape bytes."""
     from prompt_toolkit.application import create_app_session
@@ -241,7 +236,6 @@ def test_print_cli_progress_line_stops_live_before_trace():
     assert renderer._live is None
 
 
-@pytest.mark.asyncio
 async def test_print_interactive_progress_line_pauses_spinner_before_printing():
     """Interactive progress output should also pause spinner cleanly."""
     order: list[str] = []
@@ -312,7 +306,6 @@ def test_stream_renderer_stop_for_input_stops_spinner():
         spinner.stop.assert_called_once()
 
 
-@pytest.mark.asyncio
 async def test_on_end_writes_final_content_to_stdout_after_stopping_live():
     """on_end should stop Live (transient erases it) then print final content to stdout."""
     mock_live = MagicMock()
@@ -338,7 +331,6 @@ async def test_on_end_writes_final_content_to_stdout_after_stopping_live():
     assert written == ["final output\n"]
 
 
-@pytest.mark.asyncio
 async def test_on_end_resuming_clears_buffer_and_restarts_spinner():
     """on_end(resuming=True) should reset state for the next iteration."""
     spinner = MagicMock()

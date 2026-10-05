@@ -88,7 +88,6 @@ class _FakeChannel:
         return None
 
 
-@pytest.mark.asyncio
 async def test_whatsapp_connect_commits_new_session_after_scan(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -109,7 +108,6 @@ async def test_whatsapp_connect_commits_new_session_after_scan(
     assert channel.client.stopped is True
 
 
-@pytest.mark.asyncio
 async def test_whatsapp_connect_cancel_preserves_existing_session(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -131,7 +129,6 @@ async def test_whatsapp_connect_cancel_preserves_existing_session(
     assert channel.client.stopped is True
 
 
-@pytest.mark.asyncio
 async def test_whatsapp_connect_clears_qr_while_finishing_login(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -156,7 +153,6 @@ async def test_whatsapp_connect_clears_qr_while_finishing_login(
     assert target.read_bytes() == b"new-session"
 
 
-@pytest.mark.asyncio
 async def test_whatsapp_connect_waits_for_native_client_before_committing(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -179,7 +175,6 @@ async def test_whatsapp_connect_waits_for_native_client_before_committing(
     assert target.read_bytes() == b"new-session"
 
 
-@pytest.mark.asyncio
 async def test_whatsapp_connect_retries_transient_windows_database_lock(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -205,7 +200,6 @@ async def test_whatsapp_connect_retries_transient_windows_database_lock(
     assert target.read_bytes() == b"new-session"
 
 
-@pytest.mark.asyncio
 async def test_whatsapp_connect_store_closes_pending_login(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

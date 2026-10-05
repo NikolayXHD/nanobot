@@ -25,7 +25,6 @@ from nanobot.session.webui_turns import _title_inputs
 from nanobot.webui.transcript import _session_user_event
 
 
-@pytest.mark.asyncio
 async def test_resolve_runtime_context_preserves_provider_order() -> None:
     calls: list[str] = []
 

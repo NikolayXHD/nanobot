@@ -14,7 +14,6 @@ def fixed_arrival_time():
         yield
 
 
-@pytest.mark.asyncio
 async def test_stream_coalesces_burst_and_flushes_during_provider_pause():
     with patch.object(stream, "Live") as live_class, patch.object(stream, "_make_console"):
         live = live_class.return_value
@@ -31,7 +30,6 @@ async def test_stream_coalesces_burst_and_flushes_during_provider_pause():
         await renderer.close()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("finish", ["end", "close", "pause"])
 async def test_pending_refresh_cannot_write_after_stream_teardown(finish):
     with patch.object(stream, "Live") as live_class, patch.object(stream, "_make_console"):
@@ -61,7 +59,6 @@ async def test_pending_refresh_cannot_write_after_stream_teardown(finish):
         await renderer.close()
 
 
-@pytest.mark.asyncio
 async def test_resuming_after_trace_renders_the_buffered_tail():
     with patch.object(stream, "Live") as live_class, patch.object(stream, "_make_console"):
         live_class.side_effect = [MagicMock(), MagicMock()]

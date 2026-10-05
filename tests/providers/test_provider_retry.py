@@ -44,7 +44,6 @@ class ScriptedProvider(LLMProvider):
         return "test-model"
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_retries_transient_error_then_succeeds(monkeypatch) -> None:
     provider = ScriptedProvider([
         LLMResponse(content="429 rate limit", finish_reason="error"),
@@ -65,7 +64,6 @@ async def test_chat_with_retry_retries_transient_error_then_succeeds(monkeypatch
     assert delays == [1]
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_emits_structured_retry_lifecycle(monkeypatch) -> None:
     provider = ScriptedProvider([
         LLMResponse(
@@ -99,7 +97,6 @@ async def test_chat_with_retry_emits_structured_retry_lifecycle(monkeypatch) -> 
     assert statuses[1].attempt == 2
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_clears_waiting_status_on_terminal_non_transient_error(
     monkeypatch,
 ) -> None:
@@ -137,7 +134,6 @@ async def test_chat_with_retry_clears_waiting_status_on_terminal_non_transient_e
     assert statuses[-1].error_kind == "unknown"
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_does_not_retry_non_transient_error(monkeypatch) -> None:
     provider = ScriptedProvider([
         LLMResponse(content="401 unauthorized", finish_reason="error"),
@@ -156,7 +152,6 @@ async def test_chat_with_retry_does_not_retry_non_transient_error(monkeypatch) -
     assert delays == []
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_returns_final_error_after_retries(monkeypatch) -> None:
     provider = ScriptedProvider([
         LLMResponse(content="429 rate limit a", finish_reason="error"),
@@ -178,7 +173,6 @@ async def test_chat_with_retry_returns_final_error_after_retries(monkeypatch) ->
     assert delays == [1, 2, 4]
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_emits_terminal_progress_when_standard_retries_exhaust(monkeypatch) -> None:
     provider = ScriptedProvider([
         LLMResponse(content="429 rate limit a", finish_reason="error"),
@@ -220,7 +214,6 @@ async def test_chat_with_retry_emits_terminal_progress_when_standard_retries_exh
     )
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_routes_terminal_progress_to_explicit_callback(monkeypatch) -> None:
     provider = ScriptedProvider([
         LLMResponse(content="429 rate limit a", finish_reason="error"),
@@ -253,7 +246,6 @@ async def test_chat_with_retry_routes_terminal_progress_to_explicit_callback(mon
     assert terminal_progress == ["Model request failed after 4 attempts, giving up."]
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_preserves_cancelled_error() -> None:
     provider = ScriptedProvider([asyncio.CancelledError()])
 
@@ -261,7 +253,6 @@ async def test_chat_with_retry_preserves_cancelled_error() -> None:
         await provider.chat_with_retry(messages=[{"role": "user", "content": "hello"}])
 
 
-@pytest.mark.asyncio
 async def test_chat_stream_with_retry_does_not_retry_after_emitting_content(monkeypatch) -> None:
     first = LLMResponse(content="stream stalled", finish_reason="error")
     first._test_stream_delta = "partial"  # type: ignore[attr-defined]
@@ -291,7 +282,6 @@ async def test_chat_stream_with_retry_does_not_retry_after_emitting_content(monk
     assert delays == []
 
 
-@pytest.mark.asyncio
 async def test_chat_stream_with_retry_retries_timeout_after_emitting_content(monkeypatch) -> None:
     first = LLMResponse(
         content="Error calling LLM: stream stalled for more than 30 seconds",
@@ -327,7 +317,6 @@ async def test_chat_stream_with_retry_retries_timeout_after_emitting_content(mon
     assert provider.last_kwargs.get("on_content_delta") is None
 
 
-@pytest.mark.asyncio
 async def test_chat_stream_with_retry_retries_timeout_in_new_stream_segment(
     monkeypatch,
 ) -> None:
@@ -370,7 +359,6 @@ async def test_chat_stream_with_retry_retries_timeout_in_new_stream_segment(
     assert provider.last_kwargs.get("on_content_delta") is not None
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_uses_provider_generation_defaults() -> None:
     """When callers omit generation params, provider.generation defaults are used."""
     provider = ScriptedProvider([LLMResponse(content="ok")])
@@ -383,7 +371,6 @@ async def test_chat_with_retry_uses_provider_generation_defaults() -> None:
     assert provider.last_kwargs["reasoning_effort"] == "high"
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_explicit_override_beats_defaults() -> None:
     """Explicit kwargs should override provider.generation defaults."""
     provider = ScriptedProvider([LLMResponse(content="ok")])
@@ -420,7 +407,6 @@ _IMAGE_MSG_NO_META = [
 ]
 
 
-@pytest.mark.asyncio
 async def test_non_transient_error_with_images_retries_without_images() -> None:
     """Any non-transient error retries once with images stripped when images are present."""
     provider = ScriptedProvider([
@@ -440,7 +426,6 @@ async def test_non_transient_error_with_images_retries_without_images() -> None:
             assert any("not delivered" in (b.get("text") or "").lower() for b in content)
 
 
-@pytest.mark.asyncio
 async def test_successful_image_retry_mutates_original_messages_in_place() -> None:
     """Successful no-image retry should update the caller's message history."""
     provider = ScriptedProvider([
@@ -458,7 +443,6 @@ async def test_successful_image_retry_mutates_original_messages_in_place() -> No
     assert any("not delivered" in (block.get("text") or "").lower() for block in content)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("messages", "payload", "pending_messages"),
     [
@@ -539,7 +523,6 @@ async def test_image_retry_discards_provider_state_with_images(
         assert all(block.get("type") != "image_url" for block in public_content)
 
 
-@pytest.mark.asyncio
 async def test_non_transient_error_without_images_no_retry() -> None:
     """Non-transient errors without image content are returned immediately."""
     provider = ScriptedProvider([
@@ -554,7 +537,6 @@ async def test_non_transient_error_without_images_no_retry() -> None:
     assert response.finish_reason == "error"
 
 
-@pytest.mark.asyncio
 async def test_image_fallback_returns_error_on_second_failure() -> None:
     """If the image-stripped retry also fails, return that error."""
     provider = ScriptedProvider([
@@ -569,7 +551,6 @@ async def test_image_fallback_returns_error_on_second_failure() -> None:
     assert response.finish_reason == "error"
 
 
-@pytest.mark.asyncio
 async def test_image_fallback_without_meta_uses_default_placeholder() -> None:
     """When _meta is absent, fallback placeholder is non-descriptive."""
     provider = ScriptedProvider([
@@ -588,7 +569,6 @@ async def test_image_fallback_without_meta_uses_default_placeholder() -> None:
             assert any("not delivered" in (b.get("text") or "").lower() for b in content)
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_uses_retry_after_and_emits_wait_progress(monkeypatch) -> None:
     provider = ScriptedProvider([
         LLMResponse(content="429 rate limit, retry after 7s", finish_reason="error"),
@@ -660,7 +640,6 @@ def test_extract_retry_after_from_headers_supports_retry_after_ms() -> None:
     ) == 0.5
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_prefers_structured_retry_after_when_present(monkeypatch) -> None:
     provider = ScriptedProvider([
         LLMResponse(content="429 rate limit", finish_reason="error", retry_after=9.0),
@@ -679,7 +658,6 @@ async def test_chat_with_retry_prefers_structured_retry_after_when_present(monke
     assert delays == [9.0 + RETRY_AFTER_BUFFER]
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_retries_structured_status_code_without_keyword(monkeypatch) -> None:
     provider = ScriptedProvider([
         LLMResponse(
@@ -703,7 +681,6 @@ async def test_chat_with_retry_retries_structured_status_code_without_keyword(mo
     assert delays == [1]
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_stops_on_429_quota_exhausted(monkeypatch) -> None:
     provider = ScriptedProvider([
         LLMResponse(
@@ -729,7 +706,6 @@ async def test_chat_with_retry_stops_on_429_quota_exhausted(monkeypatch) -> None
     assert delays == []
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_retries_429_transient_rate_limit(monkeypatch) -> None:
     provider = ScriptedProvider([
         LLMResponse(
@@ -756,7 +732,6 @@ async def test_chat_with_retry_retries_429_transient_rate_limit(monkeypatch) -> 
     assert delays == [0.2 + RETRY_AFTER_BUFFER]
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_retries_structured_timeout_kind(monkeypatch) -> None:
     provider = ScriptedProvider([
         LLMResponse(
@@ -780,7 +755,6 @@ async def test_chat_with_retry_retries_structured_timeout_kind(monkeypatch) -> N
     assert delays == [1]
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_structured_should_retry_false_disables_retry(monkeypatch) -> None:
     provider = ScriptedProvider([
         LLMResponse(
@@ -803,7 +777,6 @@ async def test_chat_with_retry_structured_should_retry_false_disables_retry(monk
     assert delays == []
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_prefers_structured_retry_after(monkeypatch) -> None:
     provider = ScriptedProvider([
         LLMResponse(
@@ -826,7 +799,6 @@ async def test_chat_with_retry_prefers_structured_retry_after(monkeypatch) -> No
     assert delays == [0.2 + RETRY_AFTER_BUFFER]
 
 
-@pytest.mark.asyncio
 async def test_persistent_retry_aborts_after_ten_identical_transient_errors(monkeypatch) -> None:
     provider = ScriptedProvider([
         *[LLMResponse(content="429 rate limit", finish_reason="error") for _ in range(10)],
@@ -850,7 +822,6 @@ async def test_persistent_retry_aborts_after_ten_identical_transient_errors(monk
     assert delays == [1, 2, 4, 4, 4, 4, 4, 4, 4]
 
 
-@pytest.mark.asyncio
 async def test_persistent_retry_emits_terminal_progress_on_identical_error_limit(monkeypatch) -> None:
     provider = ScriptedProvider([
         *[LLMResponse(content="429 rate limit", finish_reason="error") for _ in range(10)],
@@ -875,7 +846,6 @@ async def test_persistent_retry_emits_terminal_progress_on_identical_error_limit
     assert progress[-1] == "Persistent retry stopped after 10 identical errors."
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_normalizes_explicit_none_max_tokens() -> None:
     """Explicit max_tokens=None must fall back to generation defaults.
 
@@ -898,7 +868,6 @@ async def test_chat_with_retry_normalizes_explicit_none_max_tokens() -> None:
     assert provider.last_kwargs["temperature"] == 0.7
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_retries_zhipu_1302_rate_limit(monkeypatch) -> None:
     """ZhiPu returns code 1302 with Chinese rate-limit text instead of HTTP 429."""
     provider = ScriptedProvider([
@@ -922,7 +891,6 @@ async def test_chat_with_retry_retries_zhipu_1302_rate_limit(monkeypatch) -> Non
     assert delays == [1]
 
 
-@pytest.mark.asyncio
 async def test_chat_with_retry_retries_zhipu_1302_with_429_status(monkeypatch) -> None:
     """ZhiPu 1302 error with HTTP 429 status should also retry."""
     provider = ScriptedProvider([
@@ -948,7 +916,6 @@ async def test_chat_with_retry_retries_zhipu_1302_with_429_status(monkeypatch) -
     assert delays == [1]
 
 
-@pytest.mark.asyncio
 async def test_chat_stream_with_retry_normalizes_explicit_none_max_tokens() -> None:
     """chat_stream_with_retry must apply the same None-guard as chat_with_retry."""
     provider = ScriptedProvider([LLMResponse(content="ok")])

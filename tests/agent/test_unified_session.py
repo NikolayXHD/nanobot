@@ -17,8 +17,6 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
-
 from agent.session_helpers import run_session
 from nanobot.agent.loop import AgentLoop
 from nanobot.agent.tools.file_state import FileStateStore
@@ -81,7 +79,6 @@ def _make_msg(channel: str = "telegram", chat_id: str = "111",
 class TestUnifiedSessionDispatch:
     """Session admission applies the unified-session routing policy."""
 
-    @pytest.mark.asyncio
     async def test_unified_session_rewrites_key_to_unified_default(self, tmp_path: Path):
         """When unified_session=True, all messages use 'unified:default' as session key."""
         loop = _make_loop(tmp_path, unified_session=True)
@@ -99,7 +96,6 @@ class TestUnifiedSessionDispatch:
 
         assert captured == ["unified:default"]
 
-    @pytest.mark.asyncio
     async def test_unified_session_different_channels_share_same_key(self, tmp_path: Path):
         """Messages from different channels all resolve to the same session key."""
         loop = _make_loop(tmp_path, unified_session=True)
@@ -118,7 +114,6 @@ class TestUnifiedSessionDispatch:
 
         assert captured == ["unified:default", "unified:default", "unified:default"]
 
-    @pytest.mark.asyncio
     async def test_unified_session_disabled_preserves_original_key(self, tmp_path: Path):
         """When unified_session=False (default), session key is channel:chat_id as usual."""
         loop = _make_loop(tmp_path, unified_session=False)
@@ -136,7 +131,6 @@ class TestUnifiedSessionDispatch:
 
         assert captured == ["telegram:999"]
 
-    @pytest.mark.asyncio
     async def test_unified_session_respects_existing_override(self, tmp_path: Path):
         """If session_key_override is already set (e.g. Telegram thread), it is NOT overwritten."""
         loop = _make_loop(tmp_path, unified_session=True)
@@ -234,7 +228,6 @@ class TestCmdNewUnifiedSession:
         register_builtin_commands(router)
         assert "/new" in router._exact
 
-    @pytest.mark.asyncio
     async def test_cmd_new_clears_unified_session(self, tmp_path: Path):
         """cmd_new called with key='unified:default' clears the shared session."""
         sessions = SessionManager(tmp_path)
@@ -299,7 +292,6 @@ class TestCmdNewUnifiedSession:
         )
         loop.llm_runtime.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_cmd_new_in_unified_mode_does_not_affect_other_sessions(self, tmp_path: Path):
         """Clearing unified:default must not touch other sessions on disk."""
         sessions = SessionManager(tmp_path)
@@ -342,7 +334,6 @@ class TestCmdNewUnifiedSession:
 class TestStopCommandWithUnifiedSession:
     """Verify /stop command works correctly with unified session enabled."""
 
-    @pytest.mark.asyncio
     async def test_active_tasks_use_effective_key_in_unified_mode(self, tmp_path: Path):
         """When unified_session=True, tasks are stored under UNIFIED_SESSION_KEY."""
         loop = _make_loop(tmp_path, unified_session=True)
@@ -355,7 +346,6 @@ class TestStopCommandWithUnifiedSession:
         assert set(loop._active_tasks) == {UNIFIED_SESSION_KEY}
         await asyncio.gather(*loop._active_tasks[UNIFIED_SESSION_KEY])
 
-    @pytest.mark.asyncio
     async def test_stop_command_finds_task_in_unified_mode(self, tmp_path: Path):
         """cmd_stop can cancel tasks when unified_session=True."""
         from nanobot.command.builtin import cmd_stop
@@ -387,7 +377,6 @@ class TestStopCommandWithUnifiedSession:
         assert task.cancelled() or task.done()
         assert "Stopped 1 task" in result.content
 
-    @pytest.mark.asyncio
     async def test_stop_command_uses_effective_key_without_session_override(self, tmp_path: Path):
         """Priority /stop must cancel the unified session even before dispatch rewrites the message."""
         from nanobot.command.builtin import cmd_stop
@@ -412,7 +401,6 @@ class TestStopCommandWithUnifiedSession:
         assert task.cancelled() or task.done()
         assert "Stopped 1 task" in result.content
 
-    @pytest.mark.asyncio
     async def test_stop_command_cross_channel_in_unified_mode(self, tmp_path: Path):
         """In unified mode, /stop from one channel cancels tasks from another channel."""
         from nanobot.command.builtin import cmd_stop

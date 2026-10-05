@@ -209,7 +209,6 @@ def test_plugin_mcp_namespaces_cannot_shadow_plugin_identities(tmp_path: Path) -
     assert servers["foo--bar"].args == ["multi"]
 
 
-@pytest.mark.asyncio
 async def test_restricted_project_can_read_only_enabled_plugin_skill(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -260,7 +259,6 @@ async def test_restricted_project_can_read_only_enabled_plugin_skill(
     assert resource.read_text(encoding="utf-8") == "plugin reference"
 
 
-@pytest.mark.asyncio
 async def test_restricted_project_revokes_cached_plugin_read_after_replacement(
     tmp_path: Path,
 ) -> None:
@@ -302,7 +300,6 @@ async def test_restricted_project_revokes_cached_plugin_read_after_replacement(
     assert discover_agent_plugins(agent_workspace)[0].enabled is False
 
 
-@pytest.mark.asyncio
 async def test_project_reads_do_not_rescan_cached_plugin_packages(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

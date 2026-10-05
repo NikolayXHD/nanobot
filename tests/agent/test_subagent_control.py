@@ -59,7 +59,6 @@ async def settled(manager):
     await asyncio.sleep(0)
 
 
-@pytest.mark.asyncio
 async def test_direct_turn_waits_for_child_without_a_background_consumer(loop_factory):
     loop = loop_factory()
     loop.provider.provider_name = "test"
@@ -84,7 +83,6 @@ async def test_direct_turn_waits_for_child_without_a_background_consumer(loop_fa
         await loop.subagents.close()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("existing_parent", [False, True])
 @pytest.mark.parametrize("streamed", [False, True])
 async def test_sdk_ephemeral_delegation_never_persists_on_later_flush(
@@ -154,7 +152,6 @@ async def test_sdk_ephemeral_delegation_never_persists_on_later_flush(
         await bot.aclose()
 
 
-@pytest.mark.asyncio
 async def test_child_origin_uses_the_channel_turn_identity(loop_factory):
     loop = loop_factory()
     loop.provider.provider_name = "test"
@@ -176,7 +173,6 @@ async def test_child_origin_uses_the_channel_turn_identity(loop_factory):
         await loop.subagents.close()
 
 
-@pytest.mark.asyncio
 async def test_owner_canonical_fallback_and_absent_context(tmp_path):
     manager, _, ctx = setup(tmp_path)
     manager.runner.run = AsyncMock(return_value=AgentRunResult(messages=[], final_content="private"))
@@ -217,7 +213,6 @@ async def test_owner_canonical_fallback_and_absent_context(tmp_path):
     await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_bounded_fifo_snapshot_and_terminal_receipts(tmp_path):
     manager, _, ctx = setup(tmp_path)
     entered, drain, drained, finish = (asyncio.Event() for _ in range(4))
@@ -260,7 +255,6 @@ async def test_bounded_fifo_snapshot_and_terminal_receipts(tmp_path):
     await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_lifetime_receipt_limit_rejects_without_silent_eviction(tmp_path):
     manager, _, ctx = setup(tmp_path)
     manager.MAX_MESSAGES = 2
@@ -284,7 +278,6 @@ async def test_lifetime_receipt_limit_rejects_without_silent_eviction(tmp_path):
     await manager.close()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("begun", [False, True])
 async def test_queued_cancel_is_idempotent_and_never_admitted(tmp_path, begun):
     manager, _, ctx = setup(tmp_path, max_concurrent_subagents=1)
@@ -316,7 +309,6 @@ async def test_queued_cancel_is_idempotent_and_never_admitted(tmp_path, begun):
         assert is_tool_error_result(await SubagentTool(manager).execute(action="create", task="after close"))
 
 
-@pytest.mark.asyncio
 async def test_real_runner_injects_followup_without_durable_child_session(tmp_path):
     manager, provider, ctx = setup(tmp_path)
     entered, release = asyncio.Event(), asyncio.Event()
@@ -344,7 +336,6 @@ async def test_real_runner_injects_followup_without_durable_child_session(tmp_pa
     await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_iteration_limit_returns_partial_findings_without_success_notice(tmp_path):
     manager, provider, ctx = setup(tmp_path, max_iterations=1)
     (tmp_path / "note.txt").write_text("evidence", encoding="utf-8")
@@ -372,7 +363,6 @@ async def test_iteration_limit_returns_partial_findings_without_success_notice(t
     await manager.close()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("inline", [False, True])
 async def test_cancel_preserves_completed_iteration_output_and_receipts(tmp_path, inline):
     manager, provider, ctx = setup(tmp_path)
@@ -418,7 +408,6 @@ async def test_cancel_preserves_completed_iteration_output_and_receipts(tmp_path
     await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_empty_final_response_is_a_failure(tmp_path):
     manager, provider, ctx = setup(tmp_path)
     provider.chat_stream_with_retry = AsyncMock(return_value=LLMResponse(content=""))
@@ -434,7 +423,6 @@ async def test_empty_final_response_is_a_failure(tmp_path):
     await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_host_without_background_consumer_returns_the_child_result(tmp_path):
     manager, _, ctx = setup(tmp_path)
     ctx = RequestContext("cli", "oneshot", session_key="cli:oneshot", runtime=ctx.runtime,
@@ -448,7 +436,6 @@ async def test_host_without_background_consumer_returns_the_child_result(tmp_pat
     await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_provider_suppressed_cancellation_cannot_execute_returned_tools(tmp_path):
     manager, provider, ctx = setup(tmp_path)
     entered = asyncio.Event()
@@ -472,7 +459,6 @@ async def test_provider_suppressed_cancellation_cannot_execute_returned_tools(tm
     await manager.close()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("ending", ["done", "error", "cancel"])
 async def test_real_task_process_cleanup_preserves_sibling_parent_and_work_products(tmp_path, ending):
     manager, _, ctx = setup(tmp_path)
@@ -552,7 +538,6 @@ async def test_real_task_process_cleanup_preserves_sibling_parent_and_work_produ
     assert (tmp_path / "two-output.txt").read_text() == "two"
 
 
-@pytest.mark.asyncio
 async def test_terminal_retention_and_active_capacity_are_bounded(tmp_path):
     manager, _, ctx = setup(tmp_path)
     manager.MAX_TERMINAL = 2
@@ -580,7 +565,6 @@ async def test_terminal_retention_and_active_capacity_are_bounded(tmp_path):
     await manager.close()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("shutdown", [False, True])
 async def test_completion_wins_cancel_race_and_rejects_late_messages(tmp_path, shutdown):
     manager, _, ctx = setup(tmp_path)
@@ -613,7 +597,6 @@ async def test_completion_wins_cancel_race_and_rejects_late_messages(tmp_path, s
     await manager.close()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("late_failure", [False, True])
 async def test_cancel_wins_over_late_execution_result(tmp_path, late_failure):
     manager, _, ctx = setup(tmp_path)
@@ -647,7 +630,6 @@ async def test_cancel_wins_over_late_execution_result(tmp_path, late_failure):
     await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_inline_caller_cancel_closes_child_without_notice(tmp_path):
     manager, _, ctx = setup(tmp_path)
     entered = asyncio.Event()
@@ -669,7 +651,6 @@ async def test_inline_caller_cancel_closes_child_without_notice(tmp_path):
     await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_cleanup_failure_survives_status_eviction_and_shutdown_retries(tmp_path):
     manager, _, ctx = setup(tmp_path)
     manager.MAX_TERMINAL = 1
@@ -704,7 +685,6 @@ async def test_cleanup_failure_survives_status_eviction_and_shutdown_retries(tmp
     assert list(manager.runtime_statuses()) == [newer]
 
 
-@pytest.mark.asyncio
 async def test_tool_suppressed_cancellation_cannot_start_next_tool(tmp_path):
     manager, provider, ctx = setup(tmp_path)
     entered = asyncio.Event()
@@ -738,7 +718,6 @@ async def test_tool_suppressed_cancellation_cannot_start_next_tool(tmp_path):
     await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_long_running_task_receipts_survive_newer_task_retention(tmp_path):
     manager, _, ctx = setup(tmp_path)
     manager.MAX_TERMINAL = 1
@@ -767,7 +746,6 @@ async def test_long_running_task_receipts_survive_newer_task_retention(tmp_path)
     await manager.close()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("operation", ["cancel", "session", "close", "inline"])
 async def test_resistant_dependency_has_bounded_stop_and_no_late_result(tmp_path, operation):
     manager, provider, ctx = setup(tmp_path, max_concurrent_subagents=1)
@@ -830,7 +808,6 @@ async def test_resistant_dependency_has_bounded_stop_and_no_late_result(tmp_path
     assert manager.bus.inbound_size == (1 if operation == "cancel" else 0)
 
 
-@pytest.mark.asyncio
 async def test_targeted_inline_cancel_does_not_cancel_waiting_parent(tmp_path):
     manager, _, ctx = setup(tmp_path)
     entered = asyncio.Event()
@@ -851,7 +828,6 @@ async def test_targeted_inline_cancel_does_not_cancel_waiting_parent(tmp_path):
     await manager.close()
 
 
-@pytest.mark.asyncio
 async def test_cleanup_wait_is_bounded_and_repeated_cancel_does_not_interrupt_it(tmp_path):
     manager, _, ctx = setup(tmp_path)
     manager.CANCEL_WAIT_SECONDS = 0.02

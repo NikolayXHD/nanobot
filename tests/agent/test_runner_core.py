@@ -217,7 +217,6 @@ def test_usage_or_estimate_trusts_positive_reported_total(monkeypatch) -> None:
     estimate.assert_not_called()
 
 
-@pytest.mark.asyncio
 async def test_runner_preserves_reasoning_fields_and_tool_results():
     from nanobot.agent.runner import AgentRunner
 
@@ -274,7 +273,6 @@ async def test_runner_preserves_reasoning_fields_and_tool_results():
     )
 
 
-@pytest.mark.asyncio
 async def test_runner_replays_provider_state_without_chat_projection_duplicates():
     from nanobot.agent.runner import AgentRunner
 
@@ -372,7 +370,6 @@ async def test_runner_replays_provider_state_without_chat_projection_duplicates(
     assert checkpoints[2]["provider_state"].payload == second_state.payload
 
 
-@pytest.mark.asyncio
 async def test_runner_preserves_tool_result_before_rejecting_unfit_followup():
     from nanobot.agent.runner import AgentRunner
 
@@ -444,7 +441,6 @@ async def test_runner_preserves_tool_result_before_rejecting_unfit_followup():
     }]
 
 
-@pytest.mark.asyncio
 async def test_injected_final_response_checkpoint_includes_provider_state():
     from nanobot.agent.runner import AgentRunner
 
@@ -495,7 +491,6 @@ async def test_injected_final_response_checkpoint_includes_provider_state():
     assert checkpoints[0]["provider_state"].payload == first_state.payload
 
 
-@pytest.mark.asyncio
 async def test_runner_preserves_last_completed_provider_state_on_model_error():
     from nanobot.agent.runner import AgentRunner
 
@@ -538,7 +533,6 @@ async def test_runner_preserves_last_completed_provider_state_on_model_error():
     assert "model error" in result.provider_state.pending_messages[1]["content"]
 
 
-@pytest.mark.asyncio
 async def test_runner_discards_provider_state_on_non_retryable_model_error():
     from nanobot.agent.runner import AgentRunner
 
@@ -574,7 +568,6 @@ async def test_runner_discards_provider_state_on_non_retryable_model_error():
     assert result.provider_state is None
 
 
-@pytest.mark.asyncio
 async def test_runner_returns_max_iterations_fallback():
     from nanobot.agent.runner import AgentRunner
 
@@ -608,7 +601,6 @@ async def test_runner_returns_max_iterations_fallback():
     assert tools.execute.await_count == 2
 
 
-@pytest.mark.asyncio
 async def test_runner_uses_no_tools_finalization_after_max_iterations():
     from nanobot.agent.runner import AgentRunner
 
@@ -669,7 +661,6 @@ async def test_runner_uses_no_tools_finalization_after_max_iterations():
     ]
 
 
-@pytest.mark.asyncio
 async def test_runner_replaces_empty_tool_result_with_marker():
     from nanobot.agent.runner import AgentRunner
 
@@ -707,7 +698,6 @@ async def test_runner_replaces_empty_tool_result_with_marker():
     assert tool_message["content"] == "(noop completed with no output)"
 
 
-@pytest.mark.asyncio
 async def test_runner_retries_empty_final_response_with_summary_prompt():
     """Empty responses get 2 silent retries before finalization kicks in."""
     from nanobot.agent.runner import AgentRunner
@@ -758,7 +748,6 @@ async def test_runner_retries_empty_final_response_with_summary_prompt():
     ]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("finish_reason", ["refusal", "content_filter"])
 async def test_runner_does_not_retry_blank_policy_terminal(
     finish_reason: str,
@@ -788,7 +777,6 @@ async def test_runner_does_not_retry_blank_policy_terminal(
     assert result.stop_reason == "empty_final_response"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("finish_reason", ["refusal", "content_filter"])
 async def test_runner_does_not_auto_continue_goal_after_policy_terminal(
     finish_reason: str,
@@ -821,7 +809,6 @@ async def test_runner_does_not_auto_continue_goal_after_policy_terminal(
     assert result.stop_reason == "completed"
 
 
-@pytest.mark.asyncio
 async def test_runner_uses_specific_message_after_empty_finalization_retry():
     """After silent retries + finalization all return empty, stop_reason is empty_final_response."""
     from nanobot.agent.runner import AgentRunner
@@ -849,7 +836,6 @@ async def test_runner_uses_specific_message_after_empty_finalization_retry():
     assert result.stop_reason == "empty_final_response"
 
 
-@pytest.mark.asyncio
 async def test_empty_finalization_retry_discards_candidate_provider_state():
     from nanobot.agent.runner import AgentRunner
 
@@ -899,7 +885,6 @@ async def test_empty_finalization_retry_discards_candidate_provider_state():
     assert result.provider_state is None
 
 
-@pytest.mark.asyncio
 async def test_runner_length_recovery_returns_all_segments():
     """Recovered output segments are returned together instead of only the tail."""
     from nanobot.agent.runner import AgentRunner
@@ -931,7 +916,6 @@ async def test_runner_length_recovery_returns_all_segments():
     assert provider.chat_stream_with_retry.await_count == 3
 
 
-@pytest.mark.asyncio
 async def test_runner_length_recovery_preserves_prefix_at_max_iterations():
     """Budget exhaustion must not replace output already produced by recovery."""
     from nanobot.agent.runner import AgentRunner
@@ -965,7 +949,6 @@ async def test_runner_length_recovery_preserves_prefix_at_max_iterations():
     ] == ["partial answer", "limit reached"]
 
 
-@pytest.mark.asyncio
 async def test_runner_length_recovery_does_not_leak_across_tool_calls():
     """A recovered prefix belongs only to its contiguous response chain."""
     from nanobot.agent.runner import AgentRunner
@@ -997,7 +980,6 @@ async def test_runner_length_recovery_does_not_leak_across_tool_calls():
     assert result.tools_used == ["read_file"]
 
 
-@pytest.mark.asyncio
 async def test_runner_empty_response_does_not_break_tool_chain():
     """An empty intermediate response must not kill an ongoing tool chain.
 
@@ -1056,7 +1038,6 @@ async def test_runner_empty_response_does_not_break_tool_chain():
     assert "read_file" in result.tools_used
 
 
-@pytest.mark.asyncio
 async def test_runner_accumulates_usage_and_preserves_cache_reads():
     """Runner accumulates usage across iterations, including cache reads."""
     from nanobot.agent.runner import AgentRunner
@@ -1108,7 +1089,6 @@ async def test_runner_accumulates_usage_and_preserves_cache_reads():
     ]
 
 
-@pytest.mark.asyncio
 async def test_runner_carries_retry_notifications_in_provider_context():
     """The runner carries a generic scope, not an event-specific callback."""
     from nanobot.agent.runner import AgentRunner
@@ -1151,7 +1131,6 @@ async def test_runner_carries_retry_notifications_in_provider_context():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
 async def test_runner_passes_temperature_to_provider():
     """temperature from AgentRunSpec should reach provider.chat_stream_with_retry."""
     from nanobot.agent.runner import AgentRunner
@@ -1180,7 +1159,6 @@ async def test_runner_passes_temperature_to_provider():
     assert captured["temperature"] == 0.7
 
 
-@pytest.mark.asyncio
 async def test_runner_passes_max_tokens_to_provider():
     """max_tokens from AgentRunSpec should reach provider.chat_stream_with_retry."""
     from nanobot.agent.runner import AgentRunner
@@ -1209,7 +1187,6 @@ async def test_runner_passes_max_tokens_to_provider():
     assert captured["max_tokens"] == 8192
 
 
-@pytest.mark.asyncio
 async def test_runner_passes_reasoning_effort_to_provider():
     """reasoning_effort from AgentRunSpec should reach provider.chat_stream_with_retry."""
     from nanobot.agent.runner import AgentRunner

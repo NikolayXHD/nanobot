@@ -27,7 +27,6 @@ def _runtime_state(tmp_path):
     )
 
 
-@pytest.mark.asyncio
 async def test_image_generation_reload_replaces_and_removes_live_tool(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
@@ -74,7 +73,6 @@ async def test_image_generation_reload_replaces_and_removes_live_tool(
     assert not registry.has("generate_image")
 
 
-@pytest.mark.asyncio
 async def test_image_generation_reload_reaches_agent_runtime_control(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,

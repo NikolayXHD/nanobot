@@ -35,7 +35,6 @@ class RecordingProvider(LLMProvider):
         return 100, "test"
 
 
-@pytest.mark.asyncio
 async def test_sessions_run_concurrently_with_isolated_model_presets(tmp_path) -> None:
     base = RecordingProvider("base-model")
     fast = RecordingProvider("fast-model")
@@ -109,7 +108,6 @@ async def test_sessions_run_concurrently_with_isolated_model_presets(tmp_path) -
     assert load_counts == {"fast": 1, "deep": 1}
 
 
-@pytest.mark.asyncio
 async def test_removed_session_model_preset_falls_back_and_clears_metadata(tmp_path) -> None:
     base = RecordingProvider("base-model")
     loop = AgentLoop(
@@ -135,7 +133,6 @@ async def test_removed_session_model_preset_falls_back_and_clears_metadata(tmp_p
     assert model_preset_from_metadata(restored.metadata) is None
 
 
-@pytest.mark.asyncio
 async def test_streamed_sdk_resolves_session_runtime_after_lock_admission(tmp_path) -> None:
     base = RecordingProvider("base-model")
     fast = RecordingProvider("fast-model")
@@ -188,7 +185,6 @@ async def test_streamed_sdk_resolves_session_runtime_after_lock_admission(tmp_pa
 
 
 @pytest.mark.parametrize("custom_value", ["legacy-tag", 7])
-@pytest.mark.asyncio
 async def test_sdk_custom_model_preset_metadata_does_not_select_runtime(
     tmp_path,
     custom_value,
@@ -229,7 +225,6 @@ async def test_sdk_custom_model_preset_metadata_does_not_select_runtime(
 
 
 @pytest.mark.parametrize("invalid_value", [{"invalid": True}, "  "])
-@pytest.mark.asyncio
 async def test_sdk_invalid_internal_model_preset_metadata_fails_explicitly(
     tmp_path,
     invalid_value,

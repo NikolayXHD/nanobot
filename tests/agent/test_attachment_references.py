@@ -43,7 +43,6 @@ def _turn_context(loop: AgentLoop, msg: InboundMessage) -> TurnContext:
     )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("extract_document_text", [True, False])
 async def test_document_attachment_is_referenced_and_read_on_demand(
     tmp_path: Path,
@@ -84,7 +83,6 @@ async def test_document_attachment_is_referenced_and_read_on_demand(
     assert "2| nanobot,1" in result
 
 
-@pytest.mark.asyncio
 async def test_document_reference_survives_session_reload(tmp_path: Path) -> None:
     workspace = tmp_path / "workspace"
     workspace.mkdir()
@@ -115,7 +113,6 @@ async def test_document_reference_survives_session_reload(tmp_path: Path) -> Non
     assert "media" not in persisted.messages[0]
 
 
-@pytest.mark.asyncio
 async def test_pending_document_attachment_keeps_body_out_of_prompt(
     tmp_path: Path,
 ) -> None:

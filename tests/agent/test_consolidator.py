@@ -639,7 +639,6 @@ class TestCompactIdleSession:
         assert sessions.get_or_create(session.key).last_archived == 1
         mock_provider.chat_stream_with_retry.assert_not_awaited()
 
-    @pytest.mark.asyncio
     async def test_archives_full_tail_preserves_messages_and_replays_checkpoint(
         self, real_consolidator, mock_provider, runtime
     ):
@@ -675,7 +674,6 @@ class TestCompactIdleSession:
         assert "last_active" in meta
         assert reloaded.updated_at == old_ts
 
-    @pytest.mark.asyncio
     async def test_emits_manual_compaction_lifecycle(
         self, real_consolidator, mock_provider, runtime
     ):
@@ -704,7 +702,6 @@ class TestCompactIdleSession:
         assert events[0].compaction_id == events[1].compaction_id
         assert all(event.notify for event in events)
 
-    @pytest.mark.asyncio
     async def test_event_callback_failure_does_not_abort_compaction(
         self, real_consolidator, mock_provider, runtime
     ):
@@ -728,7 +725,6 @@ class TestCompactIdleSession:
         reloaded = real_consolidator.sessions.get_or_create("cli:event-callback-failure")
         assert reloaded.last_archived == 1
 
-    @pytest.mark.asyncio
     async def test_short_idle_session_archives_once(
         self, real_consolidator, mock_provider, store, runtime
     ):
@@ -752,7 +748,6 @@ class TestCompactIdleSession:
         assert reloaded.last_archived == 2
         assert reloaded.get_history() == []
 
-    @pytest.mark.asyncio
     async def test_idle_compaction_with_no_new_messages_is_noop(
         self, real_consolidator, mock_provider, store, runtime
     ):
@@ -778,7 +773,6 @@ class TestCompactIdleSession:
         assert reloaded.provider_state == _provider_state()
         assert store.read_unprocessed_history(since_cursor=0) == []
 
-    @pytest.mark.asyncio
     async def test_next_turn_rebuilds_context_after_idle_compaction(
         self, loop_factory, mock_provider,
     ):
@@ -818,7 +812,6 @@ class TestCompactIdleSession:
         finally:
             await loop.aclose()
 
-    @pytest.mark.asyncio
     async def test_archive_failure_preserves_provider_state(self, real_consolidator, runtime):
         sessions = real_consolidator.sessions
         session = sessions.get_or_create("cli:failed-archive")
@@ -836,7 +829,6 @@ class TestCompactIdleSession:
         assert reloaded.last_archived == 0
         assert "_last_summary" not in reloaded.metadata
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("summary", [None, ""])
     async def test_missing_summary_preserves_replay(self, real_consolidator, runtime, summary):
         sessions = real_consolidator.sessions
@@ -862,7 +854,6 @@ class TestCompactIdleSession:
         assert reloaded.last_archived == 0
         assert reloaded.get_history() == [{"role": "user", "content": "Keep this context"}]
 
-    @pytest.mark.asyncio
     async def test_new_messages_advance_existing_archive_progress(
         self, real_consolidator, mock_provider, runtime
     ):
@@ -905,7 +896,6 @@ class TestCompactIdleSession:
         assert reloaded.last_archived == 5
         assert reloaded.metadata["_last_summary"]["text"] == second
 
-    @pytest.mark.asyncio
     async def test_raw_fallback_preserves_previous_checkpoint_and_new_chunk(
         self,
         real_consolidator,
@@ -950,7 +940,6 @@ class TestCompactIdleSession:
         reloaded = sessions.get_or_create("cli:cumulative-fallback")
         assert reloaded.metadata["_last_summary"]["text"] == fallback
 
-    @pytest.mark.asyncio
     async def test_nothing_replaces_previous_checkpoint(
         self,
         real_consolidator,
@@ -986,7 +975,6 @@ class TestCompactIdleSession:
         assert reloaded.last_archived == 5
         assert reloaded.metadata["_last_summary"]["text"] == result
 
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("max_suffix", [8, 0])
     async def test_concurrent_append_remains_unarchived(
         self, real_consolidator, mock_provider, runtime, max_suffix
@@ -1020,7 +1008,6 @@ class TestCompactIdleSession:
             "late user", "late assistant",
         ]
 
-    @pytest.mark.asyncio
     async def test_summarizes_latest_correction_with_full_history(
         self, real_consolidator, mock_provider, runtime
     ):
@@ -1051,7 +1038,6 @@ class TestCompactIdleSession:
             for message in sent_messages
         )
 
-    @pytest.mark.asyncio
     async def test_raw_dumps_full_archive_batch_on_llm_failure(
         self, real_consolidator, mock_provider, store, runtime
     ):
@@ -1080,7 +1066,6 @@ class TestCompactIdleSession:
         assert reloaded.messages[-2]["content"] == "RETAINED_SUFFIX_marker"
         assert reloaded.provider_state is None
 
-    @pytest.mark.asyncio
     async def test_idle_compact_writes_session_key_to_history(
         self,
         real_consolidator,
@@ -1104,7 +1089,6 @@ class TestCompactIdleSession:
         entries = store.read_unprocessed_history(since_cursor=0)
         assert entries[0]["session_key"] == "cli:test"
 
-    @pytest.mark.asyncio
     async def test_empty_session_does_not_refresh_timestamp(
         self, real_consolidator, runtime
     ):
@@ -1126,7 +1110,6 @@ class TestCompactIdleSession:
         assert reloaded.updated_at == old_ts
         assert reloaded.metadata == {}
 
-    @pytest.mark.asyncio
     async def test_nothing_commits_checkpoint_once_without_raw_archive(
         self, real_consolidator, mock_provider, runtime
     ):
@@ -1157,7 +1140,6 @@ class TestCompactIdleSession:
         assert reloaded.get_history() == []
         mock_provider.chat_stream_with_retry.assert_awaited_once()
 
-    @pytest.mark.asyncio
     async def test_llm_failure_preserves_history_but_advances_replay_boundary(
         self, real_consolidator, mock_provider, store, runtime
     ):
@@ -1187,7 +1169,6 @@ class TestCompactIdleSession:
         assert reloaded.metadata["_last_summary"]["text"] == result
         assert reloaded.get_history(max_messages=20) == []
 
-    @pytest.mark.asyncio
     async def test_respects_last_archived(
         self, real_consolidator, mock_provider, runtime
     ):
@@ -1221,7 +1202,6 @@ class TestCompactIdleSession:
         assert "u26" in sent_content
         assert sent_messages[-1]["content"] == _ARCHIVE_PROMPT
 
-    @pytest.mark.asyncio
     async def test_full_archive_replaces_entire_tool_turn(
         self,
         real_consolidator,
@@ -1256,7 +1236,6 @@ class TestCompactIdleSession:
         assert "assistant-09" in sent_content
         assert "user-14" in sent_content
 
-    @pytest.mark.asyncio
     async def test_preserves_tool_history_and_persists_only_overview(
         self,
         real_consolidator,
@@ -1310,7 +1289,6 @@ class TestCompactIdleSession:
             "Overview from the temporary turn."
         ]
 
-    @pytest.mark.asyncio
     async def test_tool_call_response_retries_with_disabled_tool_results(
         self,
         real_consolidator,
@@ -1372,7 +1350,6 @@ class TestCompactIdleSession:
         assert [entry["content"] for entry in entries] == ["Recovered archive summary."]
         assert sessions.get_or_create("cli:unexpected-tool").last_archived == 2
 
-    @pytest.mark.asyncio
     async def test_repeated_tool_call_response_uses_raw_fallback(
         self,
         real_consolidator,
@@ -1405,7 +1382,6 @@ class TestCompactIdleSession:
         assert "important answer" in entries[0]["content"]
         assert sessions.get_or_create("cli:repeated-tool").last_archived == 2
 
-    @pytest.mark.asyncio
     async def test_empty_response_uses_raw_fallback(
         self,
         real_consolidator,
@@ -1436,7 +1412,6 @@ class TestCompactIdleSession:
         assert "important answer" in entries[0]["content"]
         assert sessions.get_or_create("cli:empty-summary").last_archived == 2
 
-    @pytest.mark.asyncio
     async def test_oversized_prefix_raw_archives_without_flattened_llm_retry(
         self,
         real_consolidator,
@@ -1464,7 +1439,6 @@ class TestCompactIdleSession:
         assert "x" * 100_000 in "".join(entry["content"].split("\n", 1)[1] for entry in entries)
         assert sessions.get_or_create("sdk:oversized").last_archived == 1
 
-    @pytest.mark.asyncio
     async def test_archive_context_contains_only_model_visible_messages(
         self,
         real_consolidator,
@@ -1498,7 +1472,6 @@ class TestCompactIdleSession:
         ]
         assert sent[-1]["content"] == _ARCHIVE_PROMPT
 
-    @pytest.mark.asyncio
     async def test_reuses_real_prefix_for_unified_session_workspace(
         self,
         loop_factory,
@@ -1543,7 +1516,6 @@ class TestCompactIdleSession:
         assert "PROJECT_WORKSPACE_MARKER" in system
         assert "GLOBAL_WORKSPACE_MARKER" not in system
 
-    @pytest.mark.asyncio
     async def test_acquires_consolidation_lock(
         self, real_consolidator, mock_provider, runtime
     ):

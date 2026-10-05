@@ -45,7 +45,6 @@ def _make_loop(*, tools_config=None):
 
 
 class TestActiveTaskTracking:
-    @pytest.mark.asyncio
     async def test_completed_task_removes_empty_session_group(self):
         loop, _bus = _make_loop()
         release = asyncio.Event()
@@ -58,7 +57,6 @@ class TestActiveTaskTracking:
 
         assert "test:c1" not in loop._active_tasks
 
-    @pytest.mark.asyncio
     async def test_session_group_remains_until_last_task_completes(self):
         loop, _bus = _make_loop()
         releases = [asyncio.Event(), asyncio.Event()]
@@ -78,7 +76,6 @@ class TestActiveTaskTracking:
 
         assert "test:c1" not in loop._active_tasks
 
-    @pytest.mark.asyncio
     async def test_old_callback_preserves_replacement_session_group(self):
         loop, _bus = _make_loop()
         old_release = asyncio.Event()
@@ -112,7 +109,6 @@ async def _wait_for_background_callbacks(loop) -> None:
 
 
 class TestBackgroundTaskTracking:
-    @pytest.mark.asyncio
     async def test_successful_background_task_is_removed(self, monkeypatch):
         loop, _bus = _make_loop()
         mock_logger = MagicMock()
@@ -124,7 +120,6 @@ class TestBackgroundTaskTracking:
         assert not loop._background_tasks
         mock_logger.opt.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_failed_background_task_is_retrieved_and_logged(self, monkeypatch):
         loop, _bus = _make_loop()
         mock_logger = MagicMock()
@@ -153,7 +148,6 @@ class TestBackgroundTaskTracking:
             task_name,
         )
 
-    @pytest.mark.asyncio
     async def test_cancelled_background_task_is_removed_without_error(self, monkeypatch):
         loop, _bus = _make_loop()
         mock_logger = MagicMock()
@@ -177,7 +171,6 @@ class TestBackgroundTaskTracking:
         mock_logger.opt.assert_not_called()
 
 
-    @pytest.mark.asyncio
     async def test_shutdown_drains_background_failure_and_logs_it_once(self, monkeypatch):
         loop, _bus = _make_loop()
         loop.subagents.close = AsyncMock()
@@ -212,7 +205,6 @@ class TestBackgroundTaskTracking:
 
 
 class TestHandleStop:
-    @pytest.mark.asyncio
     async def test_stop_no_active_task(self):
         from nanobot.bus.events import InboundMessage
         from nanobot.command.builtin import cmd_stop
@@ -224,7 +216,6 @@ class TestHandleStop:
         out = await cmd_stop(ctx)
         assert "No active task" in out.content
 
-    @pytest.mark.asyncio
     async def test_aclose_cancels_active_turn_before_resources(self):
         loop, _bus = _make_loop()
         events: list[str] = []
@@ -250,7 +241,6 @@ class TestHandleStop:
         assert events == ["turn_cancelled", "resources_closed"]
         assert task.cancelled()
 
-    @pytest.mark.asyncio
     async def test_aclose_serializes_duplicate_cleanup(self):
         loop, _bus = _make_loop()
         entered = asyncio.Event()
@@ -278,7 +268,6 @@ class TestHandleStop:
 
         assert max_concurrent == 1
 
-    @pytest.mark.asyncio
     async def test_stop_cancels_active_task(self):
         from nanobot.bus.events import InboundMessage
         from nanobot.command.builtin import cmd_stop
@@ -307,7 +296,6 @@ class TestHandleStop:
         assert cancelled.is_set()
         assert "stopped" in out.content.lower()
 
-    @pytest.mark.asyncio
     async def test_stop_cancels_multiple_tasks(self):
         from nanobot.bus.events import InboundMessage
         from nanobot.command.builtin import cmd_stop
@@ -336,7 +324,6 @@ class TestHandleStop:
 
 
 class TestDispatch:
-    @pytest.mark.asyncio
     async def test_run_logs_and_continues_after_leaked_cancelled_error(self, monkeypatch):
         loop, bus = _make_loop()
         loop.aclose = AsyncMock()
@@ -371,7 +358,6 @@ class TestDispatch:
 
         assert loop.tools.get("exec") is None
 
-    @pytest.mark.asyncio
     async def test_dispatch_processes_and_publishes(self):
         from nanobot.bus.events import InboundMessage, OutboundMessage
 
@@ -384,7 +370,6 @@ class TestDispatch:
         out = await asyncio.wait_for(bus.consume_outbound(), timeout=1.0)
         assert out.content == "hi"
 
-    @pytest.mark.asyncio
     async def test_dispatch_streaming_preserves_message_metadata(self):
         from nanobot.bus.events import InboundMessage
 
@@ -420,7 +405,6 @@ class TestDispatch:
         assert second.metadata["thread_reply_to_event_id"] == "$reply1"
         assert isinstance(second.event, StreamEndEvent)
 
-    @pytest.mark.asyncio
     async def test_same_session_dispatches_serialize(self):
         from nanobot.bus.events import InboundMessage, OutboundMessage
 
@@ -453,7 +437,6 @@ class TestDispatch:
 
 
 class TestSubagentCancellation:
-    @pytest.mark.asyncio
     async def test_cancel_by_session(self, tmp_path):
         from nanobot.agent.subagent import SubagentManager
         from nanobot.bus.queue import MessageBus
@@ -486,7 +469,6 @@ class TestSubagentCancellation:
         assert count == 1
         assert cancelled.is_set()
 
-    @pytest.mark.asyncio
     async def test_cancel_by_session_no_tasks(self):
         from nanobot.agent.subagent import SubagentManager
         from nanobot.bus.queue import MessageBus
@@ -500,7 +482,6 @@ class TestSubagentCancellation:
         )
         assert await mgr.cancel_by_session("nonexistent") == 0
 
-    @pytest.mark.asyncio
     async def test_cancel_by_session_does_not_terminate_parent_exec_sessions(self):
         from nanobot.agent.subagent import SubagentManager
         from nanobot.agent.tools.exec_session import ExecSessionManager
@@ -522,7 +503,6 @@ class TestSubagentCancellation:
 
         mock_exec_mgr.terminate_by_owner.assert_not_awaited()
 
-    @pytest.mark.asyncio
     async def test_subagent_preserves_reasoning_fields_in_tool_turn(self, monkeypatch, tmp_path):
         from nanobot.agent.subagent import SubagentManager
         from nanobot.bus.queue import MessageBus
@@ -577,7 +557,6 @@ class TestSubagentCancellation:
         assert assistant_messages[0]["reasoning_content"] == "hidden reasoning"
         assert assistant_messages[0]["thinking_blocks"] == [{"type": "thinking", "thinking": "step"}]
 
-    @pytest.mark.asyncio
     async def test_subagent_exec_tool_not_registered_when_disabled(self, tmp_path):
         from nanobot.agent.subagent import SubagentManager
         from nanobot.agent.tools.shell import ExecToolConfig
@@ -619,7 +598,6 @@ class TestSubagentCancellation:
         mgr.runner.run.assert_awaited_once()
         mgr._announce_result.assert_awaited_once()
 
-    @pytest.mark.asyncio
     async def test_subagent_announces_success_after_recovering_from_tool_failure(
         self, monkeypatch, tmp_path
     ):
@@ -679,7 +657,6 @@ class TestSubagentCancellation:
         assert calls["n"] == 2
         assert provider.chat_stream_with_retry.await_count == 3
 
-    @pytest.mark.asyncio
     async def test_cancel_by_session_cancels_running_subagent_tool(self, monkeypatch, tmp_path):
         from nanobot.agent.subagent import SubagentManager
         from nanobot.bus.queue import MessageBus
@@ -743,7 +720,6 @@ class TestSubagentAnnounceSessionKey:
         )
         return mgr, bus
 
-    @pytest.mark.asyncio
     async def test_announce_uses_effective_key_in_unified_mode(self):
         """In unified session mode, session_key_override must be 'unified:default'
         so the result matches the pending queue key."""
@@ -756,7 +732,6 @@ class TestSubagentAnnounceSessionKey:
         assert msg.session_key_override == UNIFIED_SESSION_KEY
         assert msg.session_key == UNIFIED_SESSION_KEY
 
-    @pytest.mark.asyncio
     async def test_announce_uses_raw_key_in_normal_mode(self):
         """Without unified sessions, session_key_override is the raw channel:chat_id."""
         mgr, bus = self._make_mgr()
@@ -768,7 +743,6 @@ class TestSubagentAnnounceSessionKey:
         assert msg.session_key_override == "telegram:222"
         assert msg.session_key == "telegram:222"
 
-    @pytest.mark.asyncio
     async def test_announce_falls_back_to_origin_when_no_session_key(self):
         """When session_key is None, fallback to f'{channel}:{chat_id}'."""
         mgr, bus = self._make_mgr()
@@ -781,7 +755,6 @@ class TestSubagentAnnounceSessionKey:
         assert msg.channel == "system"
         assert msg.chat_id == "discord:333"
 
-    @pytest.mark.asyncio
     async def test_spawn_routes_result_to_parent_session(self):
         """Background results return to the parent's canonical session."""
 
