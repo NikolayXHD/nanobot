@@ -4,7 +4,9 @@ import sys
 
 import pytest
 
+from nanobot.agent.tools.context import RequestContext, bind_request_context, reset_request_context
 from nanobot.agent.tools.shell import ExecTool
+from nanobot.bus.events import PREPARED_BODY_PATH_META
 
 _UNIX_ONLY = pytest.mark.skipif(sys.platform == "win32", reason="Unix shell commands")
 
@@ -149,3 +151,36 @@ async def test_exec_path_append_command_substitution_does_not_execute(tmp_path):
 
     assert "OK" in result
     assert "SHOULD_NOT_APPEAR" not in result
+
+
+async def test_exec_receives_the_turn_body_path(tmp_path):
+    """A turn exposes its reply body path to commands by default."""
+    tool = ExecTool()
+    request = RequestContext(
+        channel="cli", chat_id="direct", turn_id="turn-3", workspace=tmp_path
+    )
+    token = bind_request_context(request)
+    try:
+        result = await tool.execute(command="printenv NANOBOT_BODY_PATH")
+    finally:
+        reset_request_context(token)
+    assert str(tmp_path / "outbox" / "turn-3.md") in result
+
+
+async def test_exec_prefers_the_declared_body_path(tmp_path):
+    """A declared body path wins over the turn body path."""
+    declared = tmp_path / "declared.md"
+    tool = ExecTool()
+    request = RequestContext(
+        channel="cli",
+        chat_id="direct",
+        turn_id="turn-3",
+        workspace=tmp_path,
+        metadata={PREPARED_BODY_PATH_META: str(declared)},
+    )
+    token = bind_request_context(request)
+    try:
+        result = await tool.execute(command="printenv NANOBOT_BODY_PATH")
+    finally:
+        reset_request_context(token)
+    assert str(declared) in result

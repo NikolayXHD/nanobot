@@ -36,6 +36,40 @@ def _make_config(**overrides) -> EmailConfig:
     return EmailConfig(**defaults)
 
 
+class _FakeSMTP:
+    """Minimal SMTP stub recording messages sent through the channel."""
+
+    def __init__(self, _host: str, _port: int, timeout: int = 30) -> None:
+        self.timeout = timeout
+        self.sent_messages: list[EmailMessage] = []
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        return False
+
+    def starttls(self, context=None):
+        return None
+
+    def login(self, _user: str, _pw: str):
+        return None
+
+    def send_message(self, msg: EmailMessage):
+        self.sent_messages.append(msg)
+
+
+@pytest.fixture
+def fake_smtp(monkeypatch) -> _FakeSMTP:
+    smtp = _FakeSMTP("smtp.example.com", 587)
+
+    def _factory(*_args, **_kwargs):
+        return smtp
+
+    monkeypatch.setattr("nanobot.channels.email.runtime.smtplib.SMTP", _factory)
+    return smtp
+
+
 def _make_raw_email(
     from_addr: str = "alice@example.com",
     subject: str = "Hello",
@@ -805,6 +839,108 @@ async def test_send_uses_smtp_and_reply_subject(monkeypatch) -> None:
     assert sent["Subject"] == "Re: Invoice #42"
     assert sent["To"] == "alice@example.com"
     assert sent["In-Reply-To"] == "<m1@example.com>"
+
+
+async def test_send_defaults_to_plaintext_body(fake_smtp) -> None:
+    channel = EmailChannel(_make_config(), MessageBus())
+    await channel.send(
+        OutboundMessage(
+            channel="email",
+            chat_id="alice@example.com",
+            content="**Bold** text",
+        )
+    )
+
+    sent = fake_smtp.sent_messages[0]
+    assert not sent.is_multipart()
+    assert "**Bold** text" in sent.get_content()
+
+
+async def test_send_renders_markdown_html_alternative(fake_smtp) -> None:
+    channel = EmailChannel(_make_config(), MessageBus())
+    await channel.send(
+        OutboundMessage(
+            channel="email",
+            chat_id="alice@example.com",
+            content="**Bold**\n\n| A | B |\n| --- | --- |\n| 1 | 2 |",
+            metadata={"body_format": "md_to_html"},
+        )
+    )
+
+    sent = fake_smtp.sent_messages[0]
+    assert sent.is_multipart()
+    plain = sent.get_body(preferencelist=("plain",))
+    html = sent.get_body(preferencelist=("html",))
+    assert plain is not None and html is not None
+    assert "**Bold**" in plain.get_content()
+    html_content = html.get_content()
+    assert "<strong>Bold</strong>" in html_content
+    assert "<table" in html_content
+    assert 'bordercolor="#7f7f7f"' in html_content
+    assert 'style="border-collapse' not in html_content
+
+
+async def test_send_sanitizes_html_body(fake_smtp) -> None:
+    channel = EmailChannel(_make_config(), MessageBus())
+    await channel.send(
+        OutboundMessage(
+            channel="email",
+            chat_id="alice@example.com",
+            content=(
+                "<script>alert(1)</script><p>"
+                '<a href="javascript:alert(1)">bad</a> '
+                '<a href="https://example.com">good</a></p>'
+            ),
+            metadata={"body_format": "html"},
+        )
+    )
+
+    sent = fake_smtp.sent_messages[0]
+    html = sent.get_body(preferencelist=("html",))
+    assert html is not None
+    html_content = html.get_content()
+    assert "<script>" not in html_content
+    assert "javascript:" not in html_content
+    assert "<p>" in html_content
+    assert 'href="https://example.com"' in html_content
+
+
+async def test_send_keeps_table_attributes(fake_smtp) -> None:
+    channel = EmailChannel(_make_config(), MessageBus())
+    await channel.send(
+        OutboundMessage(
+            channel="email",
+            chat_id="alice@example.com",
+            content='<table border="1" cellpadding="6"><tr><td>x</td></tr></table>',
+            metadata={"body_format": "html"},
+        )
+    )
+
+    html = fake_smtp.sent_messages[0].get_body(preferencelist=("html",))
+    assert html is not None
+    html_content = html.get_content()
+    assert 'border="1"' in html_content
+    assert 'bordercolor="#7f7f7f"' in html_content
+    assert 'cellspacing="0"' in html_content
+    assert 'cellpadding="6"' in html_content
+    assert 'style="padding: 4px 8px;"' in html_content
+    assert "border: 1px solid" not in html_content
+
+
+async def test_send_keeps_html_body_as_html(fake_smtp) -> None:
+    channel = EmailChannel(_make_config(), MessageBus())
+    await channel.send(
+        OutboundMessage(
+            channel="email",
+            chat_id="alice@example.com",
+            content="**Bold** text",
+            metadata={"body_format": "html"},
+        )
+    )
+
+    html = fake_smtp.sent_messages[0].get_body(preferencelist=("html",))
+    assert html is not None
+    assert "**Bold** text" in html.get_content()
 
 
 async def test_send_skips_progress_messages_before_smtp(monkeypatch) -> None:

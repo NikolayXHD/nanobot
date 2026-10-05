@@ -17,8 +17,17 @@ from email.message import EmailMessage
 from email.parser import BytesParser
 from email.utils import getaddresses, parseaddr
 from fnmatch import fnmatch
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Literal, cast
+
+try:
+    import nh3
+    from mistune import HTMLRenderer, create_markdown
+except ImportError as e:
+    raise ImportError(
+        "Email dependencies not installed. Run: nanobot plugins enable email"
+    ) from e
 
 from loguru import logger
 from pydantic import Field, field_validator
@@ -31,6 +40,33 @@ from nanobot.config.paths import get_media_dir
 from nanobot.config.schema import Base
 from nanobot.events import ContextCompactionEvent
 from nanobot.utils.helpers import safe_filename
+
+EMAIL_MARKDOWN = create_markdown(
+    renderer=HTMLRenderer(escape=True),
+    plugins=["table", "strikethrough", "url", "superscript", "subscript"],
+)
+EMAIL_HTML_TAGS = {
+    "p", "a", "strong", "em", "del", "code", "pre", "blockquote",
+    "ul", "ol", "li", "h1", "h2", "h3", "h4", "h5", "h6",
+    "hr", "br", "table", "thead", "tbody", "tr", "th", "td", "caption",
+    "sup", "sub",
+}
+EMAIL_HTML_ATTRIBUTES: dict[str, set[str]] = {
+    "a": {"href", "title"},
+    "ol": {"start"},
+    "table": {"border", "bordercolor", "cellpadding", "cellspacing", "width", "align"},
+    "td": {"colspan", "rowspan", "align", "valign", "width"},
+    "th": {"colspan", "rowspan", "align", "valign", "width"},
+    "tr": {"align", "valign"},
+}
+EMAIL_HTML_URL_SCHEMES = {"http", "https", "mailto"}
+EMAIL_HTML_CLEANER = nh3.Cleaner(
+    tags=EMAIL_HTML_TAGS,
+    attributes=EMAIL_HTML_ATTRIBUTES,
+    url_schemes=EMAIL_HTML_URL_SCHEMES,
+    strip_comments=True,
+    link_rel="noopener noreferrer",
+)
 
 
 class EmailConfig(Base):
@@ -324,7 +360,18 @@ class EmailChannel(BaseChannel):
         email_msg["From"] = self.config.from_address or self.config.smtp_username or self.config.imap_username
         email_msg["To"] = to_addr
         email_msg["Subject"] = subject
-        email_msg.set_content(content)
+        body_format = msg.metadata.get("body_format")
+        if body_format == "html":
+            html_body = _inline_email_styles(EMAIL_HTML_CLEANER.clean(content))
+            email_msg.set_content(html_body, subtype="html")
+        else:
+            email_msg.set_content(content)
+            if body_format == "md_to_html":
+                rendered = _render_markdown_html(content)
+                if rendered:
+                    email_msg.add_alternative(
+                        _inline_email_styles(rendered), subtype="html"
+                    )
 
         for data, maintype, subtype, filename in attachments:
             email_msg.add_attachment(
@@ -1244,3 +1291,80 @@ class EmailChannel(BaseChannel):
         if subject.lower().startswith("re:"):
             return subject
         return f"{prefix}{subject}"
+
+
+class _EmailStyleInliner(HTMLParser):
+    """Add inline styles: mail clients drop style blocks and table border attributes."""
+
+    # Table borders use the bordercolor attribute: clients repaint CSS borders
+    # in dark mode but leave the legacy attribute alone.
+    _TABLE_ATTRIBUTES = (
+        ("border", "1"),
+        ("bordercolor", "#7f7f7f"),
+        ("cellspacing", "0"),
+    )
+
+    _ELEMENT_STYLES = {
+        "th": "padding: 4px 8px;",
+        "td": "padding: 4px 8px;",
+        "pre": (
+            "border: 1px solid currentColor; "
+            "background-color: rgba(127, 127, 127, 0.12); "
+            "padding: 8px; overflow-x: auto;"
+        ),
+    }
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.parts: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self.parts.append(self._tag(tag, attrs, closed=False))
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self.parts.append(self._tag(tag, attrs, closed=True))
+
+    def handle_endtag(self, tag: str) -> None:
+        self.parts.append(f"</{tag}>")
+
+    def handle_data(self, data: str) -> None:
+        self.parts.append(html.escape(data, quote=False))
+
+    def handle_comment(self, data: str) -> None:
+        self.parts.append(f"<!--{data}-->")
+
+    def handle_decl(self, decl: str) -> None:
+        self.parts.append(f"<!{decl}>")
+
+    def _tag(
+        self, tag: str, attrs: list[tuple[str, str | None]], *, closed: bool
+    ) -> str:
+        if tag == "table":
+            managed = {name for name, _ in self._TABLE_ATTRIBUTES}
+            attrs = [(key, value) for key, value in attrs if key not in managed]
+            attrs.extend(self._TABLE_ATTRIBUTES)
+        style = self._ELEMENT_STYLES.get(tag)
+        if style:
+            attrs = [(key, value) for key, value in attrs if key != "style"]
+            attrs.append(("style", style))
+        rendered = "".join(
+            f' {key}="{html.escape(value or "", quote=True)}"' for key, value in attrs
+        )
+        return f"<{tag}{rendered}{' /' if closed else ''}>"
+
+
+def _inline_email_styles(html: str) -> str:
+    inliner = _EmailStyleInliner()
+    inliner.feed(html)
+    inliner.close()
+    return "".join(inliner.parts)
+
+
+def _render_markdown_html(text: str) -> str | None:
+    """Render markdown to sanitized HTML; returns None when rendering fails."""
+    try:
+        rendered = EMAIL_HTML_CLEANER.clean(cast(str, EMAIL_MARKDOWN(text))).strip()
+    except Exception:
+        logger.warning("Email HTML rendering failed; sending plain text only")
+        return None
+    return rendered

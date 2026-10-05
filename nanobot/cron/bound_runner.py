@@ -6,9 +6,14 @@ import asyncio
 import hashlib
 import time
 import uuid
+from pathlib import Path
 from typing import Any, Protocol
 
-from nanobot.bus.events import InboundMessage, OutboundMessage
+from nanobot.bus.events import (
+    PREPARED_BODY_PATH_META,
+    InboundMessage,
+    OutboundMessage,
+)
 from nanobot.cron.session_delivery import origin_delivery_context
 from nanobot.cron.session_turns import CRON_DEFER_UNTIL_IDLE_META, CRON_TRIGGER_META
 from nanobot.cron.types import CronJob, CronRunResult
@@ -17,6 +22,8 @@ from nanobot.utils.prompt_templates import render_template
 
 
 class BoundCronAgent(Protocol):
+    workspace: Path
+
     async def submit_cron_turn(self, msg: InboundMessage) -> OutboundMessage | None:
         ...
 
@@ -89,6 +96,15 @@ async def run_bound_cron_job(
         ),
     }
     metadata[CRON_DEFER_UNTIL_IDLE_META] = True
+    # The payload declares the contract; drop stale keys from the session.
+    metadata.pop(PREPARED_BODY_PATH_META, None)
+    metadata.pop("body_format", None)
+    if job.payload.delivery == "file":
+        metadata[PREPARED_BODY_PATH_META] = str(
+            Path(agent.workspace) / "outbox" / f"{run_id}.md"
+        )
+        if job.payload.body_format != "plaintext":
+            metadata["body_format"] = job.payload.body_format
     run_record_base: dict[str, Any] = {
         "job_id": job.id,
         "job_name": job.name,

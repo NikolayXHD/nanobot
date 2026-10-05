@@ -152,6 +152,79 @@ Each local trigger delivery writes an audit record under
 `<workspace>/triggers/runs`. Run one gateway consumer per workspace; the local
 queue is not a distributed multi-consumer queue.
 
+### Prepared message bodies
+
+Goal: the message sent to the user is the contents of a file prepared by a
+deterministic script, not the agent reply. The turn still runs the agent: the
+agent runs the script, the script writes the message file, and the turn
+delivers that file. The session transcript keeps the agent reply.
+
+Why bother:
+
+- The file is rendered verbatim: numbers, dates, and links appear exactly as
+  the script wrote them. A model restating the same table paraphrases rows,
+  drops entries, and occasionally invents a link.
+- A long list (hundreds of rows) does not fit one model reply: the model
+  silently shortens it, the script prints every row.
+
+#### Cron job
+
+1. Declare the contract in the job payload, editing
+   `<workspace>/cron/jobs.json` directly (the chat cron tool does not expose
+   these fields):
+
+   ```json
+   {
+     "kind": "agent_turn",
+     "message": "Prepare the reply inputs. Run foo.py to generate the reply",
+     "delivery": "file",
+     "bodyFormat": "md_to_html"
+   }
+   ```
+
+   `bodyFormat: "plaintext"` keeps the body as is. Choose `"md_to_html"` for
+   markup-heavy bodies such as tables or preformatted code: the channel
+   renders the markdown into a sanitized HTML part. `"html"` treats the body
+   as HTML and sanitizes it with the same tag allowlist. Rendering is
+   currently implemented for email only.
+
+2. Write the renderer script the job turn runs. The script writes the body
+   (see the requirements below); the body becomes the user-visible message,
+   and the session transcript keeps the agent reply.
+
+#### Interactive sessions
+
+In a chat, ask for a reply built by a script (see the requirements below),
+for example "build the reply with a script, I need the exact rows". The body
+that script writes becomes the user-visible message; a missing or empty body
+fails the turn with an error.
+
+For a file-backed message that must arrive without a live chat turn, create a
+job bound to the target chat session and edit it in
+`<workspace>/cron/jobs.json`: set `"schedule": {"kind": "at", "atMs":
+<timestamp in ms>}`, `"deleteAfterRun": true`, and the payload fields from the
+step above. The job runs once, delivers the body, and is removed.
+
+#### Renderer script requirements
+
+The renderer script follows the same contract from a cron job and from a chat:
+
+- Read the destination path from the `NANOBOT_BODY_PATH` environment
+  variable. Never hardcode the path: it changes from run to run, and the
+  variable exists only for commands started by the turn.
+- Write a non-empty UTF-8 body of at most 1 MiB: markdown, or HTML when
+  `bodyFormat` is `"html"`. The channel sanitizes both formats.
+- Exit with status 0 after the body is on disk. A nonzero exit is a tool
+  error for the turn.
+- Do not send the email or post the message: delivery belongs to the job
+  channel. Do not print the body to stdout as a delivery channel either;
+  stdout and stderr are diagnostics for the turn.
+- A body that is empty, not UTF-8, unreadable, or larger than 1 MiB becomes
+  the error text of the reply, and the session transcript keeps the agent
+  reply. In a cron job a body that was never written is an error too: the run
+  keeps status `ok`, so a broken renderer shows up in the delivered message
+  rather than only in the run log.
+
 ## Common Patterns
 
 For a nightly report, ask from the target topic:

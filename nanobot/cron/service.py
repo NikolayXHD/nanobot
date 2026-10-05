@@ -397,6 +397,8 @@ class CronService:
                     "payload": {
                         "kind": j.payload.kind,
                         "message": j.payload.message,
+                        "delivery": j.payload.delivery,
+                        "bodyFormat": j.payload.body_format,
                         "deliver": j.payload.deliver,
                         "channel": j.payload.channel,
                         "to": j.payload.to,

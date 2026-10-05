@@ -2058,6 +2058,7 @@ async def test_system_subagent_followup_uses_common_turn_lifecycle(tmp_path: Pat
         "_dispatch_command",
         "_build_turn",
         "_run_turn",
+        "_apply_prepared_body",
         "_persist_turn",
         "_prepare_outbound",
     ):
@@ -2100,11 +2101,12 @@ async def test_system_subagent_followup_uses_common_turn_lifecycle(tmp_path: Pat
         "_dispatch_command",
         "_build_turn",
         "_run_turn",
+        "_apply_prepared_body",
         "_persist_turn",
         "_prepare_outbound",
     ]
     logged = "\n".join(record["message"] for record in records)
-    for stage in ("restore", "compact", "command", "build", "run", "save", "respond"):
+    for stage in ("restore", "compact", "command", "build", "run", "body", "save", "respond"):
         assert f"Stage {stage} completed in" in logged
     stage_records = [record for record in records if record["extra"].get("event") == "turn_stage"]
     assert {record["extra"]["stage"] for record in stage_records} == {
@@ -2113,6 +2115,7 @@ async def test_system_subagent_followup_uses_common_turn_lifecycle(tmp_path: Pat
         "command",
         "build",
         "run",
+        "body",
         "save",
         "respond",
     }
