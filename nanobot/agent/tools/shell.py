@@ -14,8 +14,13 @@ from urllib.parse import unquote
 
 from loguru import logger
 
+from nanobot.agent.prepared_body import turn_body_path
 from nanobot.agent.tools.base import Tool, ToolResult
-from nanobot.agent.tools.context import ToolContext, current_request_session_key
+from nanobot.agent.tools.context import (
+    ToolContext,
+    current_request_context,
+    current_request_session_key,
+)
 from nanobot.agent.tools.exec_session import (
     DEFAULT_EXEC_SESSION_MANAGER,
     DEFAULT_MAX_OUTPUT_CHARS,
@@ -33,6 +38,7 @@ from nanobot.agent.tools.schema import (
     tool_parameters_schema,
 )
 from nanobot.agent.tools.shell_config import ExecToolConfig
+from nanobot.bus.events import PREPARED_BODY_PATH_META
 from nanobot.config.paths import get_media_dir
 from nanobot.execution.sandbox import build_sandbox_argv
 from nanobot.security.sandbox_launcher import SandboxLauncherError
@@ -404,6 +410,13 @@ class ExecTool(Tool):
 
         effective_timeout = self._resolve_timeout(timeout)
         env = self._build_env()
+        request = current_request_context()
+        if request is not None:
+            body_path = request.metadata.get(PREPARED_BODY_PATH_META)
+            if body_path is None and request.turn_id and request.workspace is not None:
+                body_path = str(turn_body_path(request.workspace, request.turn_id))
+            if body_path is not None:
+                env["NANOBOT_BODY_PATH"] = body_path
 
         if isinstance(command, list):
             parent_path = os.environ.get("PATH", env.get("PATH", ""))

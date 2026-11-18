@@ -16,6 +16,9 @@ OUTBOUND_META_AGENT_UI = "_agent_ui"
 # services. Never accept these keys verbatim from an untrusted client.
 INBOUND_META_RUNTIME_CONTROL = "_runtime_control"
 INBOUND_META_USER_SHELL = "_user_shell"
+# Declared by a cron job with `delivery: "file"` or by the `reply_body` tool:
+# the turn reply is read from this file instead of the model output.
+PREPARED_BODY_PATH_META = "prepared_body_path"
 RUNTIME_CONTROL_SESSION_DISCARD = "session_discard"
 
 # Transport-provided turn correlation; the persisted spelling is retained for clients.

@@ -27,6 +27,12 @@ from nanobot.agent.hook import AgentHook, AgentTurnHookFactory
 from nanobot.agent.memory import Consolidator
 from nanobot.agent.model_runtime import ModelRuntimeResolver
 from nanobot.agent.pending_inputs import PendingInputs
+from nanobot.agent.prepared_body import (
+    PREPARED_BODY_PATH_META,
+    PreparedBodyError,
+    load_prepared_body,
+    turn_body_path,
+)
 from nanobot.agent.runner import AgentCheckpoint, AgentRunner, AgentRunResult, AgentRunSpec
 from nanobot.agent.subagent import SubagentManager
 from nanobot.agent.tools.context import RequestContext, bind_request_context, reset_request_context
@@ -1837,6 +1843,7 @@ class AgentLoop:
                 return ctx.outbound
             await self._run_turn_stage(ctx, "build", self._build_turn)
             await self._run_turn_stage(ctx, "run", self._run_turn)
+            await self._run_turn_stage(ctx, "body", self._apply_prepared_body)
             await self._run_turn_stage(ctx, "save", self._persist_turn)
             await self._run_turn_stage(ctx, "respond", self._prepare_outbound)
             self._log_turn_completion(ctx)
@@ -2222,6 +2229,31 @@ class AgentLoop:
             ctx.suppress_response = True
         ctx.usage = result.usage
         ctx.delivery.record_usage(result.round_usages)
+
+    async def _apply_prepared_body(self, ctx: TurnContext) -> None:
+        """Replace the turn reply with a body file.
+
+        A body file is mandatory once it exists: `reply_body` creates the file
+        to declare the body, and an empty or unreadable file becomes the error
+        text of the reply. A turn without a body file keeps its own reply, and
+        a failed turn keeps its error text.
+        """
+        if ctx.stop_reason == "error":
+            return
+        metadata = ctx.msg.metadata
+        if metadata.get(PREPARED_BODY_PATH_META) is None:
+            body_path = turn_body_path(self.workspace, ctx.turn_id)
+            if not body_path.is_file():
+                return
+            metadata = {PREPARED_BODY_PATH_META: str(body_path)}
+        try:
+            body = load_prepared_body(metadata)
+        except PreparedBodyError as exc:
+            logger.warning("Prepared body rejected: {}", exc)
+            ctx.final_content = str(exc)
+            return
+        if body is not None:
+            ctx.final_content = body
 
     async def _persist_turn(self, ctx: TurnContext) -> None:
         session = ctx.require_session()

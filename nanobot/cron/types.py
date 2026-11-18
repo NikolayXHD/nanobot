@@ -49,6 +49,8 @@ class CronPayload:
     """What to do when the job runs."""
     kind: Literal["system_event", "agent_turn"] = "agent_turn"
     message: str = ""
+    # Message source: the agent reply or a prepared body file.
+    delivery: Literal["reply", "file"] = "reply"
     # Legacy delivery fields used by pre-session-bound cron jobs.
     deliver: bool = False
     channel: str | None = None
@@ -65,6 +67,7 @@ class CronPayload:
         return cls(
             kind=data.get("kind", "agent_turn"),
             message=data.get("message", ""),
+            delivery=data.get("delivery", "reply"),
             deliver=data.get("deliver", False),
             channel=data.get("channel"),
             to=data.get("to"),
